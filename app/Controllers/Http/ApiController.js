@@ -1,7 +1,6 @@
 'use strict'
 
 const Hash = use('Hash')
-const Encryption = use('Encryption')
 const User = use('App/Models/User')
 const Mailjet = use('node-mailjet').connect('ce9c25078a4f1474dc6d3ce5524a711c', 'd9ca8c7b9944f10a34eb42118277e6f5');
 const gravatar = use('gravatar');
