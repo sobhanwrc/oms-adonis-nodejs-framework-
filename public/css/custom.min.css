@@ -1,0 +1,24 @@
+.chef_list{
+	padding:10px;
+	}
+	.chef_list .table-scrollable td,.chef_list .table-scrollable th{
+		vertical-align:middle;
+		text-align:center;
+	}
+	
+	.chef_list .mt-checkbox span{
+		background:#fff;
+	
+	}
+::placeholder {
+    color: red;
+    opacity: 1; /* Firefox */
+}
+
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+   color: red;
+}
+
+::-ms-input-placeholder { /* Microsoft Edge */
+   color: red;
+}
