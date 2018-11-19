@@ -25,8 +25,10 @@ Route.group( () => {
 //api routes
 Route.post('/registration', 'ApiController.registration')
 Route.post('/submitLogin', 'ApiController.submitLogin')
+Route.post('/forgotPassword', 'ApiController.forgotPassword')
 Route.group(() => { 
     Route.get('/userDetails', 'ApiController.userDetails')
+    Route.post('/profileEdit', 'ApiController.profileEdit')
     Route.post('/uploadProfileImage', 'ApiController.uploadProfileImage')
     Route.post('/changePassword', 'ApiController.changePassword')
 }).middleware(['auth:jwt'])

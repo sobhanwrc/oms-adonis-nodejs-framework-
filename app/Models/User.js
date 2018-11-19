@@ -21,21 +21,37 @@ class User extends BaseModel {
       first_name: { type: String, default: '' },
       middle_name: { type: String, default: ''},
       last_name: { type: String, default: '' },
-      profile_image : { type : String},
-      email: { type: String,unique: true },
-      phone_number : {type: Number},
-      password: { type: String },
-      address: {type : String},
-      city: { type : String},
-      dob: { type: String},
-      company_name: { type : String},
-      company_address : { type : String},
-      uen_no : { type: String, unique: true},
-      latitude: {type : Number},
-      longitude : { type: Number},
+      profile_image : { type : String,  default: '' },
+      email: { type: String,unique: true ,  default: '' },
+      gender : { type : String,  default: '' },
+      phone_number : {type: Number,  default: '' },
+      password: { type: String,  default: ''  },
+      address: {type : String,  default: '' },
+      city: { type : String,  default: '' },
+      dob: { type: String,  default: '' },
+      business : [
+        {
+          company_name: { type : String,  default: '' },
+          company_address : { type : String,  default: '' },
+          company_ph_no : { type: String,  default: '' },
+          experience : { type : Number,  default: '' },
+          service_type : { type : String,  default: '' },
+          services: { type : String,  default: '' }
+        }
+      ],
+      bank_information: [
+        {
+          bank_name:  { type : String, default: '' },
+          account_no : { type : String,default: '' },
+          swift_code :  { type : String, default: '' },
+        }
+      ],
+      uen_no : { type: String, unique: true,  default: '' },
+      latitude: {type : Number,  default: '' },
+      longitude : { type: Number,  default: '' },
       status: { type: Number, default: 0},
-      reg_type: { type: String }, //1=Admin,2=User,3=Vendor
-      social_id: { type: String },
+      reg_type: { type: String,  default: ''  }, //1=Admin,2=User,3=Vendor
+      social_id: { type: String,  default: ''  },
       created_at : { type: Date, default : Date.now()}
     }
   }

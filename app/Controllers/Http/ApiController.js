@@ -7,6 +7,8 @@ const gravatar = use('gravatar');
 const base64_to_image = use ('base64-to-image');
 
 class ApiController {
+    //common api for all 
+
     async registration ({request, response, auth}) {
         var first_name = request.input('first_name');
         var last_name = request.input('last_name');
@@ -21,6 +23,11 @@ class ApiController {
         var company_address = request.input('company_address');
         var uen_no = request.input('uen_no');
         var reg_type = 0;
+        var business = {
+            company_name : company_name,
+            company_address : company_address
+        }
+        var bank = {};
 
         const avatar = gravatar.url(email, {
             s: '200', // Size
@@ -55,8 +62,8 @@ class ApiController {
                 address : address,
                 city : city,
                 dob : dob,
-                company_name : company_name,
-                company_address : company_address,
+                business : business,
+                bank_information : bank,
                 uen_no : uen_no,
                 status : 1, //active
                 reg_type : reg_type,
@@ -230,7 +237,8 @@ class ApiController {
     
             return response.json({
                 status: 'success',
-                data: 'Bearer ' + token.token,
+                token: 'Bearer ' + token.token,
+                message : "Login succcessfully."
             })
 
         } catch (error) {
@@ -248,6 +256,72 @@ class ApiController {
         } catch (error) {
             response.send('Missing or invalid jwt token')
         }
+    }
+
+    async profileEdit ({ request, response, auth }) {
+        var user = await auth.getUser();
+
+        var first_name = request.input('first_name') ? request.input('first_name') : user.first_name;
+        var middle_name = request.input('middle_name') ? request.input('middle_name') : user.middle_name;
+        var last_name = request.input('last_name') ? request.input('last_name') : user.last_name;
+        var gender = request.input('gender') ? request.input('gender') : user.gender; //M ='Male', F='Female'
+
+        var bank_name = request.input('bank_name');
+        var account_no = request.input('account_no');
+        var swift_code = request.input('swift_code');
+
+        var phone_number = request.input('phone_number') ? request.input('phone_number') : user.phone_number;
+        var address = request.input('address') ? request.input('address') : user.address;
+        var city = request.input('city') ? request.input('city') : user.city;
+        var dob = request.input('dob') ? request.input('dob') : user.dob;
+
+        var company_name = request.input('company_name') ? request.input('company_name') : user.business[0].company_name;
+        var company_address = request.input('company_address') ? request.input('company_address') : user.business[0].company_address;
+        var company_ph_no = request.input('company_ph_no') ? request.input('company_ph_no') : user.business[0].company_ph_no;
+        var experience = request.input('experience') ? request.input('experience') : user.business[0].experience;
+        var service_type = request.input('service_type') ? request.input('service_type') : user.business[0].service_type;
+        var services = request.input('services') ? request.input('services') : user.business[0].services;
+
+        var uen_no = request.input('uen_no') ? request.input('uen_no') : user.uen_no;
+
+        user.bank_information = {
+            bank_name : bank_name ? bank_name : user.bank_information[0].bank_name,
+            account_no : account_no ? account_no : user.bank_information[0].account_no,
+            swift_code : swift_code ? swift_code : user.bank_information[0].swift_code,
+        }
+
+        user.first_name = first_name;
+        user.middle_name = middle_name;
+        user.last_name = last_name;
+        user.gender = gender;
+        user.phone_number = phone_number;
+        user.address = address;
+        user.city = city;
+        user.dob = dob;
+        user.uen_no = uen_no;
+        user.business = {
+            company_name : company_name,
+            company_address : company_address,
+            company_ph_no : company_ph_no,
+            experience : experience,
+            service_type : service_type,
+            services : services,
+        }
+
+        if(await user.save()) {
+            response.json ({
+                status : true,
+                code : 200,
+                message : "Profile updated successfully."
+            });
+        }else { 
+            response.json ({
+                status : false,
+                code : 400,
+                message : "Profile updated failed."
+            });
+        }
+
     }
 
     async uploadProfileImage ({ request, response, auth}) {
@@ -311,7 +385,12 @@ class ApiController {
             });
         }
         
-    } 
+    }
+
+    async forgotPassword ({ request, response}) {
+        var email = request.input('email');
+        var user = await User.findOne({ email:email });
+    }
 
     async userLogout ({ auth, response }) {
         // const user =  await auth.current.user 

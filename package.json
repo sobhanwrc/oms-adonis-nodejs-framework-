@@ -31,6 +31,7 @@
     "base64-to-image": "^1.0.2",
     "gravatar": "^1.6.0",
     "lucid-mongo": "^3.1.4",
+    "mongoose": "^5.3.12",
     "mysql": "^2.16.0",
     "node-mailjet": "^3.3.1",
     "sqlite3": "^4.0.4"
