@@ -49,9 +49,11 @@ class User extends BaseModel {
       uen_no : { type: String, unique: true,  default: '' },
       latitude: {type : Number,  default: '' },
       longitude : { type: Number,  default: '' },
-      status: { type: Number, default: 0},
+      status: { type: Number, default: 0}, //1 = 'active', 0='Inactive'
       reg_type: { type: String,  default: ''  }, //1=Admin,2=User,3=Vendor
       social_id: { type: String,  default: ''  },
+      forgot_pw_key : { type: String, default: ''},
+      forgot_pw_email_sent_date : { type: Date, default: ''},
       created_at : { type: Date, default : Date.now()}
     }
   }
