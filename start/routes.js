@@ -26,11 +26,18 @@ Route.group( () => {
 Route.post('/registration', 'ApiController.registration')
 Route.post('/submitLogin', 'ApiController.submitLogin')
 Route.post('/forgotPassword', 'ApiController.forgotPassword')
+Route.post('/addJobIndustrty', 'ApiController.addJobIndustrty')
+Route.post('/addJobCategory', 'ApiController.addJobCategory')
+Route.get('/fetchJobCategoryAndIndustry', 'ApiController.fetchJobCategoryAndIndustry')
 Route.group(() => { 
     Route.get('/userDetails', 'ApiController.userDetails')
     Route.post('/profileEdit', 'ApiController.profileEdit')
     Route.post('/uploadProfileImage', 'ApiController.uploadProfileImage')
     Route.post('/changePassword', 'ApiController.changePassword')
+    Route.post('/addJob', 'ApiController.addJob')
+    Route.get('/jobList', 'ApiController.jobList')
+    Route.post('/jobDetails', 'ApiController.jobDetails')
+    Route.post('/editJob', 'ApiController.editJob')
 }).middleware(['auth:jwt'])
 
 Route.get('/logout', 'ApiController.userLogout').middleware(['auth']);

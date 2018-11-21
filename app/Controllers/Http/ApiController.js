@@ -2,6 +2,9 @@
 
 const Hash = use('Hash')
 const User = use('App/Models/User')
+const JobIndustry = use('App/Models/JobIndustry')
+const JobCategory = use('App/Models/JobCategory')
+const Job = use('App/Models/Job')
 const Mailjet = use('node-mailjet').connect('ce9c25078a4f1474dc6d3ce5524a711c', 'd9ca8c7b9944f10a34eb42118277e6f5');
 const gravatar = use('gravatar');
 const base64_to_image = use ('base64-to-image');
@@ -266,7 +269,12 @@ class ApiController {
 
     async userDetails ({ request, response, auth}) {
         try {
-            return await auth.getUser()
+            var user_details = await auth.getUser();
+            response.json ({
+              status : true,
+              code:200,
+              data: user_details
+            });
         } catch (error) {
             response.send('Missing or invalid jwt token')
         }
@@ -329,6 +337,7 @@ class ApiController {
             response.json ({
                 status : true,
                 code : 200,
+                data: user,
                 message : "Profile updated successfully."
             });
         }else { 
@@ -365,9 +374,9 @@ class ApiController {
 
             if(await user.save()){
                 response.json({
-                success: true,
-                code:200,
-                message: "Profile image uploaded successfully."
+                  success: true,
+                  code:200,
+                  message: "Profile image uploaded successfully."
                 });
             }
         }catch (error) {
@@ -1405,6 +1414,175 @@ class ApiController {
                 message: "Your email not registered with us."
             });
         }
+    }
+
+    async addJobIndustrty ({request, response}) {
+      var add = new JobIndustry ({
+        industry_name : request.input('industry_name'),
+      });
+
+      if(await add.save()) {
+        response.json ({
+          status : true, 
+          code : 200, 
+          message : "Added successfully."
+        });
+      }
+    }
+
+    async addJobCategory ({request, response}) {
+      var add = new JobCategory ({
+        category_type : request.input('category_type'),
+      });
+
+      if(await add.save()) {
+        response.json ({
+          status : true, 
+          code : 200, 
+          message : "Added successfully."
+        });
+      }
+    }
+
+    async fetchJobCategoryAndIndustry ({request, response}) {
+      var all_jobcategory = await JobCategory.find({},{status: 0, created_at: 0, updated_at: 0, __v:0 });
+      var all_jobindustry = await JobIndustry.find({},{status: 0, created_at: 0, updated_at: 0, __v:0 });
+
+      response.json ({
+        status : true,
+        code : 200,
+        jobIndustry : all_jobindustry,
+        jobCategory : all_jobcategory
+      });
+    }
+
+    async addJob ({request, response, auth}) {
+      var user = await auth.getUser();
+
+      if(user.reg_type == 2) {
+        var user_id = user._id;
+        var job_title = request.input('job_title');
+        var service_require_at = request.input('service_require_at');
+        var job_industry = request.input('job_industry');
+        var job_category = request.input('job_category');
+        var job_date = request.input('job_date');
+        var job_time = request.input('job_time');
+        var description  = request.input('description');
+
+        var add_job = new Job({
+          user_id : user_id,
+          job_title : job_title,
+          service_require_at : service_require_at,
+          job_industry : job_industry,
+          job_category : job_category,
+          job_date : job_date,
+          job_time : job_time,
+          description : description
+        });
+
+        if(await add_job.save()) {
+          response.json({
+            status : true,
+            code : 200,
+            message : "Job added successfully."
+          });
+        }
+      } else { 
+        response.json({
+          status : false,
+          code : 400,
+          message : "You don't have a permission to add job."
+        });
+      }
+    }
+
+    async jobList ({request, response, auth}) {
+      var user = await auth.getUser();
+      var all_jobs_list = await Job.find({status :1, user_id: user._id})
+      .populate('job_industry')
+      .populate('job_category');
+
+      if(all_jobs_list.length > 0) {
+        response.json({
+          status : true,
+          code: 200,
+          data: all_jobs_list 
+        });
+      }else { 
+        response.json({
+          status : false,
+          code: 400,
+          data: "No job found." 
+        });
+      }
+      
+    }
+
+    async jobDetails ({request, response, auth}) {
+      var user = await auth.getUser()
+      var job_id = request.input('job_id');
+
+      var job_details = await Job.find({_id : job_id, user_id : user._id})
+      .populate('job_industry')
+      .populate('job_category');
+
+      if(job_details.length > 0) {
+        response.json({
+          status : true,
+          code : 200,
+          data : job_details
+        });
+      }else { 
+        response.json({
+          status : false,
+          code : 400,
+          message : "No job found."
+        });
+      }
+    }
+
+    async editJob ({request, response, auth}) {
+      var user = await auth.getUser();
+      var job_id = request.input('job_id');
+      var job_update = await Job.findById({_id : job_id});
+
+      if(job_update) {
+        
+        var job_title = request.input('job_title') ? request.input('job_title') : job_update.job_title;
+        var service_require_at = request.input('service_require_at') ? request.input('service_require_at') : job_update.service_require_at;
+        var job_industry = request.input('job_industry') ? request.input('job_industry') : job_update.job_industry;
+        var job_category = request.input('job_category') ? request.input('job_category') : job_update.job_category;
+        var job_date = request.input('job_date') ? request.input('job_date') : job_update.job_date;
+        var job_time = request.input('job_time') ? request.input('job_time') : job_update.job_time;
+        var description = request.input('description') ? request.input('description') : job_update.description;
+
+        job_update.job_title = job_title;
+        job_update.service_require_at = service_require_at;
+        job_update.job_industry = job_industry;
+        job_update.job_category = job_category;
+        job_update.job_date = job_date;
+        job_update.job_time = job_time;
+        job_update.description = description;
+
+        if(await job_update.save()) {
+          var updated_job_details = await Job.findById({_id : job_id})
+          .populate('job_industry')
+          .populate('job_category');
+
+          response.json({
+            status : true,
+            code : 200,
+            message : "Job edit successfully.",
+            data : updated_job_details
+          });
+        }
+      }else { 
+        response.json({
+          status : false,
+          code : 400,
+          message : "No job found."
+        });
+      }
     }
 
     async userLogout ({ auth, response }) {
