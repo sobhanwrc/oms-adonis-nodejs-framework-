@@ -22,7 +22,7 @@ class User extends BaseModel {
       middle_name: { type: String, default: ''},
       last_name: { type: String, default: '' },
       profile_image : { type : String,  default: '' },
-      email: { type: String,unique: true ,  default: '' },
+      email: { type: String, unique: true ,  default: '' },
       gender : { type : String,  default: '' },
       phone_number : {type: Number,  default: '' },
       password: { type: String,  default: ''  },
@@ -51,6 +51,7 @@ class User extends BaseModel {
       longitude : { type: Number,  default: '' },
       status: { type: Number, default: 0}, //1 = 'active', 0='Inactive'
       reg_type: { type: String,  default: ''  }, //1=Admin,2=User,3=Vendor
+      login_type: { type: String,  default: ''  }, //F=Facebook,G=Google,N=Normal
       social_id: { type: String,  default: ''  },
       forgot_pw_key : { type: String, default: ''},
       forgot_pw_email_sent_date : { type: Date, default: ''},

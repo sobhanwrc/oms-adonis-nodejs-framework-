@@ -11,6 +11,9 @@ const base64_to_image = use ('base64-to-image');
 const randomstring = use("randomstring");
 const datetime = use('node-datetime');
 const moment = use('moment');
+const Encryption = use ('Encryption');
+const Location = use ('App/Models/Location');
+const Helpers = use ('Helpers');
 
 class ApiController {
     //common api for all 
@@ -45,11 +48,12 @@ class ApiController {
             reg_type = 2 //user
         }else { 
             reg_type = 3 //vendor
+
+            var check_validate = this.validateUEN(uen_no);
+            var check_sameUEN = await User.find({uen_no : uen_no});
         }
 
-        var checkExistingUser = await User.findOne ({
-            email : email
-        });
+        var checkExistingUser = await User.findOne({email : email});
         
         if(checkExistingUser) {
             response.json ({
@@ -57,7 +61,22 @@ class ApiController {
                 code : 400,
                 messages : "User is already registered with us."
             });
-        } else {
+        }
+        else if (reg_type == 3 && check_validate != true) {
+          response.json ({
+              status : false,
+              code : 400,
+              messages : "Your UEN number is invalid. Please enter correct UEN number."
+          });
+        } 
+        else if (reg_type == 3 && check_validate == true && check_sameUEN.length > 0) {
+          response.json ({
+              status : false,
+              code : 400,
+              messages : "UEN number is duplicate. Enter valid UEN number."
+          });
+        }
+        else {
             var add = new User({  
                 first_name : first_name,
                 middle_name : middle_name,
@@ -73,149 +92,17 @@ class ApiController {
                 uen_no : uen_no,
                 status : 1, //active
                 reg_type : reg_type,
+                login_type : "N",
                 password: password
             });
 
-            var email_body = `
-        <!DOCTYPE html>
-        <html lang="en">
-          <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
-          <head>
-            <style>
-                #customers {
-                    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
-                    border-collapse: collapse;
-                    width: 100%;
-                }
-        
-                    #customers td, #customers th {
-                        border: 1px solid #ddd;
-                        padding: 5px;
-                    }
-        
-                    #customers tr:nth-child(even) {
-                        background-color: #f2f2f2;
-                    }
-        
-        
-                    #customers th {
-                        padding-top: 12px;
-                        padding-bottom: 12px;
-                        text-align: left;
-                        background-color: #4CAF50;
-                        color: white;
-                        font-weight: normal;
-                    }
-        
-                    #customers td {
-                        font-size: 12px;
-                    }
-        
-                        #customers td img {
-                            width: 50px;
-                            border-radius: 50%;
-                            height: 50px;
-                        }
-            </style>
-          </head>
-          <body>
-            <table class="width_100 currentTable" align="center" border="0" cellpadding="0" cellspacing="0" width="800" style="border-collapse:collapse;" data-module="Account Password 1">
-                <tr>
-                    <td width="100%" align="center" valign="middle" background="https://w-dog.net/wallpapers/14/16/506636200709579/mood-a-bottle-a-letter-note-message-beach-sand-sea-river-water-background-wallpaper-widescreen-full-screen-hd-wallpapers.jpg" style="background-image: url('https://w-dog.net/wallpapers/14/16/506636200709579/mood-a-bottle-a-letter-note-message-beach-sand-sea-river-water-background-wallpaper-widescreen-full-screen-hd-wallpapers.jpg'); background-position: center center; background-repeat: repeat; background-size: cover;" bgcolor="#f7f8f8" data-bg="Account Password 1" data-bgcolor="Account Password 1">
-                        <table align="center" border="0" cellpadding="0" width="100%" cellspacing="0" style="border-collapse: collapse;">
-                            <tr>
-                                <td width="100%" height="20" style="line-height:1px;"></td>
-                            </tr>
-                            <tr>
-                                <td width="100%" align="center" valign="middle" style="line-height:1px;">
-                                    <img src='/logo.png' alt="logo_chef_final" border="0" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td width="100%" height="21" style="line-height:1px;"></td>
-                            </tr>
-                            <tr>
-                                <td width="100%" align="center" valign="middle">
-                                    <table class="width_90percent" align="center" border="0" cellpadding="0" width="600" cellspacing="0" style="border-collapse: collapse; max-width:90%; -webkit-border-radius: 10px; border-radius: 10px; background-color: #fff;" data-bgcolor="Box Color">
-                                        <tr>
-                                            <td width="100%" align="center" valign="middle">
-                                                <table class="width_90percent" align="center" border="0" cellpadding="0" width="550" cellspacing="0" style="border-collapse: collapse; max-width:90%;">
-                                                    <tr>
-                                                        <td width="100%" height="53" style="line-height:1px;"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td width="100%" align="center" valign="middle" data-size="Main Title" data-min="20" data-max="28" data-color="Main Title" style="margin:0px; padding:0px; font-size:15px; color: #c63a39; margin-bottom: 10px; font-family: 'Open Sans', Helvetica, Arial, Verdana, sans-serif; font-weight:bold;">
-                                                           <p style="color: #b3b3b3;">
-                                                            Hi ${first_name}, 
-                                                            You have successfully registered to our services.
-                                                            <br>
-                                                                Thank You!
-                                                           </p>
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td width="100%" height="18" style="line-height:1px;"></td>
-                                                    </tr>
-                                                    
-                                                    <tr>
-                                                        <td width="100%" align="center" valign="middle">
-                                                            <table class="width_90percent" align="center" border="0" cellpadding="0" cellspacing="0" width="255" style="border-collapse:collapse; max-width:100%; -webkit-border-radius:30px; border-radius:30px;">
-                                                                <tr>
-                                                                    <td width="100%" align="center" data-size="Button" data-color="Button" data-min="10" data-max="18">
-                                                                        <a href="http://122.163.54.103:90/ChefsCorner/"><img src='/logo.png' alt="logo_chef_final" border="0" width="80%" /></a>
-                                                                    </td>
-                                                                </tr>
-                                                            </table>
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="display-block padding" width="100%" height="21" style="line-height:1px;"></td>
-                                                    </tr>
-        
-                                                    <tr>
-                                                        <td class="display-block padding" width="100%" height="25" style="line-height:1px;"></td>
-                                                    </tr>
-        
-        
-                                                </table>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td width="100%" height="39" style="line-height:1px;"></td>
-                            </tr>
-        
-                            <tr>
-                                <td width="100%" align="center" valign="middle" data-size="Footer Description" data-min="9" data-max="16" data-color="Footer Description" style="margin:0px; padding:0px; font-size:12px; color:#000000; font-family: 'Open Sans', Helvetica, Arial, Verdana, sans-serif; font-weight:normal; line-height:24px;">
-                                    © 2018 All right reserved OMC
-                                </td>
-                            </tr>
-        
-                            <tr>
-                                <td width="100%" height="43" style="line-height:1px;"></td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-          </body>
-        </html>`;
             try{
                 if(await add.save()) {
                     const user = await User.findOne({email : email});
                     var generate_token = await auth.generate(user);
+                    var send_registration_email = this.registrationEmailData(user);
 
-                    var sendEmail = Mailjet.post('send');
-                    var emailData = {
-                        'FromEmail': 'sobhan.das@intersoftkk.com',
-                        'FromName': 'Oh! My Concierge',
-                        'Subject': 'Registration confirmation',
-                        'Html-part': email_body,
-                        'Recipients': [{'Email': email}]
-                    };
-                    if(sendEmail.request(emailData)) {
+                    if(send_registration_email == true) {
                         return response.json({
                             success: true, 
                             code: 200, 
@@ -265,6 +152,139 @@ class ApiController {
                 message : "Wrong username or password."
             });
         }
+    }
+
+    async socialLogin ({request, response, auth}) {
+      var email = request.input('email');
+      var login_type = request.input('login_type'); //F = facebook, G = google, N = Normal
+      // var reg_type = 2;
+      var user = await User.findOne({email, login_type: 'N'});
+
+      if(user){
+        res.json({
+          success: false, 
+          code: 300, 
+          message: 'User already exist.'
+        });
+      }else{
+
+        if(login_type == 'F'){
+          try{
+            var already_login_with_social_app = await User.findOne({email,login_type: 'F'});
+        
+            if(already_login_with_social_app) {
+              already_login_with_social_app.first_name = request.input('full_name');
+              already_login_with_social_app.email = request.input('email');
+
+              if(this.extractHostname(request.input('profile_image')) == 'graph.facebook.com') {
+                already_login_with_social_app.profile_image = request.input('profile_image');
+              }
+        
+              if(already_login_with_social_app.save()){
+                const user = await User.findOne({email : email});
+                var generate_token = await auth.generate(user);
+
+                return response.json({
+                    success: true, 
+                    code: 200, 
+                    token: 'Bearer ' + generate_token.token,
+                    message: 'Login successfully.'
+                });
+              }
+            }else{
+              const newUser = new User({
+                first_name: request.input('full_name'),
+                last_name: '',
+                email: request.input('email'),
+                profile_image: request.input('profile_image'),
+                password: '',
+                reg_type: 2,
+                login_type : 'F',
+                status: 1
+              });
+          
+              if(await newUser.save()){
+                const user = await User.findOne({email : email});
+                var generate_token = await auth.generate(user);
+                var send_registration_email_from_social_login = this.registrationEmailData(user);
+
+                if(send_registration_email_from_social_login == true) {
+                    return response.json({
+                        success: true, 
+                        code: 200, 
+                        token: 'Bearer ' + generate_token.token,
+                        message: 'Registration completed successfully with Facebook.'
+                    });
+                }
+              }
+            }
+          }catch(e){
+            res.json({
+              status : false,
+              code : 300,
+              message : "Email already exist."
+            });
+          }
+        }
+        else if (login_type == 'G') {
+          try{
+            var already_login_with_social_app_google = await User.findOne({email,login_type: 'G'});
+        
+            if(already_login_with_social_app_google) {
+              already_login_with_social_app_google.first_name = request.input('full_name');
+              already_login_with_social_app_google.email = request.input('email');
+
+              if(this.extractHostname(request.input('profile_image')) == 'lh4.googleusercontent.com') {
+                already_login_with_social_app_google.profile_image =request.input('profile_image');
+              }
+        
+              if(already_login_with_social_app_google.save()){
+                const user = await User.findOne({email : email});
+                var generate_token = await auth.generate(user);
+
+                return response.json({
+                    success: true, 
+                    code: 200, 
+                    token: 'Bearer ' + generate_token.token,
+                    message: 'Login successfully with Google.'
+                });
+              }
+            }else{
+              const newUser = new User({
+                first_name: request.input('full_name'),
+                email: request.input('email'),
+                profile_image: request.input('profile_image'),
+                password: '',
+                reg_type: 2,
+                login_type : 'G',
+                status: 1
+              });
+          
+              if(await newUser.save()){
+                const user = await User.findOne({email : email});
+                var generate_token = await auth.generate(user);
+                var send_registration_email_from_social_login = this.registrationEmailData(user);
+
+                if(send_registration_email_from_social_login == true) {
+                    return response.json({
+                        success: true, 
+                        code: 200, 
+                        token: 'Bearer ' + generate_token.token,
+                        message: 'Registration completed successfully with Google.'
+                    });
+                }
+              }
+            }
+          }catch(e) {
+            res.json({
+              status : false,
+              code : 300,
+              message : "Email already exist."
+            });
+          }
+        }
+        
+      }
     }
 
     async userDetails ({ request, response, auth}) {
@@ -1585,24 +1605,368 @@ class ApiController {
       }
     }
 
-    async userLogout ({ auth, response }) {
-        // const user =  await auth.current.user 
-        // console.log(user);
-        // const token = auth.getAuthHeader()
-        // await user
-        //         .tokens()
-        //         .where('type', 'api_token')
-        //         .where('is_revoked', false)
-        //         .where('token', Encryption.decrypt(token))
-        //         .update({ is_revoked: true })
+    async addLocations ({request, response}) {
+      var location_name = request.input('location_name');
+      var add = new Location({
+        name : location_name
+      });
 
-        await auth.logout();
+      if(await add.save()) {
+        response.json({
+          status : true,
+          code : 200,
+          message : "Location added successfully."
+        })
+      }
+    }
+
+    async fetchLocations ({response}) {
+      var all_locations = await Location.find({status : 1}, {status : 0, __v : 0, created_at : 0});
+
+      response.json({
+        status : true,
+        code : 200,
+        data : all_locations
+      });
+    }
+
+    async shoeDonationListings ({response, auth}) {
+      var user = await auth.getUser()
+
+      var all_list = await Shoe.find({ user_id : user._id, status : 1});
+
+      console.log(all_list);
+      return false;
+
+      if(all_list.length > 0) {
+        response.json ({
+          status : true,
+          code : 200,
+          data : all_list
+        });
+      } else{ 
+        response.json ({
+          status : false,
+          code : 400,
+          message : "No list found as off now."
+        });
+      }
+    }
+
+    //checking uen number validation
+    validateUEN (uen) {
+      var debug = true;
+      const entityTypeIndicator = [
+          'LP', 'LL', 'FC', 'PF', 'RF', 'MQ', 'MM', 'NB', 'CC', 'CS', 'MB', 'FM', 'GS', 'GA',
+          'GB', 'DP', 'CP', 'NR', 'CM', 'CD', 'MD', 'HS', 'VH', 'CH', 'MH', 'CL', 'XL', 'CX',
+          'RP', 'TU', 'TC', 'FB', 'FN', 'PA', 'PB', 'SS', 'MC', 'SM'
+      ];
+  
+      if (debug) {
+          console.log('(A) Businesses registered with ACRA');
+          console.log('(B) Local companies registered with ACRA');
+          console.log('(C) All other entities which will be issued new UEN');
+      }
+  
+      // check that uen is not empty
+      if (!uen || String(uen) === '') {
+          if (debug) { console.log('UEN is empty'); }
+          return false;
+      }
+  
+      // check if uen is 9 or 10 digits
+      if (uen.length < 9 || uen.length > 10) {
+          if (debug) { console.log('UEN is not 9 or 10 digits'); }
+          return false;
+      }
+  
+      uen = uen.toUpperCase();
+      var uenStrArray = uen.split('');
+  
+      // (A) Businesses registered with ACRA
+      if (uenStrArray.length === 9) {
+          // check that last character is a letter
+          if (!isNaN(uenStrArray[uenStrArray.length - 1])) {
+              if (debug) { console.log('(A) last character is not an alphabet'); }
+              return false;
+          }
+  
+          for (var i = 0; i < uenStrArray.length - 1; i++) {
+              // check that first 8 letters are all numbers
+              if (isNaN(uenStrArray[i])) {
+                  if (debug) { console.log('(A) there are non-numbers in 1st to 8th letters'); }
+                  return false;
+              }
+          }
+  
+          // (A) Businesses registered with ACRA (SUCCESS)
+          if (debug) { console.log('valid (A) Businesses registered with ACRA'); }
+          return true;
+      }
+      else if (uenStrArray.length === 10) {
+          // check that last character is a letter
+          if (!isNaN(uenStrArray[uenStrArray.length - 1])) {
+              if (debug) { console.log('(B)(C) last character is not an alphabet'); }
+              return false;
+          }
+  
+          // (B) Local companies registered with ACRA
+          if (!isNaN(uenStrArray[0]) && !isNaN(uenStrArray[1]) && !isNaN(uenStrArray[2]) && !isNaN(uenStrArray[3])) {
+              // check that 5th to 9th letters are all numbers
+              if (!isNaN(uenStrArray[4]) && !isNaN(uenStrArray[5]) && !isNaN(uenStrArray[6]) &&
+                  !isNaN(uenStrArray[7]) && !isNaN(uenStrArray[8])) {
+                  // (B) Local companies registered with ACRA (SUCCESS)
+                  if (debug) { console.log('valid (B) Local companies registered with ACRA'); }
+                  return true;
+              } else {
+                  if (debug) { console.log('(B) there are non-numbers in 5th to 9th letters'); }
+                  return false;
+              }
+          }
+          // (C) All other entities which will be issued new UEN
+          else {
+              // check that 1st letter is either T or S or R
+              if (uenStrArray[0] !== 'T' && uenStrArray[0] !== 'S' && uenStrArray[0] !== 'R') {
+                  if (debug) { console.log('(C) 1st letter is incorrect'); }
+                  return false;
+              }
+  
+              // check that 2nd and 3rd letters are numbers only
+              if (isNaN(uenStrArray[1]) || isNaN(uenStrArray[2])) {
+                  if (debug) { console.log('(C) 2nd and 3rd letter is incorrect'); }
+                  return false;
+              }
+  
+              // check that 4th letter is an alphabet
+              if (!isNaN(uenStrArray[3])) {
+                  if (debug) { console.log('(C) 4th letter is not an alphabet'); }
+                  return false;
+              }
+  
+              // check entity-type indicator
+              var entityTypeMatch = false,
+                  entityType = String(uenStrArray[3]) + String(uenStrArray[4]);
+              for (var i = 0; i < entityTypeIndicator.length; i++) {
+                  if (String(entityTypeIndicator[i]) === String(entityType)) {
+                      entityTypeMatch = true;
+                  }
+              }
+              if (!entityTypeMatch) {
+                  if (debug) { console.log('(C) entity-type indicator is invalid'); }
+                  return false;
+              }
+  
+              // check that 6th to 9th letters are numbers only
+              if (isNaN(uenStrArray[5]) || isNaN(uenStrArray[6]) || isNaN(uenStrArray[7]) || isNaN(uenStrArray[8])) {
+                  if (debug) { console.log('(C) 2nd and 3rd letter is incorrect'); }
+                  return false;
+              }
+  
+              // (C) All other entities which will be issued new UEN (SUCCESS)
+              if (debug) { console.log('valid (C) All other entities which will be issued new UEN'); }
+              return true;
+          }
+      }
+  
+      return false;
+    }
+    //end
+
+    //for getting hostname
+    extractHostname(url) {
+      var hostname;
+      //find & remove protocol (http, ftp, etc.) and get hostname
+
+      if (url.indexOf("//") > -1) {
+          hostname = url.split('/')[2];
+      }
+      else {
+          hostname = url.split('/')[0];
+      }
+
+      //find & remove port number
+      hostname = hostname.split(':')[0];
+      //find & remove "?"
+      hostname = hostname.split('?')[0];
+
+      return hostname;
+    }
+    //end
+
+    //registration sent email data
+    registrationEmailData(user) {
+      console.log(user,'user');
+
+      var email_body = `<!DOCTYPE html>
+      <html lang="en">
+        <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+        <head>
+          <style>
+              #customers {
+                  font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+                  border-collapse: collapse;
+                  width: 100%;
+              }
+      
+                  #customers td, #customers th {
+                      border: 1px solid #ddd;
+                      padding: 5px;
+                  }
+      
+                  #customers tr:nth-child(even) {
+                      background-color: #f2f2f2;
+                  }
+      
+      
+                  #customers th {
+                      padding-top: 12px;
+                      padding-bottom: 12px;
+                      text-align: left;
+                      background-color: #4CAF50;
+                      color: white;
+                      font-weight: normal;
+                  }
+      
+                  #customers td {
+                      font-size: 12px;
+                  }
+      
+                      #customers td img {
+                          width: 50px;
+                          border-radius: 50%;
+                          height: 50px;
+                      }
+          </style>
+        </head>
+        <body>
+          <table class="width_100 currentTable" align="center" border="0" cellpadding="0" cellspacing="0" width="800" style="border-collapse:collapse;" data-module="Account Password 1">
+              <tr>
+                  <td width="100%" align="center" valign="middle" background="https://w-dog.net/wallpapers/14/16/506636200709579/mood-a-bottle-a-letter-note-message-beach-sand-sea-river-water-background-wallpaper-widescreen-full-screen-hd-wallpapers.jpg" style="background-image: url('https://w-dog.net/wallpapers/14/16/506636200709579/mood-a-bottle-a-letter-note-message-beach-sand-sea-river-water-background-wallpaper-widescreen-full-screen-hd-wallpapers.jpg'); background-position: center center; background-repeat: repeat; background-size: cover;" bgcolor="#f7f8f8" data-bg="Account Password 1" data-bgcolor="Account Password 1">
+                      <table align="center" border="0" cellpadding="0" width="100%" cellspacing="0" style="border-collapse: collapse;">
+                          <tr>
+                              <td width="100%" height="20" style="line-height:1px;"></td>
+                          </tr>
+                          <tr>
+                              <td width="100%" align="center" valign="middle" style="line-height:1px;">
+                                  <img src='' alt="logo_chef_final" border="0" />
+                              </td>
+                          </tr>
+                          <tr>
+                              <td width="100%" height="21" style="line-height:1px;"></td>
+                          </tr>
+                          <tr>
+                              <td width="100%" align="center" valign="middle">
+                                  <table class="width_90percent" align="center" border="0" cellpadding="0" width="600" cellspacing="0" style="border-collapse: collapse; max-width:90%; -webkit-border-radius: 10px; border-radius: 10px; background-color: #fff;" data-bgcolor="Box Color">
+                                      <tr>
+                                          <td width="100%" align="center" valign="middle">
+                                              <table class="width_90percent" align="center" border="0" cellpadding="0" width="550" cellspacing="0" style="border-collapse: collapse; max-width:90%;">
+                                                  <tr>
+                                                      <td width="100%" height="53" style="line-height:1px;"></td>
+                                                  </tr>
+                                                  <tr>
+                                                      <td width="100%" align="center" valign="middle" data-size="Main Title" data-min="20" data-max="28" data-color="Main Title" style="margin:0px; padding:0px; font-size:15px; color: #c63a39; margin-bottom: 10px; font-family: 'Open Sans', Helvetica, Arial, Verdana, sans-serif; font-weight:bold;">
+                                                         <p style="color: #b3b3b3;">
+                                                          Hi ${user.first_name}, 
+                                                          You have successfully registered to our services.
+                                                          <br>
+                                                              Thank You!
+                                                         </p>
+                                                      </td>
+                                                  </tr>
+                                                  <tr>
+                                                      <td width="100%" height="18" style="line-height:1px;"></td>
+                                                  </tr>
+                                                  
+                                                  <tr>
+                                                      <td width="100%" align="center" valign="middle">
+                                                          <table class="width_90percent" align="center" border="0" cellpadding="0" cellspacing="0" width="255" style="border-collapse:collapse; max-width:100%; -webkit-border-radius:30px; border-radius:30px;">
+                                                              <tr>
+                                                                  <td width="100%" align="center" data-size="Button" data-color="Button" data-min="10" data-max="18">
+                                                                      <a href="http://122.163.54.103:90/ChefsCorner/"><img src='logo.png' alt="logo_chef_final" border="0" width="80%" /></a>
+                                                                  </td>
+                                                              </tr>
+                                                          </table>
+                                                      </td>
+                                                  </tr>
+                                                  <tr>
+                                                      <td class="display-block padding" width="100%" height="21" style="line-height:1px;"></td>
+                                                  </tr>
+      
+                                                  <tr>
+                                                      <td class="display-block padding" width="100%" height="25" style="line-height:1px;"></td>
+                                                  </tr>
+      
+      
+                                              </table>
+                                          </td>
+                                      </tr>
+                                  </table>
+                              </td>
+                          </tr>
+                          <tr>
+                              <td width="100%" height="39" style="line-height:1px;"></td>
+                          </tr>
+      
+                          <tr>
+                              <td width="100%" align="center" valign="middle" data-size="Footer Description" data-min="9" data-max="16" data-color="Footer Description" style="margin:0px; padding:0px; font-size:12px; color:#000000; font-family: 'Open Sans', Helvetica, Arial, Verdana, sans-serif; font-weight:normal; line-height:24px;">
+                                  © 2018 All right reserved OMC
+                              </td>
+                          </tr>
+      
+                          <tr>
+                              <td width="100%" height="43" style="line-height:1px;"></td>
+                          </tr>
+                      </table>
+                  </td>
+              </tr>
+          </table>
+        </body>
+      </html>`;
+
+      var sendEmail = Mailjet.post('send');
+      var emailData = {
+          'FromEmail': 'sobhan.das@intersoftkk.com',
+          'FromName': 'Oh! My Concierge',
+          'Subject': 'Registration confirmation',
+          'Html-part': email_body,
+          'Recipients': [{'Email': user.email}]
+      };
+      
+      if (sendEmail.request(emailData)) {
+        return true;
+      }
+
+    }
+    //end
+
+    async userLogout ({ auth, response }) {
+        const user =  await auth.current.user
+        const token = auth.getAuthHeader()
+        // await auth.user
+        //         .tokens()
+        //         .where('type', 'jwt_refresh_token')
+        //         // .where('is_revoked', false)
+        //         // .where('token', Encryption.decrypt(token))
+        //         .update({ is_revoked: true });
+
+        // const refreshToken = '' // get it from user
+        // await auth.check();
+        // await auth
+        //   .scheme('jwt')
+        //   .revokeTokens([token], true)
+
+        await auth
+          .authenticator('jwt')
+          .revokeTokens([token], true)
 
         return response.json({
             status: true,
-            msg : "Logout successfully."
+            code: 200,
+            message : "Logout successfully."
         });
     }
+
+
 }
 
 module.exports = ApiController
