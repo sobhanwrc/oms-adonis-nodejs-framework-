@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="utf-8">
+<title>Oh My Concierge</title>
+<meta name="description" content="">
+<meta name="author" content="">
+<meta name="keywords" content="">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<!-- Mobile Specific Meta  -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<!-- CSS -->
+{{ style ('/css/bootstrap.min.css') }}
+{{ style ('/css/jquery-ui.css') }}
+{{ style ('/css/fontawesome-all.min.css') }}
+{{ style ('/fonts/flaticon.css') }}
+{{ style ('/css/magnific-popup.css') }}
+{{ style ('/css/owl.carousel.min.css') }}
+{{ style ('/css/animate.css') }}
+{{ style ('css/slicknav.min.css') }}
+{{ style ('/css/style.css') }}
+{{ style ('/css/responsive.css') }}
+
+<!-- Favicon -->
+<link rel="shortcut icon" type="image/png" href="img/favicon.png">
+
+</head>
+
+<body data-spy="scroll" data-target="#scroll-menu" data-offset="65">
+<!-- ===================================================
+        Loading Transition
+    ==================================================== -->
+<div id="loader-wrapper">
+  <div id="loader"></div>
+</div>
+    @include('partials.header')
+    
+    @!section('content')
+
+    @include('partials.footer')
+
+{{ script('/js/jquery-3.2.0.min.js') }}
+{{ script('/js/jquery-ui.js') }}
+{{ script('/js/owl.carousel.min.js') }}
+{{ script('/js/isotope.pkgd.min.js') }}
+{{ script('/js/imagesloaded.pkgd.min.js') }}
+{{ script('/js/wow.min.js') }}
+{{ script('/js/jquery.magnific-popup.min.js') }}
+{{ script('/js/countdown.js') }}
+{{ script('/js/jquery.counterup.min.js') }}
+
+{{ script('/js/jquery.slicknav.min.js') }}
+{{ script('/js/jquery.scrollUp.js') }}
+{{ script('/js/jquery.waypoints.min.js') }}
+{{ script('/js/popper.min.js') }}
+{{ script('/js/bootstrap.min.js') }}
+
+{{ script('/js/theme.js') }}
+
+
+
+
+
+
+
+</body>
+
+</html>

@@ -32,6 +32,11 @@ Route.post('/api/addJobCategory', 'ApiController.addJobCategory')
 Route.get('/api/fetchJobCategoryAndIndustry', 'ApiController.fetchJobCategoryAndIndustry')
 Route.post('/api/addLocations', 'ApiController.addLocations')
 Route.get('/api/fetchLocations', 'ApiController.fetchLocations')
+Route.post('/api/addServiceType', 'ApiController.addServiceType')
+Route.post('/api/addServiceCategory', 'ApiController.addServiceCategory')
+Route.get('/api/fetchServiceTypeAndCategory', 'ApiController.fetchServiceTypeAndCategory')
+Route.post('/api/serviceAdd', 'ApiController.serviceAdd')
+
 Route.group(() => { 
     Route.get('/api/userDetails', 'ApiController.userDetails')
     Route.post('/api/profileEdit', 'ApiController.profileEdit')
@@ -43,6 +48,7 @@ Route.group(() => {
     Route.post('/api/editJob', 'ApiController.editJob')
     Route.get('/api/shoeDonationListings', 'ApiController.shoeDonationListings')
     Route.get('/api/logout', 'ApiController.userLogout')
+
 }).middleware(['auth:jwt'])
 
 // Route.get('/fetchUser', 'ApiController.fetchUser')

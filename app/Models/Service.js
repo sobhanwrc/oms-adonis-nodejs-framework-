@@ -1,0 +1,24 @@
+const mongoose = use ('mongoose');
+
+const Schema = mongoose.Schema;
+
+var service = new Schema ({
+    user_id : {type : Schema.Types.ObjectId, ref: 'User'},
+    service_title : { type: String},
+    service_type : {
+        type: Schema.Types.ObjectId,
+        ref: "ServiceType"
+    },
+    service_category : {
+        type: Schema.Types.ObjectId,
+        ref: "ServiceCategory"
+    },
+    rate : { type :String},
+    start_date : { type: Date},
+    end_time : { type: String},
+    description : { type: String},
+    status : { type: Number},
+    created_at : { type: Date, default : Date.now()}
+});
+
+module.exports = mongoose.model ('Service', service);

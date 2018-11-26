@@ -7,7 +7,7 @@ const User = use('App/Models/User')
 
 class LoginController {
     index ({view}) {
-        return view.render('login')
+        return view.render('index')
     }
 
     async login ({request, response, session}) {
