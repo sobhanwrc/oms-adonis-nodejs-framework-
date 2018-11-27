@@ -16,6 +16,7 @@ const Location = use ('App/Models/Location');
 const Helpers = use ('Helpers');
 const ServiceType = use('App/Models/ServiceType');
 const ServiceCategory = use('App/Models/ServiceCategory');
+const Service = use ('App/Models/Service');
 
 class ApiController {
     //common api for all 
@@ -725,9 +726,9 @@ class ApiController {
     }
 
     async addServiceType ({request, response}) {
-      var service_type = request.input('name');
+      var service_type_name = request.input('name');
       var add = new ServiceType ({
-        service_type : service_type,
+        service_type : service_type_name,
         status : 1
       });
 
@@ -756,7 +757,7 @@ class ApiController {
       }
     }
 
-    async fetchServiceTypeAndCategory ({request, response}) {
+    async fetchServiceTypeAndCategories ({response}) {
       var all_servicecategory = await ServiceCategory.find({},{status: 0, created_at: 0, updated_at: 0, __v:0 });
       var all_servicetype = await ServiceType.find({},{status: 0, created_at: 0, updated_at: 0, __v:0 });
 
@@ -769,7 +770,153 @@ class ApiController {
     }
 
     async serviceAdd ({request, response, auth}) {
-      
+      try {
+        var user = await auth.getUser();
+        if(user.reg_type == 3) {
+          var add_service = new Service ({
+            user_id : user._id,
+            service_title : request.input('service_title'),
+            service_type : request.input('service_type'),
+            service_category : request.input('service_category'),
+            rate : request.input('rate'),
+            start_date : request.input('start_date'),
+            end_date : request.input('end_date'),
+            description : request.input('description'),
+          });
+  
+          if(await add_service.save()) {
+            response.json ({
+              status : true,
+              code : 200,
+              message : "Service added successfully."
+            });
+          } 
+        }else { 
+          response.json ({
+            status : true,
+            code : 200,
+            message : "You don't have a permission to add service."
+          });
+        }
+        
+      } catch (error) {
+        response.json ({
+          status : false,
+          code : 400,
+          message : "Something went wrong."
+        });
+      }
+    }
+
+    async serviceList ({response, auth}) {
+      var user = await auth.getUser();
+      if(user.reg_type == 3) {
+        var all_services = await Service.find({'user_id' : user._id})
+        .populate('service_type')
+        .populate('service_category');
+
+        if(all_services) {
+          response.json({
+            status : true,
+            code : 200,
+            data : all_services
+          });
+        }else { 
+          response.json({
+            status : false,
+            code : 400,
+            message : "No service found."
+          });
+        }
+      } else { 
+        response.json({
+          status : false,
+          code : 400,
+          message : "You don't have a permission to see services list."
+        });
+      }
+    }
+
+    async serviceDetails ({request, response, auth}) {
+      var user = await auth.getUser();
+      if(user.reg_type == 3) {
+        var service_id = request.input('service_id');
+
+        var service_details = await Service.findOne({_id : service_id, user_id : user._id})
+        .populate('service_type')
+        .populate('service_category');
+
+        if(service_details) {
+          response.json ({
+            status : true,
+            code : 200,
+            data : service_details
+          });
+        } else { 
+          response.json ({
+            status : false,
+            code : 400,
+            message : "No details found."
+          });
+        }
+      }else { 
+        response.json ({
+          status : false,
+          code : 400,
+          message : "You don't have a permission to see service details."
+        });
+      }
+    }
+
+    async editService ({ request, response, auth}) {
+      var user = await auth.getUser();
+
+      if(user.reg_type == 3) {
+        var service_id = request.input('service_id'); 
+        var service_details = await Service.findOne({_id : service_id, user_id : user._id})
+
+        if(service_details) {
+          service_details.service_title = request.input('service_title') ? request.input('service_title') : service_details.service_title;
+          
+          service_details.service_type = request.input('service_type') ? request.input('service_type') : service_details.service_type;
+          
+          service_details.service_category = request.input('service_category') ? request.input('service_category') : service_details.service_category;
+
+          service_details.rate = request.input('rate') ? request.input('rate') : service_details.rate;
+
+          service_details.start_date = request.input('start_date') ? request.input('start_date') : service_details.start_date;
+
+          service_details.end_date = request.input('end_date') ? request.input('end_date') : service_details.end_date;
+
+          service_details.description = request.input('description') ? request.input('description') : service_details.description;
+
+          if(await service_details.save()) {
+            var updated_service_details = await Service.findOne({_id : service_id, user_id : user._id})
+            .populate('service_type')
+            .populate('service_category');
+
+            response.json({
+              status : true,
+              code : 200,
+              message : "Service edit successful.",
+              data : updated_service_details
+            });
+          }
+        } else { 
+          response.json ({
+            status : false,
+            code : 400,
+            message : "No service found."
+          });
+        }
+
+      } else { 
+        response.json ({
+          status : false,
+          code : 400,
+          message : "You don't have a permission to edit service."
+        });
+      }
     }
 
     //checking uen number validation

@@ -8,4 +8,4 @@ var ServiceType = new Schema({
     created_at : { type: Date, default : Date.now()}
 })
 
-module.exports = mongoose.model('ServiceTYpe', ServiceType);
+module.exports = mongoose.model('ServiceType', ServiceType);

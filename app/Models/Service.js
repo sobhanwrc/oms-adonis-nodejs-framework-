@@ -15,7 +15,7 @@ var service = new Schema ({
     },
     rate : { type :String},
     start_date : { type: Date},
-    end_time : { type: String},
+    end_date : { type: Date},
     description : { type: String},
     status : { type: Number},
     created_at : { type: Date, default : Date.now()}
