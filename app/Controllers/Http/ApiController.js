@@ -62,14 +62,14 @@ class ApiController {
             response.json ({
                 status : false,
                 code : 400,
-                messages : "User is already registered with us."
+                message : "User is already registered with us."
             });
         }
         else if (reg_type == 3 && check_validate != true) {
           response.json ({
               status : false,
               code : 400,
-              messages : "Your UEN number is invalid. Please enter correct UEN number."
+              message : "Your UEN number is invalid. Please enter correct UEN number."
           });
         } 
         else if (reg_type == 3 && check_validate == true && check_sameUEN.length > 0) {
@@ -107,7 +107,7 @@ class ApiController {
 
                     if(send_registration_email == true) {
                         return response.json({
-                            success: true, 
+                            status: true, 
                             code: 200, 
                             token: 'Bearer ' + generate_token.token,
                             message: 'Registration completed successfully.'
@@ -129,31 +129,41 @@ class ApiController {
         //     request.input('password')
         // ) 
 
-        const user = await User.findOne({
-            email : request.input('email'),
-        });
-        const isSame = await Hash.verify(request.input('password'), user.password);
-
-        if(user && isSame && user.status === 1) {
-            var generate_token = await auth.generate(user);
-
-            return response.json({
-                status: 'success',
-                token: 'Bearer ' + generate_token.token,
-                message : "Login successfully."
-            })
-        }else if (user.status == 0) {
-            return response.json ({
-                status: false,
-                code: 400,
-                message : "Your account is deactivated. Because you have recently requested for forgot password. So, check your email or contact with admin."
-            });
-        }else { 
-            return response.json ({
-                status: false,
-                code: 400,
-                message : "Wrong username or password."
-            });
+        const user = await User.findOne({email : request.input('email')});
+        if(user === null) {
+          response.json ({
+              status: false,
+              code: 400,
+              message : "Wrong username or password."
+          });
+        } else{ 
+          if(Object.keys(user).length > 0) {
+            const isSame = await Hash.verify(request.input('password'), user.password);
+  
+            if(user != null && isSame && user.status === 1) {
+              var generate_token = await auth.generate(user);
+  
+                return response.json({
+                    status: true,
+                    code : 200,
+                    token: 'Bearer ' + generate_token.token,
+                    message : "Login successfully."
+                })
+            }else if (user.status == 0) {
+                return response.json ({
+                    status: false,
+                    code: 400,
+                    message : "Your account is deactivated. Because you have recently requested for forgot password. So, check your email or contact with admin."
+                });
+            }else { 
+                return response.json ({
+                    status: false,
+                    code: 400,
+                    message : "Wrong username or password."
+                });
+            }
+            
+          }
         }
     }
 
@@ -299,7 +309,11 @@ class ApiController {
               data: user_details
             });
         } catch (error) {
-            response.send('Missing or invalid jwt token')
+          response.json ({
+            status : false,
+            code : 400,
+            message : "No details found."
+          });
         }
     }
 
@@ -553,6 +567,9 @@ class ApiController {
 
     async addJob ({request, response, auth}) {
       var user = await auth.getUser();
+      var last_job_details = await Job.find({}).sort({_id:-1}).limit(1);
+      console.log(last_job_details);
+      return false;
 
       if(user.reg_type == 2) {
         var user_id = user._id;
@@ -563,6 +580,7 @@ class ApiController {
         var job_date = request.input('job_date');
         var job_time = request.input('job_time');
         var description  = request.input('description');
+        var create_job_id = "JOB-" + 1;
 
         var add_job = new Job({
           user_id : user_id,
@@ -916,6 +934,40 @@ class ApiController {
           code : 400,
           message : "You don't have a permission to edit service."
         });
+      }
+    }
+
+    async authRefresh ({request, response, auth}) {
+      // validate the user credentials and generate a JWT token
+      const token = await auth.attempt(
+          request.input('email'),
+          request.input('password')
+      ) 
+      if(token) {
+        response.json ({
+          status : true,
+          code : 200,
+          token : "Bearer " + token.token
+        });
+      }
+    }
+
+    async changeAddress({request, response, auth}) {
+      var user = await auth.getUser();
+      var user_new_address = request.input('new_address');
+
+      user.user_address2 = user_new_address;
+
+      if(await user.save()) {
+        var user_job = Job.find({_id: request.input('job_id'), user_id : user._id});
+        user_job.service_require_at = user_new_address; 
+        if(await user_job.save()){
+          response.json({
+            status : true,
+            code : 200,
+            message : "Address changed successfully."
+          });
+        }
       }
     }
 

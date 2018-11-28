@@ -35,6 +35,7 @@ Route.get('/api/fetchLocations', 'ApiController.fetchLocations')
 Route.post('/api/addServiceTypes', 'ApiController.addServiceType')
 Route.post('/api/addServiceCategory', 'ApiController.addServiceCategory')
 Route.get('/api/serviceTypesCategories', 'ApiController.fetchServiceTypeAndCategories')
+Route.post('/api/authRefresh', 'ApiController.authRefresh')
 
 Route.group(() => { 
     Route.get('/api/userDetails', 'ApiController.userDetails')

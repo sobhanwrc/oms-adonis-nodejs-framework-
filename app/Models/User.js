@@ -27,6 +27,7 @@ class User extends BaseModel {
       phone_number : {type: Number,  default: '' },
       password: { type: String,  default: ''  },
       address: {type : String,  default: '' },
+      user_address2 : {type : String},
       city: { type : String,  default: '' },
       dob: { type: String,  default: '' },
       business : [
