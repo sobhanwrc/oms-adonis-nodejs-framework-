@@ -26,7 +26,13 @@ class ExceptionHandler extends BaseExceptionHandler {
       response.json({
         status : false,
         code : 266,
-        message : "need_new_jwt_token."
+        message : "Token expired. Please login or refresh."
+      });
+    }else{
+      response.json({
+        status : false,
+        code : 266,
+        message : "Need token"
       });
     }
   }

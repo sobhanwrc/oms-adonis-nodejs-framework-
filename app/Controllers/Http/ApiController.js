@@ -17,6 +17,7 @@ const Helpers = use ('Helpers');
 const ServiceType = use('App/Models/ServiceType');
 const ServiceCategory = use('App/Models/ServiceCategory');
 const Service = use ('App/Models/Service');
+const stripe = use('stripe')('sk_test_0VQiLwAYgGKfqOX9hbY80oUv'); //secret key for test account
 
 class ApiController {
     //common api for all 
@@ -102,6 +103,29 @@ class ApiController {
             try{
                 if(await add.save()) {
                     const user = await User.findOne({email : email});
+
+                    if(user.reg_type == 3) {
+                      //create customer in Stripe account
+                      var stripe_customer = await stripe.customers.create({
+                        email: email,
+                        description : "OMC Vendor",
+                        currency : 'usd'
+                      });
+                      //end
+
+                      if(stripe_customer) {
+                        var details = {
+                          customer_id : stripe_customer.id,
+                          account_balance : stripe_customer.account_balance,
+                          invoice_prefix : stripe_customer.invoice_prefix,
+                          customer_created : stripe_customer.created
+                        }
+                        user.stripe_details = details;
+                      }
+
+                      await user.save();
+                    }
+
                     var generate_token = await auth.generate(user);
                     var send_registration_email = this.registrationEmailData(user);
 
@@ -567,9 +591,7 @@ class ApiController {
 
     async addJob ({request, response, auth}) {
       var user = await auth.getUser();
-      var last_job_details = await Job.find({}).sort({_id:-1}).limit(1);
-      console.log(last_job_details);
-      return false;
+      var last_job_details = await Job.find({},{ 'create_job_id' : 1, _id : 0 }).sort({_id:-1}).limit(1);
 
       if(user.reg_type == 2) {
         var user_id = user._id;
@@ -580,9 +602,18 @@ class ApiController {
         var job_date = request.input('job_date');
         var job_time = request.input('job_time');
         var description  = request.input('description');
-        var create_job_id = "JOB-" + 1;
+        var create_job_id = '';
+        if(last_job_details.length > 0) {
+          var last_job_id = (last_job_details[0].create_job_id);
+          var values = last_job_id.split("-");
+          var last_no = values[1];
+          create_job_id = "JOB-" + ( Number(last_no) + 1);
+        }else { 
+          create_job_id = "JOB-" + 1;
+        }
 
         var add_job = new Job({
+          create_job_id : create_job_id,
           user_id : user_id,
           job_title : job_title,
           service_require_at : service_require_at,
@@ -625,7 +656,7 @@ class ApiController {
         response.json({
           status : false,
           code: 400,
-          data: "No job found." 
+          message: "No job found." 
         });
       }
       
@@ -968,6 +999,46 @@ class ApiController {
             message : "Address changed successfully."
           });
         }
+      }
+    }
+
+    async stripeTopUpCredit ({request, response, auth}) {
+      try {
+        var user = await auth.getUser();
+        if(request.input("topup_amount") < 40) {
+          response.json({
+            status : false,
+            code : 400,
+            message : "Credit amount should be greater than $40 ."
+          });
+        } else { 
+          // var  credit = await stripe.topups.create({
+          //   customer : 'cus_E3qxgk3ePXwqzB',
+          //   amount: request.input("topup_amount"),
+          //   currency: 'usd',
+          //   description: 'Top-up for Jenny Rosen',
+          //   statement_descriptor: 'Stripe top-up',
+          //   // email : user.email
+          // });
+          // console.log(credit);
+
+          stripe.topups.create({
+            amount: 2000,
+            currency: 'usd',
+            description: 'Top-up for Jenny Rosen',
+            statement_descriptor: 'Stripe top-up'
+          }, function(err, topup) {
+            if(err) 
+              console.log(err);
+            console.log(topup);
+          });
+
+          // console.log(credit);
+          return false;
+        }
+        
+      }catch (error) {
+        throw error;
       }
     }
 

@@ -47,6 +47,12 @@ class User extends BaseModel {
           swift_code :  { type : String, default: '' },
         }
       ],
+      stripe_details : [{
+        customer_id : { type : String, unique : true},
+        account_balance : { type : Number},
+        invoice_prefix : { type : String},
+        customer_created : {type : String}
+      }],
       uen_no : { type: String, unique: true,  default: '' },
       latitude: {type : Number,  default: '' },
       longitude : { type: Number,  default: '' },
