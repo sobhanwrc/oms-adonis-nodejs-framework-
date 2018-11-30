@@ -1012,29 +1012,39 @@ class ApiController {
             message : "Credit amount should be greater than $40 ."
           });
         } else { 
-          // var  credit = await stripe.topups.create({
-          //   customer : 'cus_E3qxgk3ePXwqzB',
-          //   amount: request.input("topup_amount"),
-          //   currency: 'usd',
-          //   description: 'Top-up for Jenny Rosen',
-          //   statement_descriptor: 'Stripe top-up',
-          //   // email : user.email
-          // });
-          // console.log(credit);
+          var customer_details = await stripe.customers.retrieve(request.input("stripe_customer_id"));
+          var existing_account_balance = Number(customer_details.account_balance);
+          var new_balance = 0;
 
-          stripe.topups.create({
-            amount: 2000,
-            currency: 'usd',
-            description: 'Top-up for Jenny Rosen',
-            statement_descriptor: 'Stripe top-up'
-          }, function(err, topup) {
-            if(err) 
-              console.log(err);
-            console.log(topup);
+          if(existing_account_balance > 0) {
+            new_balance = existing_account_balance + Number(request.input("topup_amount"));
+          }else { 
+            new_balance = Number(request.input("topup_amount"));
+          }
+
+          var update_customer = await stripe.customers.update(request.input("stripe_customer_id"), {
+            account_balance: new_balance 
           });
 
-          // console.log(credit);
-          return false;
+          if(update_customer) {
+            user.stripe_details = {
+              account_balance : new_balance
+            }
+
+            await user.save();
+
+            response.json ({
+              status : true,
+              code : 200,
+              message : "Top up added successfully."
+            });
+          } else { 
+            response.json ({
+              status : false,
+              code : 400,
+              message : "Top up added failed."
+            });
+          }
         }
         
       }catch (error) {
