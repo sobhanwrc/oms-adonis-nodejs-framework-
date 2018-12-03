@@ -124,6 +124,9 @@ class ApiController {
                       }
 
                       await user.save();
+                    }else { 
+                      user.stripe_details = {};
+                      await user.save();
                     }
 
                     var generate_token = await auth.generate(user);
@@ -625,11 +628,28 @@ class ApiController {
         });
 
         if(await add_job.save()) {
-          response.json({
-            status : true,
-            code : 200,
-            message : "Job added successfully."
+
+          //1st step
+          const product = await stripe.products.create({
+            name: job_title,
+            type: 'service',
           });
+           //2nd step
+          if (product) {
+            const plan = await stripe.plans.create({
+              currency: 'usd',
+              interval: 'month',
+              product: product.id,
+              nickname: create_job_id,
+              amount: 3000,
+            });
+
+            response.json({
+              status : true,
+              code : 200,
+              message : "Job added successfully."
+            });
+          }
         }
       } else { 
         response.json({
@@ -1017,9 +1037,9 @@ class ApiController {
           var new_balance = 0;
 
           if(existing_account_balance > 0) {
-            new_balance = existing_account_balance + Number(request.input("topup_amount"));
+            new_balance = existing_account_balance + Number(request.input("topup_amount") * 100);
           }else { 
-            new_balance = Number(request.input("topup_amount"));
+            new_balance = Number(request.input("topup_amount") * 100);
           }
 
           var update_customer = await stripe.customers.update(request.input("stripe_customer_id"), {

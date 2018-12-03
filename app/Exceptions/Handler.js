@@ -21,12 +21,20 @@ class ExceptionHandler extends BaseExceptionHandler {
    * @return {void}
    */
   async handle (error, { request, response }) {
+    console.log(error)
+    // return false
     // JWT Token expired
     if (error.code === 'E_JWT_TOKEN_EXPIRED') {
       response.json({
         status : false,
         code : 266,
         message : "Token expired. Please login or refresh."
+      });
+    }else if (error.code = 11000) {
+      response.json({
+        status : false,
+        code : 266,
+        message : "Duplicate entry."
       });
     }else{
       response.json({
