@@ -18,6 +18,8 @@ const ServiceType = use('App/Models/ServiceType');
 const ServiceCategory = use('App/Models/ServiceCategory');
 const Service = use ('App/Models/Service');
 const stripe = use('stripe')('sk_test_0VQiLwAYgGKfqOX9hbY80oUv'); //secret key for test account
+const _ = use('lodash');
+const Rating = use ('App/Models/Rating');
 
 class ApiController {
     //common api for all 
@@ -420,7 +422,7 @@ class ApiController {
 
             var base64Str = request.input('profile_image');
     
-            // var base64Str = req.body.profile_image.replace(/^data:image\/jpeg+;base64,/, "");
+            // var base64Str = request.input('profile_i'mage.replace(/^data:image\/jpeg+;base64,/, "");
             var base64Str1 = base64Str.replace(/ /g, '+');
 
             let base64ImageMimeType = base64Str1.split(';base64,');
@@ -629,12 +631,12 @@ class ApiController {
 
         if(await add_job.save()) {
 
-          //1st step
+          //1st step product add 
           const product = await stripe.products.create({
             name: job_title,
             type: 'service',
           });
-           //2nd step
+           //2nd step plan add within the product
           if (product) {
             const plan = await stripe.plans.create({
               currency: 'usd',
@@ -1069,6 +1071,72 @@ class ApiController {
         
       }catch (error) {
         throw error;
+      }
+    }
+
+    async rateByUserToVendor ({request, response, auth}) {
+      var user = await auth.getUser();
+      var vendor_id = request.input('vendor_id');
+      var rating_number = request.input('rating_number');
+      var comment = request.input('comment');
+
+      var fetch_rating_details = await Rating.findOne({vendor_id: vendor_id});
+
+      if(fetch_rating_details) {
+          const rating_details_if_exist = _.filter(fetch_rating_details.rating_by_user, rate => rate.user_id == user.id);
+
+          if(rating_details_if_exist.length > 0) {
+            rating_details_if_exist[0].number_of_rating = rating_number;
+            rating_details_if_exist[0].comment = comment;
+
+            if(fetch_rating_details.save()) {
+              response.json({
+                status : true,
+                code : 200,
+                message : "Rating updated successfully."
+              });
+            }
+          }else{
+            var all_rating = {
+              user_id : user._id,
+              number_of_rating : rating_number,
+              comment : comment
+            };
+            fetch_rating_details.rating_by_user.unshift(all_rating);
+
+            fetch_rating_details.save();
+            
+            response.json({
+              status : true,
+              code : 200,
+              message : "Rating addeed successfully."
+            });
+          }
+      }else{
+        var all_rating = {
+          user_id : user._id,
+          number_of_rating : rating_number,
+          comment : comment
+        };
+
+        var add = new Rating ({
+          vendor_id : vendor_id,
+          rating_by_user : all_rating
+        });
+
+        if(add.save()){
+          response.json({
+            status : true,
+            code : 200,
+            message : "Rating addeed successfully."
+          });
+        }else{
+          response.json({
+            status : false,
+            code : 400,
+            message : "Rating addeed failed."
+          });
+        }
       }
     }
 

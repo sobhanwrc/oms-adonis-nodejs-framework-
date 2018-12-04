@@ -52,6 +52,7 @@ Route.group(() => {
     Route.post('/api/serviceDetails', 'ApiController.serviceDetails')
     Route.post('/api/editService', 'ApiController.editService')
     Route.post('/api/vendor/topup-credit-stripe', 'ApiController.stripeTopUpCredit')
+    Route.post('/api/rateByUserToVendor', 'ApiController.rateByUserToVendor')
     Route.get('/api/logout', 'ApiController.userLogout')
 
 }).middleware(['auth:jwt'])

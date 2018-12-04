@@ -30,6 +30,12 @@ class ExceptionHandler extends BaseExceptionHandler {
         code : 266,
         message : "Token expired. Please login or refresh."
       });
+    }else if (error.code == 'E_INVALID_JWT_TOKEN') {
+      response.json({
+        status : false,
+        code : 266,
+        message : "Invalid token. Please sent correct token."
+      });
     }else if (error.code = 11000) {
       response.json({
         status : false,
