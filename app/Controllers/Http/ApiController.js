@@ -531,7 +531,7 @@ class ApiController {
                 if(email_sent_status == true) {
                   if (await user.save()) {
                     return response.json({
-                        success: true, 
+                        status: true, 
                         code: 200,
                         secret_key : secretKey,
                         message: 'Forgot password link sent successfully to your email.'
