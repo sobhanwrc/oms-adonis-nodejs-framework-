@@ -24,9 +24,9 @@ class User extends BaseModel {
       profile_image : { type : String,  default: '' },
       email: { type: String, unique: true ,  default: '' },
       gender : { type : String,  default: '' },
-      phone_number : {type: Number,  default: '' },
+      phone_number : {type: String,  default: '' },
       password: { type: String,  default: ''  },
-      address: {type : String,  default: '' },
+      address: {type: String, default : ''},
       user_address2 : {type : String},
       city: { type : String,  default: '' },
       dob: { type: String,  default: '' },
@@ -49,9 +49,9 @@ class User extends BaseModel {
       ],
       stripe_details : [{
         customer_id : { type : String, unique : true, default: ''},
-        account_balance : { type : Number},
-        invoice_prefix : { type : String},
-        customer_created : {type : String}
+        account_balance : { type : Number, default: ''},
+        invoice_prefix : { type : String, default: ''},
+        customer_created : {type : String, default: ''}
       }],
       uen_no : { type: String, unique: true,  default: '' },
       latitude: {type : Number,  default: '' },

@@ -20,6 +20,7 @@ const Service = use ('App/Models/Service');
 const stripe = use('stripe')('sk_test_0VQiLwAYgGKfqOX9hbY80oUv'); //secret key for test account
 const _ = use('lodash');
 const Rating = use ('App/Models/Rating');
+const {rate,average} = use('average-rating');
 
 class ApiController {
     //common api for all 
@@ -29,7 +30,7 @@ class ApiController {
         var last_name = request.input('last_name');
         var middle_name = request.input('middle_name');
         var email = request.input('email');
-        var phone_number = request.input('phone_number');
+        // var phone_number = request.input('phone_number') ? request.input('phone_number') : '';
         var password = await Hash.make(request.input('password'));
         var address = request.input('address');
         var city = 'Singapore';
@@ -89,7 +90,7 @@ class ApiController {
                 last_name : last_name,
                 profile_image : "http:" + avatar, 
                 email : email,
-                phone_number : phone_number,
+                // phone_number : phone_number,
                 address : address,
                 city : city,
                 dob : dob,
@@ -110,8 +111,7 @@ class ApiController {
                       //create customer in Stripe account
                       var stripe_customer = await stripe.customers.create({
                         email: email,
-                        description : "OMC Vendor",
-                        currency : 'usd'
+                        description : "OMC Vendor"
                       });
                       //end
 
@@ -126,7 +126,7 @@ class ApiController {
                       }
 
                       await user.save();
-                    }else { 
+                    }else {
                       user.stripe_details = {};
                       await user.save();
                     }
@@ -152,48 +152,43 @@ class ApiController {
     }
 
     async submitLogin ({ request, response, auth}){
-        // validate the user credentials and generate a JWT token
-        // const token = await auth.attempt(
-        //     request.input('email'),
-        //     request.input('password')
-        // ) 
+      var reg_type = request.input('reg_type'); //2 ='user', 3='vendor'
+      const user = await User.findOne({email : request.input('email'), reg_type : reg_type});
+      if(user === null) {
+        response.json ({
+            status: false,
+            code: 400,
+            message : "Wrong username or password."
+        });
+      } else{ 
+        if(Object.keys(user).length > 0) {
+          const isSame = await Hash.verify(request.input('password'), user.password);
 
-        const user = await User.findOne({email : request.input('email')});
-        if(user === null) {
-          response.json ({
-              status: false,
-              code: 400,
-              message : "Wrong username or password."
-          });
-        } else{ 
-          if(Object.keys(user).length > 0) {
-            const isSame = await Hash.verify(request.input('password'), user.password);
-  
-            if(user != null && isSame && user.status === 1) {
-              var generate_token = await auth.generate(user);
-  
-                return response.json({
-                    status: true,
-                    code : 200,
-                    token: 'Bearer ' + generate_token.token,
-                    message : "Login successfully."
-                })
-            }else if (user.status == 0) {
-                return response.json ({
-                    status: false,
-                    code: 400,
-                    message : "Your account is deactivated. Because you have recently requested for forgot password. So, check your email or contact with admin."
-                });
-            }else { 
-                return response.json ({
-                    status: false,
-                    code: 400,
-                    message : "Wrong username or password."
-                });
-            }
-            
+          if(user != null && isSame && user.status === 1) {
+            var generate_token = await auth.generate(user);
+
+              return response.json({
+                  status: true,
+                  code : 200,
+                  token: 'Bearer ' + generate_token.token,
+                  message : "Login successfully."
+              })
+          }else if (user.status == 0) {
+              return response.json ({
+                  status: false,
+                  code: 400,
+                  message : "Your account is deactivated. Because you have recently requested for forgot password. So, check your email or contact with admin."
+              });
+          }else { 
+              return response.json ({
+                  status: false,
+                  code: 400,
+                  message : "Wrong username or password."
+              });
           }
+          
         }
+      }
     }
 
     async socialLogin ({request, response, auth}) {
@@ -331,12 +326,12 @@ class ApiController {
 
     async userDetails ({ request, response, auth}) {
         try {
-            var user_details = await auth.getUser();
-            response.json ({
-              status : true,
-              code:200,
-              data: user_details
-            });
+          var user_details = await auth.getUser();
+          response.json ({
+            status : true,
+            code:200,
+            data: user_details
+          });
         } catch (error) {
           response.json ({
             status : false,
@@ -582,7 +577,7 @@ class ApiController {
       }
     }
 
-    async fetchJobCategoryAndIndustry ({request, response}) {
+    async fetchJobCategoryAndIndustry ({response}) {
       var all_jobcategory = await JobCategory.find({},{status: 0, created_at: 0, updated_at: 0, __v:0 });
       var all_jobindustry = await JobIndustry.find({},{status: 0, created_at: 0, updated_at: 0, __v:0 });
 
@@ -605,6 +600,7 @@ class ApiController {
         var job_industry = request.input('job_industry');
         var job_category = request.input('job_category');
         var job_date = request.input('job_date');
+        var job_endDate = request.input('job_endDate');
         var job_time = request.input('job_time');
         var description  = request.input('description');
         var create_job_id = '';
@@ -625,33 +621,18 @@ class ApiController {
           job_industry : job_industry,
           job_category : job_category,
           job_date : job_date,
+          job_endDate : job_endDate,
           job_time : job_time,
-          description : description
+          description : description,
+          status : 2
         });
 
         if(await add_job.save()) {
-
-          //1st step product add 
-          const product = await stripe.products.create({
-            name: job_title,
-            type: 'service',
+          response.json({
+            status : true,
+            code : 200,
+            message : "Job added successfully."
           });
-           //2nd step plan add within the product
-          if (product) {
-            const plan = await stripe.plans.create({
-              currency: 'usd',
-              interval: 'month',
-              product: product.id,
-              nickname: create_job_id,
-              amount: 3000,
-            });
-
-            response.json({
-              status : true,
-              code : 200,
-              message : "Job added successfully."
-            });
-          }
         }
       } else { 
         response.json({
@@ -721,6 +702,7 @@ class ApiController {
         var job_date = request.input('job_date') ? request.input('job_date') : job_update.job_date;
         var job_time = request.input('job_time') ? request.input('job_time') : job_update.job_time;
         var description = request.input('description') ? request.input('description') : job_update.description;
+        var job_endDate = request.input('job_endDate') ? request.input('job_endDate') : job_update.job_endDate;
 
         job_update.job_title = job_title;
         job_update.service_require_at = service_require_at;
@@ -729,6 +711,7 @@ class ApiController {
         job_update.job_date = job_date;
         job_update.job_time = job_time;
         job_update.description = description;
+        job_update.job_endDate = job_endDate;
 
         if(await job_update.save()) {
           var updated_job_details = await Job.findById({_id : job_id})
@@ -853,6 +836,7 @@ class ApiController {
             start_date : request.input('start_date'),
             end_date : request.input('end_date'),
             description : request.input('description'),
+            status : request.input('status') // 1 ='active',2='Inactive'
           });
   
           if(await add_service.save()) {
@@ -961,6 +945,8 @@ class ApiController {
 
           service_details.description = request.input('description') ? request.input('description') : service_details.description;
 
+          service_details.status = request.input('status') ? request.input('status') : service_details.status;
+
           if(await service_details.save()) {
             var updated_service_details = await Service.findOne({_id : service_id, user_id : user._id})
             .populate('service_type')
@@ -1021,56 +1007,6 @@ class ApiController {
             message : "Address changed successfully."
           });
         }
-      }
-    }
-
-    async stripeTopUpCredit ({request, response, auth}) {
-      try {
-        var user = await auth.getUser();
-        if(request.input("topup_amount") < 40) {
-          response.json({
-            status : false,
-            code : 400,
-            message : "Credit amount should be greater than $40 ."
-          });
-        } else { 
-          var customer_details = await stripe.customers.retrieve(request.input("stripe_customer_id"));
-          var existing_account_balance = Number(customer_details.account_balance);
-          var new_balance = 0;
-
-          if(existing_account_balance > 0) {
-            new_balance = existing_account_balance + Number(request.input("topup_amount") * 100);
-          }else { 
-            new_balance = Number(request.input("topup_amount") * 100);
-          }
-
-          var update_customer = await stripe.customers.update(request.input("stripe_customer_id"), {
-            account_balance: new_balance 
-          });
-
-          if(update_customer) {
-            user.stripe_details = {
-              account_balance : new_balance
-            }
-
-            await user.save();
-
-            response.json ({
-              status : true,
-              code : 200,
-              message : "Top up added successfully."
-            });
-          } else { 
-            response.json ({
-              status : false,
-              code : 400,
-              message : "Top up added failed."
-            });
-          }
-        }
-        
-      }catch (error) {
-        throw error;
       }
     }
 
@@ -1139,6 +1075,263 @@ class ApiController {
         }
       }
     }
+
+    async fetchVendorRatingDetails ({request, response, auth}) {
+      var user = await auth.getUser();
+      if(user.reg_type == 3) {
+        var fetchRating = await Rating.findOne({vendor_id : user._id})
+        var total_user_rating = fetchRating.rating_by_user.length;
+
+        var total_rating_one = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 1)).length;
+        var total_rating_two = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 2)).length;
+        var total_rating_three = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 3)).length;
+        var total_rating_four = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 4)).length;
+        var total_rating_five = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 5)).length;
+
+        // from 1 to 5 stars
+        let rating = [total_rating_one, total_rating_two, total_rating_three, total_rating_four, total_rating_five];
+        var rate_rating = rate(rating); // --> 0.84
+
+        // calculate average
+        var avg_rating = average(rating); // --> 4.4
+        
+        var new_array = [];
+        new_array.push ({
+          total_user_rating : total_user_rating,
+          avg_rating : avg_rating,
+          one_star : total_rating_one,
+          two_star : total_rating_two,
+          three_star : total_rating_three,
+          four_star : total_rating_four,
+          five_star : total_rating_five
+        });
+
+        response.json ({
+          status : true,
+          code : 200,
+          data : new_array
+        });
+      }else { 
+        response.json ({
+          status : false,
+          code : 400,
+          message : "You don't have a permission to see vendor rating details."
+        })
+      }
+    }
+
+    //stripe functions
+    async stripeTopUpCredit ({request, response, auth}) {
+      try {
+        var user = await auth.getUser();
+        if(request.input("topup_amount") < 40) {
+          response.json({
+            status : false,
+            code : 400,
+            message : "Credit amount should be greater than $40 ."
+          });
+        } else { 
+          var customer_details = await stripe.customers.retrieve(request.input("stripe_customer_id"));
+          var existing_account_balance = Number(customer_details.account_balance);
+          var new_balance = 0;
+
+          if(existing_account_balance > 0) {
+            new_balance = existing_account_balance + Number(request.input("topup_amount") * 100);
+          }else { 
+            new_balance = Number(request.input("topup_amount") * 100);
+          }
+
+          var update_customer = await stripe.customers.update(request.input("stripe_customer_id"), {
+            account_balance: new_balance 
+          });
+
+          if(update_customer) {
+            user.stripe_details = {
+              account_balance : new_balance
+            }
+
+            await user.save();
+
+            response.json ({
+              status : true,
+              code : 200,
+              message : "Top up added successfully."
+            });
+          } else { 
+            response.json ({
+              status : false,
+              code : 400,
+              message : "Top up added failed."
+            });
+          }
+        }
+        
+      }catch (error) {
+        throw error;
+      }
+    }
+
+    stripeView ({view}) {
+      return view.render('stripe_view')
+    }
+
+    //job amount payment and create new omc user to stripe
+    async stripePaymentOfUser ({request, response, auth}) {
+      const token = request.body.stripeToken;
+      var user = await auth.getUser();
+      var customer_id = user.stripe_details[0].customer_id;
+      
+      if(customer_id != '') {
+        const charge = await stripe.charges.create({
+          amount: request.input('job_amount'),
+          currency: 'sgd',
+          description: request.input('description'),
+          customer : customer_id
+        });
+
+        if(charge) {
+          var user_job = await Job.find({_id : request.input('job_id')});
+          user_job.job_amount = request.input('job_amount');
+          user_job.status = 1;
+          await user_job.save();
+
+          response.json({
+            status : true,
+            code : 200,
+            message : "Payment successfully."
+          });
+        }else { 
+          response.json({
+            status : false,
+            code : 400,
+            message : "Payment declined."
+          });
+        }
+      }else { 
+        // Create a Customer:
+        const customer = await stripe.customers.create({
+          source: token,
+          email: user.email,
+        });
+
+        if(customer) {
+          var user = await User.findOne({email : user.email});
+
+          user.stripe_details = {
+            customer_id : customer.id,
+            account_balance : customer.account_balance,
+            invoice_prefix : customer.invoice_prefix,
+            customer_created : customer.created
+          }
+
+          if(await user.save()) {
+            var user = await User.findOne({email : user.email});
+            var customer_id = user.stripe_details[0].customer_id;
+
+            const charge = await stripe.charges.create({
+              amount: request.input('job_amount'),
+              currency: 'sgd',
+              description: request.input('description'),
+              customer : customer_id
+            });
+    
+            if(charge) {
+              var user_job = await Job.find({_id : request.input('job_id')});
+              user_job.job_amount = request.input('job_amount');
+              user_job.status = 1;
+              await user_job.save();
+
+              response.json({
+                status : true,
+                code : 200,
+                message : "Payment successfully."
+              });
+            }else { 
+              response.json({
+                status : false,
+                code : 400,
+                message : "Payment declined."
+              });
+            }
+          }
+        }
+      }
+    }
+
+    //add card
+    async stripeAddCard ({request, response, auth}) {
+      const token = request.body.stripeToken;
+      var user = await auth.getUser();
+      var customer_id = user.stripe_details[0].customer_id;
+      
+      var addCard = await stripe.customers.createSource(customer_id,{
+        source: token 
+      });
+      
+      if (addCard) {
+        response.json({
+          status : true,
+          code : 200,
+          message : "Card added successfully."
+        });
+      } else { 
+        response.json({
+          status : false,
+          code : 400,
+          message : "Card added failed."
+        });
+      }
+    }
+
+    //fetch customer all save cards list
+    async stripeFetchCustomerAllCard ({request, response, auth}) {
+      var user = await auth.getUser();
+      var customer_id = user.stripe_details[0].customer_id;
+
+      var list_all_cards = await stripe.customers.listCards (customer_id);
+
+      if(list_all_cards.data.length > 0) {
+        response.json({
+          status : true,
+          code : 200,
+          data : list_all_cards.data
+        });
+      }else { 
+        response.json({
+          status : false,
+          code : 400,
+          message : "No cards found as off now."
+        });
+      }
+    }
+
+    //change default card
+    async stripeChangeDefaultCard ({request, response, auth}) {
+      var user = await auth.getUser();
+      var customer_id = user.stripe_details[0].customer_id;
+      
+      var set_default_card_id = request.input('stripe_card_id');
+
+      var save = await stripe.customers.update(customer_id, {
+        default_source : set_default_card_id
+      });
+      console.log(save);
+      if(save) {
+        response.json({
+          status : true,
+          code : 200,
+          message : "Default card change successfully."
+        });
+      }else { 
+        response.json({
+          status : false,
+          code : 400,
+          message : "Default card change failed."
+        });
+      }
+    }
+
+    //end
 
     //checking uen number validation
     validateUEN (uen) {

@@ -29,6 +29,7 @@
     "@adonisjs/shield": "^1.0.8",
     "@adonisjs/validator": "^5.0.6",
     "adonis-mongoose-model": "^3.0.1",
+    "average-rating": "^1.1.8",
     "base64-to-image": "^1.0.2",
     "gravatar": "^1.6.0",
     "lodash": "^4.17.11",

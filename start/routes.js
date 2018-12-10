@@ -37,6 +37,9 @@ Route.post('/api/addServiceCategory', 'ApiController.addServiceCategory')
 Route.get('/api/serviceTypesCategories', 'ApiController.fetchServiceTypeAndCategories')
 Route.post('/api/authRefresh', 'ApiController.authRefresh')
 
+Route.get('/api/stripeView', 'ApiController.stripeView')
+Route.post('/api/stripePaymentOfUser', 'ApiController.stripePaymentOfUser')
+
 Route.group(() => { 
     Route.get('/api/userDetails', 'ApiController.userDetails')
     Route.post('/api/profileEdit', 'ApiController.profileEdit')
@@ -53,6 +56,14 @@ Route.group(() => {
     Route.post('/api/editService', 'ApiController.editService')
     Route.post('/api/vendor/topup-credit-stripe', 'ApiController.stripeTopUpCredit')
     Route.post('/api/rateByUserToVendor', 'ApiController.rateByUserToVendor')
+    Route.get('/api/fetchVendorRatingDetails', 'ApiController.fetchVendorRatingDetails')
+
+    //all stripe route
+    Route.post('/api/stripeAddCard', 'ApiController.stripeAddCard')
+    Route.post('/api/stripeChangeDefaultCard', 'ApiController.stripeChangeDefaultCard')
+    Route.get('/api/stripeFetchCustomerAllCard', 'ApiController.stripeFetchCustomerAllCard')
+    //end
+    
     Route.get('/api/logout', 'ApiController.userLogout')
 
 }).middleware(['auth:jwt'])
