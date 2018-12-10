@@ -508,7 +508,7 @@ class ApiController {
                     if(email_sent_status == true) {
                       if (await user.save()) {
                         return response.json({
-                            success: true, 
+                            status: true, 
                             code: 200,
                             secret_key : secretKey,
                             message: 'Forgot password link sent successfully to your email.'
@@ -645,7 +645,7 @@ class ApiController {
 
     async jobList ({request, response, auth}) {
       var user = await auth.getUser();
-      var all_jobs_list = await Job.find({status :1, user_id: user._id})
+      var all_jobs_list = await Job.find({user_id: user._id})
       .populate('job_industry')
       .populate('job_category');
 
@@ -1080,37 +1080,46 @@ class ApiController {
       var user = await auth.getUser();
       if(user.reg_type == 3) {
         var fetchRating = await Rating.findOne({vendor_id : user._id})
-        var total_user_rating = fetchRating.rating_by_user.length;
+        if(fetchRating) {
+          var total_user_rating = fetchRating.rating_by_user.length;
 
-        var total_rating_one = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 1)).length;
-        var total_rating_two = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 2)).length;
-        var total_rating_three = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 3)).length;
-        var total_rating_four = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 4)).length;
-        var total_rating_five = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 5)).length;
+          var total_rating_one = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 1)).length;
+          var total_rating_two = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 2)).length;
+          var total_rating_three = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 3)).length;
+          var total_rating_four = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 4)).length;
+          var total_rating_five = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 5)).length;
 
-        // from 1 to 5 stars
-        let rating = [total_rating_one, total_rating_two, total_rating_three, total_rating_four, total_rating_five];
-        var rate_rating = rate(rating); // --> 0.84
+          // from 1 to 5 stars
+          let rating = [total_rating_one, total_rating_two, total_rating_three, total_rating_four, total_rating_five];
+          var rate_rating = rate(rating); // --> 0.84
 
-        // calculate average
-        var avg_rating = average(rating); // --> 4.4
+          // calculate average
+          var avg_rating = average(rating); // --> 4.4
+          
+          var new_array = [];
+          new_array.push ({
+            total_user_rating : total_user_rating,
+            avg_rating : avg_rating,
+            one_star : total_rating_one,
+            two_star : total_rating_two,
+            three_star : total_rating_three,
+            four_star : total_rating_four,
+            five_star : total_rating_five
+          });
+
+          response.json ({
+            status : true,
+            code : 200,
+            data : new_array
+          });
+        }else { 
+          response.json ({
+            status : false,
+            code : 400,
+            data : "No rating details found."
+          });
+        }
         
-        var new_array = [];
-        new_array.push ({
-          total_user_rating : total_user_rating,
-          avg_rating : avg_rating,
-          one_star : total_rating_one,
-          two_star : total_rating_two,
-          three_star : total_rating_three,
-          four_star : total_rating_four,
-          five_star : total_rating_five
-        });
-
-        response.json ({
-          status : true,
-          code : 200,
-          data : new_array
-        });
       }else { 
         response.json ({
           status : false,
@@ -1212,6 +1221,7 @@ class ApiController {
         const customer = await stripe.customers.create({
           source: token,
           email: user.email,
+          description : "OMC User"
         });
 
         if(customer) {

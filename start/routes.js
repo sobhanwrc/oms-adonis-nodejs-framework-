@@ -38,7 +38,6 @@ Route.get('/api/serviceTypesCategories', 'ApiController.fetchServiceTypeAndCateg
 Route.post('/api/authRefresh', 'ApiController.authRefresh')
 
 Route.get('/api/stripeView', 'ApiController.stripeView')
-Route.post('/api/stripePaymentOfUser', 'ApiController.stripePaymentOfUser')
 
 Route.group(() => { 
     Route.get('/api/userDetails', 'ApiController.userDetails')
@@ -54,11 +53,12 @@ Route.group(() => {
     Route.get('/api/serviceList', 'ApiController.serviceList')
     Route.post('/api/serviceDetails', 'ApiController.serviceDetails')
     Route.post('/api/editService', 'ApiController.editService')
-    Route.post('/api/vendor/topup-credit-stripe', 'ApiController.stripeTopUpCredit')
     Route.post('/api/rateByUserToVendor', 'ApiController.rateByUserToVendor')
     Route.get('/api/fetchVendorRatingDetails', 'ApiController.fetchVendorRatingDetails')
 
     //all stripe route
+    Route.post('/api/vendor/topup-credit-stripe', 'ApiController.stripeTopUpCredit')
+    Route.post('/api/stripePaymentOfUser', 'ApiController.stripePaymentOfUser')
     Route.post('/api/stripeAddCard', 'ApiController.stripeAddCard')
     Route.post('/api/stripeChangeDefaultCard', 'ApiController.stripeChangeDefaultCard')
     Route.get('/api/stripeFetchCustomerAllCard', 'ApiController.stripeFetchCustomerAllCard')
