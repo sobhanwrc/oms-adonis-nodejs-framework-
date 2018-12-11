@@ -21,6 +21,7 @@ const stripe = use('stripe')('sk_test_0VQiLwAYgGKfqOX9hbY80oUv'); //secret key f
 const _ = use('lodash');
 const Rating = use ('App/Models/Rating');
 const {rate,average} = use('average-rating');
+const StripeCharge = use ('App/Models/StripeCharge');
 
 class ApiController {
     //common api for all 
@@ -1204,6 +1205,13 @@ class ApiController {
           user_job.status = 1;
           await user_job.save();
 
+          var add_charges_details = new StripeCharge ({
+            user_id : user._id,
+            charge_id : charge.id
+          });
+
+          await add_charges_details.save();
+
           response.json({
             status : true,
             code : 200,
@@ -1337,6 +1345,44 @@ class ApiController {
           status : false,
           code : 400,
           message : "Default card change failed."
+        });
+      }
+    }
+
+    //create account into stripe connect 
+    async stripeCreateConnectAccount ({request, response, auth}) {
+      var user = await auth.getUser();
+
+      try {
+        var create_connect_account = await stripe.accounts.create({
+          type: 'standard',
+          country: 'SG', //singapore
+          email: user.email
+        });
+        console.log(create_connect_account,'create_connect_account');
+
+        var add_external = await stripe.accounts.createExternalAccount(
+          'acct_1Dg5PlElGpf0E9n0',
+          {external_account: "tok_mastercard_debit"}
+        );
+
+        console.log(add_external,'add_external');
+        return false;
+
+        if(create_connect_account) {
+          response.json({
+            status : true,
+            code : 200,
+            message : "Account create successfully."
+          });
+        }
+
+      }catch(error) {
+        throw error;
+        response.json({
+          status : false,
+          code : 400,
+          message : "Account create failed."
         });
       }
     }

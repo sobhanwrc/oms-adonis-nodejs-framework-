@@ -21,7 +21,7 @@ class ExceptionHandler extends BaseExceptionHandler {
    * @return {void}
    */
   async handle (error, { request, response }) {
-    console.log(error.code,'error')
+    console.log(error,'error')
     // return false
     
     // JWT Token expired

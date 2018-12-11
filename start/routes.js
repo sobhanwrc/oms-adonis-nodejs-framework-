@@ -62,6 +62,7 @@ Route.group(() => {
     Route.post('/api/stripeAddCard', 'ApiController.stripeAddCard')
     Route.post('/api/stripeChangeDefaultCard', 'ApiController.stripeChangeDefaultCard')
     Route.get('/api/stripeFetchCustomerAllCard', 'ApiController.stripeFetchCustomerAllCard')
+    Route.post('/api/stripeCreateConnectAccount', 'ApiController.stripeCreateConnectAccount')
     //end
     
     Route.get('/api/logout', 'ApiController.userLogout')
