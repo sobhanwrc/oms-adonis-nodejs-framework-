@@ -38,6 +38,7 @@ Route.get('/api/serviceTypesCategories', 'ApiController.fetchServiceTypeAndCateg
 Route.post('/api/authRefresh', 'ApiController.authRefresh')
 
 Route.get('/api/stripeView', 'ApiController.stripeView')
+Route.post('/api/stripeFundTransferToVendor', 'ApiController.stripeFundTransferToVendor')
 
 Route.group(() => { 
     Route.get('/api/userDetails', 'ApiController.userDetails')

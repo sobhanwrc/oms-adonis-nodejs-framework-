@@ -30,6 +30,7 @@
     "@adonisjs/validator": "^5.0.6",
     "adonis-mongoose-model": "^3.0.1",
     "average-rating": "^1.1.8",
+    "axios": "^0.18.0",
     "base64-to-image": "^1.0.2",
     "gravatar": "^1.6.0",
     "lodash": "^4.17.11",
@@ -41,6 +42,7 @@
     "node-mailjet": "^3.3.1",
     "nodemon": "^1.18.7",
     "randomstring": "^1.1.5",
+    "socket.io": "^2.2.0",
     "sqlite3": "^4.0.4",
     "stripe": "^6.17.0"
   },

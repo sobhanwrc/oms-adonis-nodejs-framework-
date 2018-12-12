@@ -1,5 +1,7 @@
 'use strict'
 
+var url = use('url');
+const Env = use('Env')
 const Hash = use('Hash')
 const User = use('App/Models/User')
 const JobIndustry = use('App/Models/JobIndustry')
@@ -22,6 +24,7 @@ const _ = use('lodash');
 const Rating = use ('App/Models/Rating');
 const {rate,average} = use('average-rating');
 const StripeCharge = use ('App/Models/StripeCharge');
+const axios = use('axios');
 
 class ApiController {
     //common api for all 
@@ -1181,7 +1184,36 @@ class ApiController {
       }
     }
 
-    stripeView ({view}) {
+    async stripeView ({request,view}) {
+      var queryString = request.get();
+      var code = queryString.code;
+      var scope = queryString.scope;
+      console.log(queryString);
+      console.log(Object.keys(queryString).length);
+      // return false;
+
+      if(Object.keys(queryString).length > 0) {
+
+        // var details = await axios.post('https://connect.stripe.com/oauth/token', {
+        //   client_secret:'ca_E3sEHl427GVcWtwVAlFcLO5Sc7GEjBui',
+        //   code:code,
+        //   grant_type:'authorization_code'
+        // });
+
+        var details = await request.post({
+          url: 'https://connect.stripe.com/oauth/token',
+          formData: {
+            client_secret:'ca_E3sEHl427GVcWtwVAlFcLO5Sc7GEjBui',
+            code:code,
+            grant_type:'authorization_code'
+          }
+        });
+
+        console.log(details,'details');
+      }
+      
+      var stripe_user_id = 'acct_1DgWAaKrGXB01yL1'; //for testing id = acct_1DgXBjBqxSk38u8C
+
       return view.render('stripe_view')
     }
 
@@ -1349,44 +1381,15 @@ class ApiController {
       }
     }
 
-    //create account into stripe connect 
-    async stripeCreateConnectAccount ({request, response, auth}) {
-      var user = await auth.getUser();
+    async stripeFundTransferToVendor ({request, response, auth}) {
+      var transfer = await stripe.transfers.create({
+        amount: 400,
+        currency: "sgd",
+        destination: "acct_1DgWAaKrGXB01yL1"
+      });
 
-      try {
-        var create_connect_account = await stripe.accounts.create({
-          type: 'standard',
-          country: 'SG', //singapore
-          email: user.email
-        });
-        console.log(create_connect_account,'create_connect_account');
-
-        var add_external = await stripe.accounts.createExternalAccount(
-          'acct_1Dg5PlElGpf0E9n0',
-          {external_account: "tok_mastercard_debit"}
-        );
-
-        console.log(add_external,'add_external');
-        return false;
-
-        if(create_connect_account) {
-          response.json({
-            status : true,
-            code : 200,
-            message : "Account create successfully."
-          });
-        }
-
-      }catch(error) {
-        throw error;
-        response.json({
-          status : false,
-          code : 400,
-          message : "Account create failed."
-        });
-      }
+      console.log(transfer);
     }
-
     //end
 
     //checking uen number validation
