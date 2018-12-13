@@ -111,29 +111,29 @@ class ApiController {
                 if(await add.save()) {
                     const user = await User.findOne({email : email});
 
-                    if(user.reg_type == 3) {
-                      //create customer in Stripe account
-                      var stripe_customer = await stripe.customers.create({
-                        email: email,
-                        description : "OMC Vendor"
-                      });
-                      //end
+                    // if(user.reg_type == 3) {
+                    //   //create customer in Stripe account
+                    //   var stripe_customer = await stripe.customers.create({
+                    //     email: email,
+                    //     description : "OMC Vendor"
+                    //   });
+                    //   //end
 
-                      if(stripe_customer) {
-                        var details = {
-                          customer_id : stripe_customer.id,
-                          account_balance : stripe_customer.account_balance,
-                          invoice_prefix : stripe_customer.invoice_prefix,
-                          customer_created : stripe_customer.created
-                        }
-                        user.stripe_details = details;
-                      }
+                    //   if(stripe_customer) {
+                    //     var details = {
+                    //       customer_id : stripe_customer.id,
+                    //       account_balance : stripe_customer.account_balance,
+                    //       invoice_prefix : stripe_customer.invoice_prefix,
+                    //       customer_created : stripe_customer.created
+                    //     }
+                    //     user.stripe_details = details;
+                    //   }
 
-                      await user.save();
-                    }else {
-                      user.stripe_details = {};
-                      await user.save();
-                    }
+                    //   await user.save();
+                    // }else {
+                    //   user.stripe_details = {};
+                    //   await user.save();
+                    // }
 
                     var generate_token = await auth.generate(user);
                     var send_registration_email = this.registrationEmailData(user);
@@ -1184,35 +1184,85 @@ class ApiController {
       }
     }
 
-    async stripeView ({request,view}) {
+    async stripeView ({request,view, response}) {
       var queryString = request.get();
       var code = queryString.code;
       var scope = queryString.scope;
-      console.log(queryString);
-      console.log(Object.keys(queryString).length);
-      // return false;
 
       if(Object.keys(queryString).length > 0) {
-
+        try {
+          // var details = await axios ({
+          //   url: 'https://connect.stripe.com/oauth/token',
+          //   method: 'post',
+          //   headers: {},
+          //   data : {
+          //     client_secret:'sk_test_0VQiLwAYgGKfqOX9hbY80oUv',
+          //     code:code,
+          //     grant_type:'authorization_code'
+          //   },
+          // });
+          // console.log(details.data);
+          // axios({
+          //   url: 'https://connect.stripe.com/oauth/token',
+          //   method: 'post',
+          //   headers: {},
+          //   data : {
+          //     client_secret:'sk_test_0VQiLwAYgGKfqOX9hbY80oUv',
+          //     code:code,
+          //     grant_type:'authorization_code'
+          //   },
+          //   success : function (result) {
+          //     consol.log(result.data, 'result');
+          //     if (result) {
+          //       response.json({
+          //         status : true,
+          //         code : 200,
+          //         data : result
+          //       });
+          //     }else {
+          //       response.json({
+          //         status : false,
+          //         code : 400,
+          //         message : 'Authorization code expired'
+          //       });
+          //     }
+          //   }
+          // })
         // var details = await axios.post('https://connect.stripe.com/oauth/token', {
-        //   client_secret:'ca_E3sEHl427GVcWtwVAlFcLO5Sc7GEjBui',
+        //   client_secret:'sk_test_0VQiLwAYgGKfqOX9hbY80oUv',
         //   code:code,
         //   grant_type:'authorization_code'
         // });
 
-        var details = await request.post({
-          url: 'https://connect.stripe.com/oauth/token',
-          formData: {
-            client_secret:'ca_E3sEHl427GVcWtwVAlFcLO5Sc7GEjBui',
+          axios.post('https://connect.stripe.com/oauth/token', {
+            client_secret: "sk_test_0VQiLwAYgGKfqOX9hbY80oUv",
             code:code,
             grant_type:'authorization_code'
-          }
-        });
+          })
+          .then(response => { 
+            var vendor_account_id = response.response.data.stripe_user_id;
+            console.log("======start=========");
+            console.log(response);
+            console.log("======end=========");
+          })
+          .catch(error => {
+            response.json({
+              status : false,
+              code : 400,
+              message : error.response.data.error_description
+            });
+            // console.log("======start=========");
+            // console.log(error.response.data.error_description)
+            // console.log("======end=========");
+          });
 
-        console.log(details,'details');
+        }catch (error) {
+          throw error;
+        }
+
       }
       
-      var stripe_user_id = 'acct_1DgWAaKrGXB01yL1'; //for testing id = acct_1DgXBjBqxSk38u8C
+      var stripe_user_id = 'acct_1DgWAaKrGXB01yL1'; //for testing id = acct_1DgXBjBqxSk38u8C, acct_1Dgo46Hbm4rVXvgB
 
       return view.render('stripe_view')
     }
