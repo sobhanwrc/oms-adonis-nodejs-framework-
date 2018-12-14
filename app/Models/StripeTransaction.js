@@ -4,8 +4,9 @@ const Schema = mongoose.Schema;
 
 var chargeDetails = new Schema ({
     user_id : {type : Schema.Types.ObjectId, ref: "User"},
-    charge_id : { type : String},
+    transaction_id : { type : String, default: ''},
+    type: {type : String, default : ''},
     created_at : { type: Date, default : Date.now()}
 });
 
-module.exports = mongoose.model('StripeCharge', chargeDetails);
+module.exports = mongoose.model('StripeTransaction', chargeDetails);

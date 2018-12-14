@@ -19,11 +19,11 @@ const Helpers = use ('Helpers');
 const ServiceType = use('App/Models/ServiceType');
 const ServiceCategory = use('App/Models/ServiceCategory');
 const Service = use ('App/Models/Service');
-const stripe = use('stripe')('sk_test_0VQiLwAYgGKfqOX9hbY80oUv'); //secret key for test account
+const stripe = use('stripe')('sk_test_1lfdJgJawDb3EFLvNDyi1p7v'); //secret key for test account
 const _ = use('lodash');
 const Rating = use ('App/Models/Rating');
 const {rate,average} = use('average-rating');
-const StripeCharge = use ('App/Models/StripeCharge');
+const StripeTransaction = use ('App/Models/StripeTransaction');
 const axios = use('axios');
 
 class ApiController {
@@ -1185,85 +1185,6 @@ class ApiController {
     }
 
     async stripeView ({request,view, response}) {
-      var queryString = request.get();
-      var code = queryString.code;
-      var scope = queryString.scope;
-
-      if(Object.keys(queryString).length > 0) {
-        try {
-          // var details = await axios ({
-          //   url: 'https://connect.stripe.com/oauth/token',
-          //   method: 'post',
-          //   headers: {},
-          //   data : {
-          //     client_secret:'sk_test_0VQiLwAYgGKfqOX9hbY80oUv',
-          //     code:code,
-          //     grant_type:'authorization_code'
-          //   },
-          // });
-          // console.log(details.data);
-          // axios({
-          //   url: 'https://connect.stripe.com/oauth/token',
-          //   method: 'post',
-          //   headers: {},
-          //   data : {
-          //     client_secret:'sk_test_0VQiLwAYgGKfqOX9hbY80oUv',
-          //     code:code,
-          //     grant_type:'authorization_code'
-          //   },
-          //   success : function (result) {
-          //     consol.log(result.data, 'result');
-          //     if (result) {
-          //       response.json({
-          //         status : true,
-          //         code : 200,
-          //         data : result
-          //       });
-          //     }else {
-          //       response.json({
-          //         status : false,
-          //         code : 400,
-          //         message : 'Authorization code expired'
-          //       });
-          //     }
-          //   }
-          // })
-        // var details = await axios.post('https://connect.stripe.com/oauth/token', {
-        //   client_secret:'sk_test_0VQiLwAYgGKfqOX9hbY80oUv',
-        //   code:code,
-        //   grant_type:'authorization_code'
-        // });
-
-          axios.post('https://connect.stripe.com/oauth/token', {
-            client_secret: "sk_test_0VQiLwAYgGKfqOX9hbY80oUv",
-            code:code,
-            grant_type:'authorization_code'
-          })
-          .then(response => { 
-            var vendor_account_id = response.response.data.stripe_user_id;
-            console.log("======start=========");
-            console.log(response);
-            console.log("======end=========");
-          })
-          .catch(error => {
-            response.json({
-              status : false,
-              code : 400,
-              message : error.response.data.error_description
-            });
-            // console.log("======start=========");
-            // console.log(error.response.data.error_description)
-            // console.log("======end=========");
-          });
-
-        }catch (error) {
-          throw error;
-        }
-
-      }
-      
-      var stripe_user_id = 'acct_1DgWAaKrGXB01yL1'; //for testing id = acct_1DgXBjBqxSk38u8C, acct_1Dgo46Hbm4rVXvgB
-
       return view.render('stripe_view')
     }
 
@@ -1287,9 +1208,10 @@ class ApiController {
           user_job.status = 1;
           await user_job.save();
 
-          var add_charges_details = new StripeCharge ({
+          var add_charges_details = new StripeTransaction ({
             user_id : user._id,
-            charge_id : charge.id
+            transaction_id : charge.id,
+            type : 'User_pay_to_OMC'
           });
 
           await add_charges_details.save();
@@ -1336,6 +1258,13 @@ class ApiController {
             });
     
             if(charge) {
+              var add_charges_details = new StripeTransaction ({
+                user_id : user._id,
+                transaction_id : charge.id,
+                type : 'User_pay_to_OMC'
+              });
+              await add_charges_details.save();
+
               var user_job = await Job.find({_id : request.input('job_id')});
               user_job.job_amount = request.input('job_amount');
               user_job.status = 1;
@@ -1431,14 +1360,105 @@ class ApiController {
       }
     }
 
-    async stripeFundTransferToVendor ({request, response, auth}) {
-      var transfer = await stripe.transfers.create({
-        amount: 400,
-        currency: "sgd",
-        destination: "acct_1DgWAaKrGXB01yL1"
-      });
+    //associate vendor bank account with stripe connect
+    async stripeCreateConnectAccount ({request, response, auth}) {
+      var user = await auth.getUser();
+      
+      var queryString = request.get();
+      var code = queryString.code;
+      var scope = queryString.scope;
 
-      console.log(transfer);
+      if(code) {
+        try {
+          axios.post('https://connect.stripe.com/oauth/token', {
+            client_secret: "sk_test_1lfdJgJawDb3EFLvNDyi1p7v",
+            code:code,
+            grant_type:'authorization_code'
+          }).then ( function (result){
+            if(result.status == 200) {
+              var vendor_account_id = result.data.stripe_user_id;
+              
+              User.updateOne({
+                _id: user._id //matching with table id
+              },{
+                $set: {
+                  stripe_details: [{
+                    customer_id : vendor_account_id
+                  }]
+                }
+              }).then(function (result) {
+                if(result) {
+                  response.json({
+                    status : true,
+                    code : 200,
+                    message : "Your bank details has been successfully associated with us."
+                  });
+                }
+              });
+            }
+
+          }).catch (function (error){
+            console.log("false");
+            console.log("======start=========");
+            console.log(error.response.data.error_description)
+            console.log("======end=========");
+
+            var error_msg = error.response.data.error_description;
+            response.json({
+              status : false,
+              code : 400,
+              message : error_msg
+            });
+          });
+
+        }catch (error) {
+          throw error;
+        }
+      }
+    }
+
+    //fund release to vendor bank account
+    async stripeFundTransferToVendor ({request, response, auth}) {
+      var user = await auth.getUser();
+      if(user.reg_type == 3) {
+        if(user.stripe_details.length > 0) {
+          var vendor_customer_account_id = user.stripe_details[0].customer_id;
+  
+          var transfer = await stripe.transfers.create({
+            amount: request.input('release_amount'),
+            currency: "sgd",
+            destination: vendor_customer_account_id
+          });
+          
+          if(transfer) {
+            var add = new StripeTransaction ({
+              user_id : user._id,
+              transaction_id : transfer.id,
+              type : "OMC_pay_to_Vendor"
+            });
+            if(await add.save()) {
+              response.json ({
+                status : true,
+                code : 200,
+                message : "Amount release to your account has been successful. Your release amount will be credited to your associate bank account within seven business days."
+              });
+            }
+          }
+        }else { 
+          response.json ({
+            status : false,
+            code : 400,
+            message : "Your bank account has not associated with us. So, please add your bank details."
+          });
+        }
+      }else {
+        response.json ({
+          status : false,
+          code : 400,
+          message : "You don't have a permission to do that."
+        });
+      }
+      
     }
     //end
 
