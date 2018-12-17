@@ -110,31 +110,6 @@ class ApiController {
             try{
                 if(await add.save()) {
                     const user = await User.findOne({email : email});
-
-                    // if(user.reg_type == 3) {
-                    //   //create customer in Stripe account
-                    //   var stripe_customer = await stripe.customers.create({
-                    //     email: email,
-                    //     description : "OMC Vendor"
-                    //   });
-                    //   //end
-
-                    //   if(stripe_customer) {
-                    //     var details = {
-                    //       customer_id : stripe_customer.id,
-                    //       account_balance : stripe_customer.account_balance,
-                    //       invoice_prefix : stripe_customer.invoice_prefix,
-                    //       customer_created : stripe_customer.created
-                    //     }
-                    //     user.stripe_details = details;
-                    //   }
-
-                    //   await user.save();
-                    // }else {
-                    //   user.stripe_details = {};
-                    //   await user.save();
-                    // }
-
                     var generate_token = await auth.generate(user);
                     var send_registration_email = this.registrationEmailData(user);
 
@@ -331,6 +306,15 @@ class ApiController {
     async userDetails ({ request, response, auth}) {
         try {
           var user_details = await auth.getUser();
+          var user_address = user_details.address;
+
+          if(user_address) {
+            var address_details = await Location.findOne({_id : user_address})
+            var address_place_details = address_details.name;
+
+            user_details['address'] = address_place_details
+          }
+
           response.json ({
             status : true,
             code:200,
@@ -359,7 +343,7 @@ class ApiController {
 
         var phone_number = request.input('phone_number') ? request.input('phone_number') : user.phone_number;
         var address = request.input('address') ? request.input('address') : user.address;
-        var city = request.input('city') ? request.input('city') : user.city;
+        // var city = '';
         var dob = request.input('dob') ? request.input('dob') : user.dob;
 
         var company_name = request.input('company_name') ? request.input('company_name') : user.business[0].company_name;
@@ -383,7 +367,7 @@ class ApiController {
         user.gender = gender;
         user.phone_number = phone_number;
         user.address = address;
-        user.city = city;
+        // user.city = city;
         user.dob = dob;
         user.uen_no = uen_no;
         user.business = {
@@ -399,18 +383,29 @@ class ApiController {
         // user.forgot_pw_key = '';
 
         if(await user.save()) {
-            response.json ({
-                status : true,
-                code : 200,
-                data: user,
-                message : "Profile updated successfully."
-            });
+          var user_details = await auth.getUser();
+          var user_address = user_details.address;
+
+          if(user_address) {
+            var address_details = await Location.findOne({_id : user_address})
+            var address_place_details = address_details.name;
+
+            user_details['address'] = address_place_details
+          }
+          
+          response.json ({
+              status : true,
+              code : 200,
+              data: user,
+              message : "Profile updated successfully.",
+              data : user_details
+          });
         }else { 
-            response.json ({
-                status : false,
-                code : 400,
-                message : "Profile updated failed."
-            });
+          response.json ({
+              status : false,
+              code : 400,
+              message : "Profile updated failed."
+          });
         }
 
     }
