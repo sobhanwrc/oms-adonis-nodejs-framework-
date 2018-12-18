@@ -414,10 +414,13 @@ class ApiController {
         try{
             var user = await auth.getUser();
 
-            var base64Str = request.input('profile_image');
+            var image_mime_type = request.input('mime');
+            var base64Str = 'data:'+ image_mime_type +';base64,'+ request.input('profile_image');
     
             // var base64Str = request.input('profile_i'mage.replace(/^data:image\/jpeg+;base64,/, "");
-            var base64Str1 = base64Str.replace(/ /g, '+');
+
+            var new_link = base64Str.replace(/(\r\n|\r|\n)/g, '');
+            var base64Str1 = new_link.replace(/ /g, '+');
 
             let base64ImageMimeType = base64Str1.split(';base64,');
             var type = base64ImageMimeType[0].split(':image/');
@@ -434,7 +437,7 @@ class ApiController {
 
             if(await user.save()){
                 response.json({
-                  success: true,
+                  status: true,
                   code:200,
                   message: "Profile image uploaded successfully."
                 });
@@ -602,6 +605,8 @@ class ApiController {
         var job_endDate = request.input('job_endDate');
         var job_time = request.input('job_time');
         var description  = request.input('description');
+        var duration = request.input('duration');
+        var job_end_time = request.input('end_time');
         var create_job_id = '';
         if(last_job_details.length > 0) {
           var last_job_id = (last_job_details[0].create_job_id);
@@ -622,7 +627,9 @@ class ApiController {
           job_date : job_date,
           job_endDate : job_endDate,
           job_time : job_time,
+          job_end_time : job_end_time,
           description : description,
+          duration : duration,
           status : 2
         });
 
@@ -702,6 +709,8 @@ class ApiController {
         var job_time = request.input('job_time') ? request.input('job_time') : job_update.job_time;
         var description = request.input('description') ? request.input('description') : job_update.description;
         var job_endDate = request.input('job_endDate') ? request.input('job_endDate') : job_update.job_endDate;
+        var duration = request.input('duration') ? request.input('duration') : job_update.duration;
+        var job_end_time = request.input('end_time') ? request.input('end_time') : job_update.job_end_time;
 
         job_update.job_title = job_title;
         job_update.service_require_at = service_require_at;
@@ -711,6 +720,8 @@ class ApiController {
         job_update.job_time = job_time;
         job_update.description = description;
         job_update.job_endDate = job_endDate;
+        job_update. duration = duration;
+        job_update.job_end_time = job_end_time;
 
         if(await job_update.save()) {
           var updated_job_details = await Job.findById({_id : job_id})

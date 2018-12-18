@@ -18,7 +18,9 @@ const schema = new Schema({
   job_date : { type: Date},
   job_endDate : { type: Date},
   job_time : { type: String},
+  job_end_time : {type: String},
   description : { type: String},
+  duration : {type : String},
   job_amount : {type : Number},
   status : { type: Number},
   created_at : { type: Date, default : Date.now()}
