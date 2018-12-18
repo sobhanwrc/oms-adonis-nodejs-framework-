@@ -93,6 +93,7 @@ class ApiController {
                 middle_name : middle_name,
                 last_name : last_name,
                 profile_image : "http:" + avatar, 
+                profile_image_type : "N",
                 email : email,
                 // phone_number : phone_number,
                 address : address,
@@ -192,8 +193,10 @@ class ApiController {
               already_login_with_social_app.first_name = request.input('full_name');
               already_login_with_social_app.email = request.input('email');
 
-              if(this.extractHostname(request.input('profile_image')) == 'graph.facebook.com') {
-                already_login_with_social_app.profile_image = request.input('profile_image');
+              if(already_login_with_social_app.profile_image_type == 'F') {
+                if(this.extractHostname(request.input('profile_image')) == 'graph.facebook.com') {
+                  already_login_with_social_app.profile_image = request.input('profile_image');
+                }
               }
         
               if(already_login_with_social_app.save()){
@@ -213,6 +216,7 @@ class ApiController {
                 last_name: '',
                 email: request.input('email'),
                 profile_image: request.input('profile_image'),
+                profile_image_type : "F",
                 password: '',
                 reg_type: 2,
                 login_type : 'F',
@@ -250,8 +254,10 @@ class ApiController {
               already_login_with_social_app_google.first_name = request.input('full_name');
               already_login_with_social_app_google.email = request.input('email');
 
-              if(this.extractHostname(request.input('profile_image')) == 'lh4.googleusercontent.com') {
-                already_login_with_social_app_google.profile_image =request.input('profile_image');
+              if(already_login_with_social_app.profile_image_type == 'G') {
+                if(this.extractHostname(request.input('profile_image')) == 'lh4.googleusercontent.com') {
+                  already_login_with_social_app_google.profile_image =request.input('profile_image');
+                }
               }
         
               if(already_login_with_social_app_google.save()){
@@ -270,6 +276,7 @@ class ApiController {
                 first_name: request.input('full_name'),
                 email: request.input('email'),
                 profile_image: request.input('profile_image'),
+                profile_image_type : "G",
                 password: '',
                 reg_type: 2,
                 login_type : 'G',
@@ -434,11 +441,13 @@ class ApiController {
             var full_image_path = request.header('Host') + '/profile_image/' + uploadImage.fileName;
 
             user.profile_image = 'http://'+full_image_path;
+            user.profile_image_type = "N";
 
             if(await user.save()){
                 response.json({
                   status: true,
                   code:200,
+                  image_link : full_image_path,
                   message: "Profile image uploaded successfully."
                 });
             }

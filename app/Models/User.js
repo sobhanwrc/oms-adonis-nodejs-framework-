@@ -22,6 +22,7 @@ class User extends BaseModel {
       middle_name: { type: String, default: ''},
       last_name: { type: String, default: '' },
       profile_image : { type : String,  default: '' },
+      profile_image_type : { type: String, default : ''},
       email: { type: String, unique: true ,  default: '' },
       gender : { type : String,  default: '' },
       phone_number : {type: String,  default: '' },
