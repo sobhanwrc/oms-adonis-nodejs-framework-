@@ -17,6 +17,9 @@
 const Route = use('Route')
 
 Route.get('/', 'LoginController.index')
+Route.get('/user-login', 'LoginController.user_login')
+Route.get('/social-login/facebook', 'LoginController.facebook')
+Route.get('/callback/facebook', 'LoginController.callback')
 Route.group( () => {
     Route.post('/login', 'LoginController.login')
 }).middleware(['guest'])
@@ -38,10 +41,12 @@ Route.get('/api/serviceTypesCategories', 'ApiController.fetchServiceTypeAndCateg
 Route.post('/api/authRefresh', 'ApiController.authRefresh')
 
 Route.get('/api/stripeView', 'ApiController.stripeView')
+Route.post('/api/fetchGeoLocation', 'ApiController.fetchGeoLocation')
 
 Route.group(() => { 
     Route.get('/api/userDetails', 'ApiController.userDetails')
     Route.post('/api/profileEdit', 'ApiController.profileEdit')
+    Route.post('/api/fetchUserPresentAddress', 'ApiController.fetchUserPresentAddress')
     Route.post('/api/uploadProfileImage', 'ApiController.uploadProfileImage')
     Route.post('/api/changePassword', 'ApiController.changePassword')
     Route.post('/api/addJob', 'ApiController.addJob')

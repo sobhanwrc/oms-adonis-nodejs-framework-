@@ -25,8 +25,36 @@ const Rating = use ('App/Models/Rating');
 const {rate,average} = use('average-rating');
 const StripeTransaction = use ('App/Models/StripeTransaction');
 const axios = use('axios');
+//for fetch geo location
+// var NodeGeocoder = use('node-geocoder');
+// var options = {
+//   provider: 'google',
+ 
+//   // Optional depending on the providers
+//   httpAdapter: 'https', // Default
+//   apiKey: '37231128145-3lbk67f5nc1ag8fonehohppt3hqgd7j0.apps.googleusercontent.com', // for Mapquest, OpenCage, Google Premier
+//   formatter: null         // 'gpx', 'string', ...
+// };
+ 
+// var geocoder = NodeGeocoder(options);
+//end
 
 class ApiController {
+
+  // async fetchGeoLocation ({request, response}) {
+  //   var address = request.input('user_address');
+
+  //   geocoder.geocode(address)
+  //   .then(function(res) {
+  //     console.log(res);
+  //   })
+  //   .catch(function(err) {
+  //     console.log(err);
+  //   });
+
+  //   // console.log(result);
+  // }
+
     //common api for all 
 
     async registration ({request, response, auth}) {
@@ -37,6 +65,7 @@ class ApiController {
         // var phone_number = request.input('phone_number') ? request.input('phone_number') : '';
         var password = await Hash.make(request.input('password'));
         var address = request.input('address');
+        var location_id = request.input('location_id');
         var city = 'Singapore';
         var dob = request.input('dob');
         var company_name = request.input('company_name');
@@ -97,6 +126,7 @@ class ApiController {
                 email : email,
                 // phone_number : phone_number,
                 address : address,
+                location_id : location_id,
                 city : city,
                 dob : dob,
                 business : business,
@@ -157,7 +187,7 @@ class ApiController {
               return response.json ({
                   status: false,
                   code: 400,
-                  message : "Your account is deactivated. Because you have recently requested for forgot password. So, check your email or contact with admin."
+                  message : "Your account has been deactivated. Because you have recently requested for forgot password. So, check your email for forgot password link or contact with OMC admin."
               });
           }else { 
               return response.json ({
@@ -313,18 +343,17 @@ class ApiController {
     async userDetails ({ request, response, auth}) {
         try {
           var user_details = await auth.getUser();
-          var user_address = user_details.address;
+          var user_location_id = user_details.location_id;
 
-          if(user_address) {
-            var address_details = await Location.findOne({_id : user_address})
-            var address_place_details = address_details.name;
-
-            user_details['address'] = address_place_details
+          if(user_location_id) {
+            var location_details = await Location.findOne({_id : user_location_id})
+            var location_place_name = location_details.name;
           }
 
           response.json ({
             status : true,
             code:200,
+            user_location_name : location_place_name,
             data: user_details
           });
         } catch (error) {
@@ -359,8 +388,8 @@ class ApiController {
         var experience = request.input('experience') ? request.input('experience') : user.business[0].experience;
         var service_type = request.input('service_type') ? request.input('service_type') : user.business[0].service_type;
         var services = request.input('services') ? request.input('services') : user.business[0].services;
-
         var uen_no = request.input('uen_no') ? request.input('uen_no') : user.uen_no;
+        var location_id = request.input('location_id') ? request.input('location_id') : user.location_id;
 
         user.bank_information = {
             bank_name : bank_name ? bank_name : user.bank_information[0].bank_name,
@@ -374,7 +403,7 @@ class ApiController {
         user.gender = gender;
         user.phone_number = phone_number;
         user.address = address;
-        // user.city = city;
+        user.location_id = location_id;
         user.dob = dob;
         user.uen_no = uen_no;
         user.business = {
@@ -391,13 +420,11 @@ class ApiController {
 
         if(await user.save()) {
           var user_details = await auth.getUser();
-          var user_address = user_details.address;
+          var user_location_id = user_details.location_id;
 
-          if(user_address) {
-            var address_details = await Location.findOne({_id : user_address})
-            var address_place_details = address_details.name;
-
-            user_details['address'] = address_place_details
+          if(user_location_id) {
+            var location_details = await Location.findOne({_id : user_location_id})
+            var location_place_name = location_details.name;
           }
           
           response.json ({
@@ -405,6 +432,7 @@ class ApiController {
               code : 200,
               data: user,
               message : "Profile updated successfully.",
+              user_location_name : location_place_name,
               data : user_details
           });
         }else { 
@@ -415,6 +443,27 @@ class ApiController {
           });
         }
 
+    }
+
+    async fetchUserPresentAddress ({request, response, auth}) {
+      var user = await auth.getUser();
+      var checkPresentAddress = request.input('check_address');
+
+      if(checkPresentAddress == 1) {
+        if(user.address != '') {
+          response.json({
+            status : true,
+            code : 200,
+            data : user.address
+          });
+        }else { 
+          response.json({
+            status : true,
+            code : 200,
+            message : "No address found."
+          });
+        } 
+      }
     }
 
     async uploadProfileImage ({ request, response, auth}) {
@@ -626,6 +675,8 @@ class ApiController {
           create_job_id = "JOB-" + 1;
         }
 
+        var user_present_address_check = request.input('check_address');
+
         var add_job = new Job({
           create_job_id : create_job_id,
           user_id : user_id,
@@ -643,6 +694,10 @@ class ApiController {
         });
 
         if(await add_job.save()) {
+          if(user_present_address_check == undefined) {
+            user.user_address2 = service_require_at
+            await user.save();
+          }
           response.json({
             status : true,
             code : 200,
@@ -720,6 +775,7 @@ class ApiController {
         var job_endDate = request.input('job_endDate') ? request.input('job_endDate') : job_update.job_endDate;
         var duration = request.input('duration') ? request.input('duration') : job_update.duration;
         var job_end_time = request.input('end_time') ? request.input('end_time') : job_update.job_end_time;
+        var check_address = request.input('check_address');
 
         job_update.job_title = job_title;
         job_update.service_require_at = service_require_at;
@@ -736,6 +792,11 @@ class ApiController {
           var updated_job_details = await Job.findById({_id : job_id})
           .populate('job_industry')
           .populate('job_category');
+
+          if (check_address == undefined) {
+            user.user_address2 = service_require_at
+            await user.save();
+          }
 
           response.json({
             status : true,
