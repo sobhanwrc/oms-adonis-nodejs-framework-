@@ -234,20 +234,28 @@ class ApiController {
                 var generate_token = await auth.generate(user);
 
                 return response.json({
-                    success: true, 
+                    status : true, 
                     code: 200, 
+                    password : user.password,
                     token: 'Bearer ' + generate_token.token,
                     message: 'Login successfully.'
                 });
               }
             }else{
+              var secretKey = await randomstring.generate({
+                  length: 7,
+                  charset: 'alphanumeric'
+              });
+
+              var social_login_pw = await Hash.make(secretKey);
+
               const newUser = new User({
                 first_name: request.input('full_name'),
                 last_name: '',
                 email: request.input('email'),
                 profile_image: request.input('profile_image'),
                 profile_image_type : "F",
-                password: '',
+                password: social_login_pw,
                 reg_type: 2,
                 login_type : 'F',
                 status: 1
@@ -260,9 +268,10 @@ class ApiController {
 
                 if(send_registration_email_from_social_login == true) {
                     return response.json({
-                        success: true, 
+                        status: true, 
                         code: 200, 
                         token: 'Bearer ' + generate_token.token,
+                        password : social_login_pw,
                         message: 'Registration completed successfully with Facebook.'
                     });
                 }
@@ -279,13 +288,15 @@ class ApiController {
         else if (login_type == 'G') {
           try{
             var already_login_with_social_app_google = await User.findOne({email,login_type: 'G'});
+
+            console.log(already_login_with_social_app_google,'already_login_with_social_app_google');
         
             if(already_login_with_social_app_google) {
               already_login_with_social_app_google.first_name = request.input('full_name');
               already_login_with_social_app_google.email = request.input('email');
 
-              if(already_login_with_social_app.profile_image_type == 'G') {
-                if(this.extractHostname(request.input('profile_image')) == 'lh4.googleusercontent.com') {
+              if(already_login_with_social_app_google.profile_image_type == 'G') {
+                if(this.extractHostname(request.input('profile_image')) == 'lh5.googleusercontent.com') {
                   already_login_with_social_app_google.profile_image =request.input('profile_image');
                 }
               }
@@ -295,19 +306,27 @@ class ApiController {
                 var generate_token = await auth.generate(user);
 
                 return response.json({
-                    success: true, 
+                    status : true, 
                     code: 200, 
                     token: 'Bearer ' + generate_token.token,
+                    password : user.password,
                     message: 'Login successfully with Google.'
                 });
               }
             }else{
+              var secretKey = await randomstring.generate({
+                  length: 7,
+                  charset: 'alphanumeric'
+              });
+
+              var social_login_pw = await Hash.make(secretKey);
+
               const newUser = new User({
                 first_name: request.input('full_name'),
                 email: request.input('email'),
                 profile_image: request.input('profile_image'),
                 profile_image_type : "G",
-                password: '',
+                password: social_login_pw,
                 reg_type: 2,
                 login_type : 'G',
                 status: 1
@@ -320,16 +339,17 @@ class ApiController {
 
                 if(send_registration_email_from_social_login == true) {
                     return response.json({
-                        success: true, 
+                        status : true, 
                         code: 200, 
                         token: 'Bearer ' + generate_token.token,
+                        password : social_login_pw,
                         message: 'Registration completed successfully with Google.'
                     });
                 }
               }
             }
           }catch(e) {
-            res.json({
+            response.json({
               status : false,
               code : 300,
               message : "Email already exist."
