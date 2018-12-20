@@ -24,6 +24,7 @@ const schema = new Schema({
   job_amount : {type : Number},
   job_allocated_to_vendor : {type : Number},
   vendor_id : { type : String, default :''},
+  transaction_id : {type : String, default :''},
   status : { type: Number},
   created_at : { type: Date, default : Date.now()}
 });

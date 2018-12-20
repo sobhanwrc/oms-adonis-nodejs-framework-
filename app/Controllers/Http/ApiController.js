@@ -235,8 +235,7 @@ class ApiController {
 
                 return response.json({
                     status : true, 
-                    code: 200, 
-                    password : user.password,
+                    code: 200,
                     token: 'Bearer ' + generate_token.token,
                     message: 'Login successfully.'
                 });
@@ -255,7 +254,7 @@ class ApiController {
                 email: request.input('email'),
                 profile_image: request.input('profile_image'),
                 profile_image_type : "F",
-                password: social_login_pw,
+                password: secretKey,
                 reg_type: 2,
                 login_type : 'F',
                 status: 1
@@ -288,8 +287,6 @@ class ApiController {
         else if (login_type == 'G') {
           try{
             var already_login_with_social_app_google = await User.findOne({email,login_type: 'G'});
-
-            console.log(already_login_with_social_app_google,'already_login_with_social_app_google');
         
             if(already_login_with_social_app_google) {
               already_login_with_social_app_google.first_name = request.input('full_name');
@@ -309,7 +306,6 @@ class ApiController {
                     status : true, 
                     code: 200, 
                     token: 'Bearer ' + generate_token.token,
-                    password : user.password,
                     message: 'Login successfully with Google.'
                 });
               }
@@ -342,7 +338,7 @@ class ApiController {
                         status : true, 
                         code: 200, 
                         token: 'Bearer ' + generate_token.token,
-                        password : social_login_pw,
+                        password : secretKey,
                         message: 'Registration completed successfully with Google.'
                     });
                 }
@@ -714,8 +710,9 @@ class ApiController {
           status : 2, // 1= active, 2 = inactive, 3 = complete
           job_allocated_to_vendor : job_allocated_to_vendor
         });
+        var jod_id = await add_job.save();
 
-        if(await add_job.save()) {
+        if(jod_id != '') {
           if(user_present_address_check == undefined) {
             user.user_address2 = service_require_at
             await user.save();
@@ -723,6 +720,7 @@ class ApiController {
           response.json({
             status : true,
             code : 200,
+            data : jod_id,
             message : "Job added successfully."
           });
         }
@@ -1080,17 +1078,15 @@ class ApiController {
 
     async authRefresh ({request, response, auth}) {
       // validate the user credentials and generate a JWT token
-      const token = await auth.attempt(
-          request.input('email'),
-          request.input('password')
-      ) 
-      if(token) {
-        response.json ({
-          status : true,
-          code : 200,
-          token : "Bearer " + token.token
-        });
-      }
+      var email = request.input('email');
+      const user = await User.findOne({email : email});
+      var generate_token = await auth.generate(user);
+
+      return response.json({
+          status : true, 
+          code: 200, 
+          token: 'Bearer ' + generate_token.token
+      });
     }
 
     async changeAddress({request, response, auth}) {
@@ -1288,9 +1284,15 @@ class ApiController {
 
     //job amount payment and create new omc user to stripe
     async stripePaymentOfUser ({request, response, auth}) {
+      console.log(request.body);
       const token = request.body.stripeToken;
       var user = await auth.getUser();
-      var customer_id = user.stripe_details[0].customer_id;
+
+      if (user.stripe_details == '') {
+        var customer_id = '';
+      }else{ 
+        var customer_id = user.stripe_details[0].customer_id;
+      }
       
       if(customer_id != '') {
         const charge = await stripe.charges.create({
@@ -1361,18 +1363,19 @@ class ApiController {
                 transaction_id : charge.id,
                 type : 'User_pay_to_OMC'
               });
-              await add_charges_details.save();
+              if(await add_charges_details.save()) {
+                var user_job = await Job.findOne({_id : request.input('job_id')});
+                user_job.job_amount = request.input('job_amount');
+                user_job.status = 1;
+                user_job.transaction_id = charge.id;
+                await user_job.save();
 
-              var user_job = await Job.find({_id : request.input('job_id')});
-              user_job.job_amount = request.input('job_amount');
-              user_job.status = 1;
-              await user_job.save();
-
-              response.json({
-                status : true,
-                code : 200,
-                message : "Payment successfully."
-              });
+                response.json({
+                  status : true,
+                  code : 200,
+                  message : "Payment successfully."
+                });
+              }
             }else { 
               response.json({
                 status : false,
