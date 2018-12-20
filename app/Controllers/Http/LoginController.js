@@ -43,7 +43,7 @@ class LoginController {
         await ally.driver('facebook').redirect()
     }
 
-    async callback ({ ally, auth }) {
+    async callback_fb ({ ally, auth }) {
         try {
           const fbUser = await ally.driver('facebook').getUser()
           console.log(fbUser);
@@ -54,6 +54,37 @@ class LoginController {
             email: fbUser.getEmail(),
             token: fbUser.getAccessToken(),
             login_source: 'facebook'
+          }
+    
+          // search for existing user
+          const whereClause = {
+            email: fbUser.getEmail()
+          }
+    
+          const user = await User.findOrCreate(whereClause, userDetails)
+          await auth.login(user)
+    
+          return 'Logged in'
+        } catch (error) {
+          return 'Unable to authenticate. Try again later'
+        }
+    }
+
+    async google ({ally}) {
+        await ally.driver('google').redirect()
+    }
+
+    async callback_google ({ ally, auth }) {
+        try {
+          const google_User = await ally.driver('google').getUser()
+          console.log(google_User);
+          return false;
+    
+          // user details to be saved
+          const userDetails = {
+            email: fbUser.getEmail(),
+            token: fbUser.getAccessToken(),
+            login_source: 'google'
           }
     
           // search for existing user

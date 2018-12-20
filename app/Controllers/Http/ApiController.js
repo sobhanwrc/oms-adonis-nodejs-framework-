@@ -665,6 +665,7 @@ class ApiController {
         var description  = request.input('description');
         var duration = request.input('duration');
         var job_end_time = request.input('end_time');
+        var job_allocated_to_vendor = 2; // 1 = allocated, 2 = not allocated
         var create_job_id = '';
         if(last_job_details.length > 0) {
           var last_job_id = (last_job_details[0].create_job_id);
@@ -690,7 +691,8 @@ class ApiController {
           job_end_time : job_end_time,
           description : description,
           duration : duration,
-          status : 2
+          status : 2, // 1= active, 2 = inactive, 3 = complete
+          job_allocated_to_vendor : job_allocated_to_vendor
         });
 
         if(await add_job.save()) {
