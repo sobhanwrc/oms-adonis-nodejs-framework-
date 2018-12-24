@@ -1227,6 +1227,28 @@ class ApiController {
       }
     }
 
+    async vendorProfileFromUser ({request, response, auth}) {
+      var user = await auth.getUser();
+
+      var vendor_id = request.input('vendor_id');
+
+      var vendor_details = await User.findOne({_id : vendor_id, reg_type : 3},{
+        first_name : 1,
+        middle_name : 1,
+        last_name : 1,
+        profile_image : 1,
+        email : 1,
+        phone_number : 1,
+        business : 1
+      })
+
+      response.json({
+        status : true,
+        code : 200,
+        data : vendor_details
+      });
+    }
+
     //stripe functions
     async stripeTopUpCredit ({request, response, auth}) {
       try {
