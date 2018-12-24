@@ -1284,7 +1284,6 @@ class ApiController {
 
     //job amount payment and create new omc user to stripe
     async stripePaymentOfUser ({request, response, auth}) {
-      console.log(request.body);
       const token = request.body.stripeToken;
       var user = await auth.getUser();
 
@@ -1351,7 +1350,7 @@ class ApiController {
             var customer_id = user.stripe_details[0].customer_id;
 
             const charge = await stripe.charges.create({
-              amount: request.input('job_amount'),
+              amount: request.input('job_amount') * 100,
               currency: 'sgd',
               description: request.input('description'),
               customer : customer_id

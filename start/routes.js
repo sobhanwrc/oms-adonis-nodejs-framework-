@@ -44,7 +44,6 @@ Route.post('/api/authRefresh', 'ApiController.authRefresh')
 
 Route.get('/api/stripeView', 'ApiController.stripeView')
 // Route.post('/api/fetchGeoLocation', 'ApiController.fetchGeoLocation')
-Route.post('/api/stripePaymentOfUser', 'ApiController.stripePaymentOfUser')
 
 Route.group(() => { 
     Route.get('/api/userDetails', 'ApiController.userDetails')
