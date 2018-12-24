@@ -1232,7 +1232,7 @@ class ApiController {
 
       var vendor_id = request.input('vendor_id');
 
-      var vendor_details = await User.findOne({_id : vendor_id, reg_type : 3},{
+      var vendor_details = await User.find({'_id' : vendor_id, 'reg_type' : 3},{
         first_name : 1,
         middle_name : 1,
         last_name : 1,
@@ -1240,12 +1240,18 @@ class ApiController {
         email : 1,
         phone_number : 1,
         business : 1
-      })
+      });
+
+      var all_servicecategory = await ServiceCategory.find({_id : vendor_details[0].business[0].services},{status: 0, created_at: 0, updated_at: 0, __v:0 });
+
+      var all_servicetype = await ServiceType.find({_id : vendor_details[0].business[0].service_type},{status: 0, created_at: 0, updated_at: 0, __v:0 });
 
       response.json({
         status : true,
         code : 200,
-        data : vendor_details
+        data : vendor_details,
+        service_type : all_servicetype,
+        services : all_servicecategory
       });
     }
 
