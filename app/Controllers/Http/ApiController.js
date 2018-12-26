@@ -1312,6 +1312,7 @@ class ApiController {
 
     //job amount payment and create new omc user to stripe
     async stripePaymentOfUser ({request, response, auth}) {
+      console.log(request.body);
       const token = request.body.stripeToken;
       var user = await auth.getUser();
 
@@ -1323,31 +1324,31 @@ class ApiController {
       
       if(customer_id != '') {
         const charge = await stripe.charges.create({
-          amount: request.input('job_amount'),
+          amount: request.input('job_amount') * 100,
           currency: 'sgd',
           description: request.input('description'),
           customer : customer_id
         });
 
         if(charge) {
-          var user_job = await Job.find({_id : request.input('job_id')});
-          user_job.job_amount = request.input('job_amount');
-          user_job.status = 1;
-          await user_job.save();
-
           var add_charges_details = new StripeTransaction ({
             user_id : user._id,
             transaction_id : charge.id,
             type : 'User_pay_to_OMC'
           });
+          if(await add_charges_details.save()) {
+            var user_job = await Job.findOne({_id : request.input('job_id')});
+            user_job.job_amount = request.input('job_amount');
+            user_job.status = 1;
+            user_job.transaction_id = charge.id;
+            await user_job.save();
 
-          await add_charges_details.save();
-
-          response.json({
-            status : true,
-            code : 200,
-            message : "Payment successfully."
-          });
+            response.json({
+              status : true,
+              code : 200,
+              message : "Payment successfully."
+            });
+          }
         }else { 
           response.json({
             status : false,
