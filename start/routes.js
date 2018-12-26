@@ -44,7 +44,6 @@ Route.post('/api/authRefresh', 'ApiController.authRefresh')
 
 Route.get('/api/stripeView', 'ApiController.stripeView')
 // Route.post('/api/fetchGeoLocation', 'ApiController.fetchGeoLocation')
-Route.post('/api/stripeCreateConnectAccount', 'ApiController.stripeCreateConnectAccount')
 
 Route.group(() => { 
     Route.get('/api/userDetails', 'ApiController.userDetails')
@@ -71,8 +70,9 @@ Route.group(() => {
     Route.post('/api/stripeAddCard', 'ApiController.stripeAddCard')
     Route.post('/api/stripeChangeDefaultCard', 'ApiController.stripeChangeDefaultCard')
     Route.get('/api/stripeFetchCustomerAllCard', 'ApiController.stripeFetchCustomerAllCard')
-    // Route.post('/api/stripeCreateConnectAccount', 'ApiController.stripeCreateConnectAccount')
+    Route.post('/api/stripeCreateConnectAccount', 'ApiController.stripeCreateConnectAccount')
     Route.post('/api/stripeFundTransferToVendor', 'ApiController.stripeFundTransferToVendor')
+    Route.post('/api/stripePaymentWithSavingCard', 'ApiController.stripePaymentWithSavingCard')
     //end
     
     Route.get('/api/logout', 'ApiController.userLogout')

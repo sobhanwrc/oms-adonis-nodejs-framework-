@@ -1242,9 +1242,9 @@ class ApiController {
         business : 1
       });
 
-      var all_servicecategory = await ServiceCategory.find({_id : vendor_details[0].business[0].services},{status: 0, created_at: 0, updated_at: 0, __v:0 });
+      var all_servicecategory = await ServiceType.find({_id : vendor_details[0].business[0].services},{status: 0, created_at: 0, updated_at: 0, __v:0 });
 
-      var all_servicetype = await ServiceType.find({_id : vendor_details[0].business[0].service_type},{status: 0, created_at: 0, updated_at: 0, __v:0 });
+      var all_servicetype = await ServiceCategory.find({_id : vendor_details[0].business[0].service_type},{status: 0, created_at: 0, updated_at: 0, __v:0 });
 
       response.json({
         status : true,
@@ -1312,7 +1312,6 @@ class ApiController {
 
     //job amount payment and create new omc user to stripe
     async stripePaymentOfUser ({request, response, auth}) {
-      console.log(request.body);
       const token = request.body.stripeToken;
       var user = await auth.getUser();
 
@@ -1444,22 +1443,31 @@ class ApiController {
     //fetch customer all save cards list
     async stripeFetchCustomerAllCard ({request, response, auth}) {
       var user = await auth.getUser();
-      var customer_id = user.stripe_details[0].customer_id;
 
-      var list_all_cards = await stripe.customers.listCards (customer_id);
-
-      if(list_all_cards.data.length > 0) {
-        response.json({
-          status : true,
-          code : 200,
-          data : list_all_cards.data
-        });
-      }else { 
+      if (user.stripe_details == '') {
         response.json({
           status : false,
           code : 400,
-          message : "No cards found as off now."
+          message : "You are not a stripe customer."
         });
+      }else{ 
+        var customer_id = user.stripe_details[0].customer_id;
+
+        var list_all_cards = await stripe.customers.listCards (customer_id);
+
+        if(list_all_cards.data.length > 0) {
+          response.json({
+            status : true,
+            code : 200,
+            data : list_all_cards.data
+          });
+        }else { 
+          response.json({
+            status : false,
+            code : 400,
+            message : "No cards found as off now."
+          });
+        }
       }
     }
 
@@ -1588,6 +1596,55 @@ class ApiController {
         });
       }
       
+    }
+
+    //create payment with saving card
+    async stripePaymentWithSavingCard ({request, response, auth}) {
+      var customer_card_id = request.input('card_id');
+      var user = await auth.getUser();
+
+      if(customer_card_id) {
+        var charge = await stripe.charges.create({
+          amount: request.input('job_amount') * 100,
+          currency: "sgd",
+          source: customer_card_id, // obtained with Stripe.js
+          customer : user.stripe_details[0].customer_id,
+          description: request.input('description')
+        });
+
+        if(charge) {
+          var add_charges_details = new StripeTransaction ({
+            user_id : user._id,
+            transaction_id : charge.id,
+            type : 'User_pay_to_OMC'
+          });
+          if(await add_charges_details.save()) {
+            var user_job = await Job.findOne({_id : request.input('job_id')});
+            user_job.job_amount = request.input('job_amount');
+            user_job.status = 1;
+            user_job.transaction_id = charge.id;
+            await user_job.save();
+
+            response.json({
+              status : true,
+              code : 200,
+              message : "Payment successfully."
+            });
+          }
+        }else { 
+          response.json({
+            status : false,
+            code : 400,
+            message : "Payment declined."
+          });
+        }
+      }else { 
+        response.json({
+          status : false,
+          code : 400,
+          message : "Invalid card."
+        });
+      }
     }
     //end
 
