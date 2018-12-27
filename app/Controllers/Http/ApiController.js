@@ -1315,6 +1315,8 @@ class ApiController {
       const token = request.body.stripeToken;
       var user = await auth.getUser();
 
+      const save_card = request.input('save_card'); // 1 = 'save card on stripe', 0 ='delete save card from stripe'
+
       if (user.stripe_details == '') {
         var customer_id = '';
       }else{ 
@@ -1322,38 +1324,57 @@ class ApiController {
       }
       
       if(customer_id != '') {
-        const charge = await stripe.charges.create({
-          amount: request.input('job_amount') * 100,
-          currency: 'sgd',
-          description: request.input('description'),
-          customer : customer_id
+        //stripe add card
+        var addCard = await stripe.customers.createSource(customer_id,{
+          source: token
         });
 
-        if(charge) {
-          var add_charges_details = new StripeTransaction ({
-            user_id : user._id,
-            transaction_id : charge.id,
-            type : 'User_pay_to_OMC'
+        if (addCard) {
+          //stripe update customer default card
+          var save = await stripe.customers.update(customer_id, {
+            default_source : addCard.id
           });
-          if(await add_charges_details.save()) {
-            var user_job = await Job.findOne({_id : request.input('job_id')});
-            user_job.job_amount = request.input('job_amount');
-            user_job.status = 1;
-            user_job.transaction_id = charge.id;
-            await user_job.save();
-
-            response.json({
-              status : true,
-              code : 200,
-              message : "Payment successfully."
+          if(save) {
+            //stripe create charge
+            const charge = await stripe.charges.create({
+              amount: request.input('job_amount') * 100,
+              currency: 'sgd',
+              description: request.input('description'),
+              customer : customer_id
             });
+    
+            if(charge) {
+              var add_charges_details = new StripeTransaction ({
+                user_id : user._id,
+                transaction_id : charge.id,
+                type : 'User_pay_to_OMC'
+              });
+              if(await add_charges_details.save()) {
+                var user_job = await Job.findOne({_id : request.input('job_id')});
+                user_job.job_amount = request.input('job_amount');
+                user_job.status = 1;
+                user_job.transaction_id = charge.id;
+
+                if(await user_job.save()) {
+                  if(save_card == 0) {
+                    //stripe delete default card
+                    var delete_card = await stripe.customers.deleteCard(customer_id,addCard.id);
+                  }
+                  response.json({
+                    status : true,
+                    code : 200,
+                    message : "Payment successfully."
+                  });
+                }
+              }
+            }else { 
+              response.json({
+                status : false,
+                code : 400,
+                message : "Payment declined."
+              });
+            }
           }
-        }else { 
-          response.json({
-            status : false,
-            code : 400,
-            message : "Payment declined."
-          });
         }
       }else { 
         // Create a Customer:
@@ -1416,29 +1437,29 @@ class ApiController {
     }
 
     //add card
-    async stripeAddCard ({request, response, auth}) {
-      const token = request.body.stripeToken;
-      var user = await auth.getUser();
-      var customer_id = user.stripe_details[0].customer_id;
+    // async stripeAddCard ({request, response, auth}) {
+    //   const token = request.body.stripeToken;
+    //   var user = await auth.getUser();
+    //   var customer_id = user.stripe_details[0].customer_id;
       
-      var addCard = await stripe.customers.createSource(customer_id,{
-        source: token 
-      });
+    //   var addCard = await stripe.customers.createSource(customer_id,{
+    //     source: token 
+    //   });
       
-      if (addCard) {
-        response.json({
-          status : true,
-          code : 200,
-          message : "Card added successfully."
-        });
-      } else { 
-        response.json({
-          status : false,
-          code : 400,
-          message : "Card added failed."
-        });
-      }
-    }
+    //   if (addCard) {
+    //     response.json({
+    //       status : true,
+    //       code : 200,
+    //       message : "Card added successfully."
+    //     });
+    //   } else { 
+    //     response.json({
+    //       status : false,
+    //       code : 400,
+    //       message : "Card added failed."
+    //     });
+    //   }
+    // }
 
     //fetch customer all save cards list
     async stripeFetchCustomerAllCard ({request, response, auth}) {
@@ -1472,30 +1493,30 @@ class ApiController {
     }
 
     //change default card
-    async stripeChangeDefaultCard ({request, response, auth}) {
-      var user = await auth.getUser();
-      var customer_id = user.stripe_details[0].customer_id;
+    // async stripeChangeDefaultCard ({request, response, auth}) {
+    //   var user = await auth.getUser();
+    //   var customer_id = user.stripe_details[0].customer_id;
       
-      var set_default_card_id = request.input('stripe_card_id');
+    //   var set_default_card_id = request.input('stripe_card_id');
 
-      var save = await stripe.customers.update(customer_id, {
-        default_source : set_default_card_id
-      });
-      console.log(save);
-      if(save) {
-        response.json({
-          status : true,
-          code : 200,
-          message : "Default card change successfully."
-        });
-      }else { 
-        response.json({
-          status : false,
-          code : 400,
-          message : "Default card change failed."
-        });
-      }
-    }
+    //   var save = await stripe.customers.update(customer_id, {
+    //     default_source : set_default_card_id
+    //   });
+
+    //   if(save) {
+    //     response.json({
+    //       status : true,
+    //       code : 200,
+    //       message : "Default card change successfully."
+    //     });
+    //   }else { 
+    //     response.json({
+    //       status : false,
+    //       code : 400,
+    //       message : "Default card change failed."
+    //     });
+    //   }
+    // }
 
     //associate vendor bank account with stripe connect
     async stripeCreateConnectAccount ({request, response, auth}) {
@@ -1602,6 +1623,7 @@ class ApiController {
     async stripePaymentWithSavingCard ({request, response, auth}) {
       var customer_card_id = request.input('card_id');
       var user = await auth.getUser();
+      var cvc = request.input('cvc');
 
       if(customer_card_id) {
         var charge = await stripe.charges.create({
@@ -1609,6 +1631,7 @@ class ApiController {
           currency: "sgd",
           source: customer_card_id, // obtained with Stripe.js
           customer : user.stripe_details[0].customer_id,
+          // cvc_check : cvc,
           description: request.input('description')
         });
 
