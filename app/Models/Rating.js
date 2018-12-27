@@ -8,7 +8,8 @@ var Rating = new Schema ({
         {
             user_id : {type: Schema.Types.ObjectId, ref: 'User'},
             number_of_rating : {type : Number},
-            comment : { type : String}
+            comment : { type : String},
+            job_id : {type: Schema.Types.ObjectId, ref: 'Job'}
         }
     ]
 });

@@ -677,6 +677,7 @@ class ApiController {
         var job_category = request.input('job_category');
         var job_date = request.input('job_date');
         var job_endDate = request.input('job_endDate');
+        var job_amount = request.input('job_amount');
         var job_time = request.input('job_time');
         var description  = request.input('description');
         var duration = request.input('duration');
@@ -699,6 +700,7 @@ class ApiController {
           user_id : user_id,
           job_title : job_title,
           service_require_at : service_require_at,
+          job_amount : job_amount,
           job_industry : job_industry,
           job_category : job_category,
           job_date : job_date,
@@ -738,6 +740,8 @@ class ApiController {
       var all_jobs_list = await Job.find({user_id: user._id})
       .populate('job_industry')
       .populate('job_category');
+
+      console.log(all_jobs_list);
 
       if(all_jobs_list.length > 0) {
         response.json({
@@ -795,6 +799,7 @@ class ApiController {
         var job_endDate = request.input('job_endDate') ? request.input('job_endDate') : job_update.job_endDate;
         var duration = request.input('duration') ? request.input('duration') : job_update.duration;
         var job_end_time = request.input('end_time') ? request.input('end_time') : job_update.job_end_time;
+        var job_amount = request.input('job_amount') ? request.input('job_amount') : job_update.job_amount;
         var check_address = request.input('check_address');
 
         job_update.job_title = job_title;
@@ -807,6 +812,7 @@ class ApiController {
         job_update.job_endDate = job_endDate;
         job_update. duration = duration;
         job_update.job_end_time = job_end_time;
+        job_update.job_amount = job_amount;
 
         if(await job_update.save()) {
           var updated_job_details = await Job.findById({_id : job_id})
@@ -1113,6 +1119,7 @@ class ApiController {
       var vendor_id = request.input('vendor_id');
       var rating_number = request.input('rating_number');
       var comment = request.input('comment');
+      var job_id = request.input('job_id');
 
       var fetch_rating_details = await Rating.findOne({vendor_id: vendor_id});
 
@@ -1120,37 +1127,40 @@ class ApiController {
           const rating_details_if_exist = _.filter(fetch_rating_details.rating_by_user, rate => rate.user_id == user.id);
 
           if(rating_details_if_exist.length > 0) {
-            rating_details_if_exist[0].number_of_rating = rating_number;
-            rating_details_if_exist[0].comment = comment;
-
-            if(fetch_rating_details.save()) {
-              response.json({
-                status : true,
-                code : 200,
-                message : "Rating updated successfully."
-              });
-            }
+            response.json({
+              status : false,
+              code : 400,
+              message : "Your review has been complete."
+            });
           }else{
             var all_rating = {
               user_id : user._id,
               number_of_rating : rating_number,
-              comment : comment
+              comment : comment,
+              job_id : job_id
             };
             fetch_rating_details.rating_by_user.unshift(all_rating);
+            var rating_details = await fetch_rating_details.save();
 
-            fetch_rating_details.save();
-            
-            response.json({
-              status : true,
-              code : 200,
-              message : "Rating addeed successfully."
-            });
+            if(rating_details) {
+              var user_job = await Job.find({_id : job_id});
+              user_job.review = 1;
+              user_job.rating_details = rating._id;
+              await user_job.save();
+
+              response.json({
+                status : true,
+                code : 200,
+                message : "Rating addeed successfully."
+              });
+            }
           }
       }else{
         var all_rating = {
           user_id : user._id,
           number_of_rating : rating_number,
-          comment : comment
+          comment : comment,
+          job_id : job_id
         };
 
         var add = new Rating ({
@@ -1158,7 +1168,14 @@ class ApiController {
           rating_by_user : all_rating
         });
 
-        if(add.save()){
+        var add_rating = await add.save();
+
+        if(add_rating){
+          var user_job = await Job.findOne({_id : job_id});
+          user_job.review = 1;
+          user_job.rating_details = rating_number;
+          await user_job.save();
+
           response.json({
             status : true,
             code : 200,

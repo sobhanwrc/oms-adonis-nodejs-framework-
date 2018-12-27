@@ -26,6 +26,8 @@ const schema = new Schema({
   vendor_id : { type : String, default :''},
   transaction_id : {type : String, default :''},
   status : { type: Number},
+  review : { type : Number, default : 0}, // 1 = rating done, 0= rating incomplete
+  rating_details : { type : Number},
   created_at : { type: Date, default : Date.now()}
 });
 
