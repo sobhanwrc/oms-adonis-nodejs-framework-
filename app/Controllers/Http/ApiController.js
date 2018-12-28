@@ -474,8 +474,8 @@ class ApiController {
           });
         }else { 
           response.json({
-            status : true,
-            code : 200,
+            status : false,
+            code : 400,
             message : "No address found."
           });
         } 
@@ -815,9 +815,7 @@ class ApiController {
         job_update.job_amount = job_amount;
 
         if(await job_update.save()) {
-          var updated_job_details = await Job.findById({_id : job_id})
-          .populate('job_industry')
-          .populate('job_category');
+          var updated_job_details = await Job.findById({_id : job_id, user_id : user._id});
 
           if (check_address == undefined) {
             user.user_address2 = service_require_at
@@ -1272,6 +1270,59 @@ class ApiController {
       });
     }
 
+    async fetchAllLatestDetails ({request, response, auth}) {
+      var user = await auth.getUser();
+      if(user.reg_type == 2) {
+        var jobs = await Job.find({'user_id' : user._id}).sort({created_at : -1, _id : -1}).limit(5)
+        .populate('job_industry')
+        .populate('job_category');
+
+        if(jobs.length > 0) {
+          var latest_fiveJobs = jobs;
+        }else { 
+          var latest_fiveJobs = "No latest jobs found."
+        }
+
+        var transactions = await StripeTransaction.find({'user_id' : user._id}).sort({created_at : -1, _id : -1}).limit(5);
+
+        if(transactions.length > 0) {
+          var latest_fiveTransactions = transactions;
+        }else {
+          var latest_fiveTransactions = "No latest transactions found."
+        }
+
+        response.json({
+          status : true,
+          code : 200,
+          latest_fiveJobs : latest_fiveJobs,
+          latest_fiveTransactions : latest_fiveTransactions
+        });
+      }else {
+        var services = await Service.find({'user_id' : user._id}).sort({created_at : -1, _id : -1}).limit(5);
+
+        if(services.length > 0) {
+          var latest_fiveServices = services;
+        }else { 
+          var latest_fiveServices = "NO latest services found."
+        }
+
+        var complete_job = await Job.find({'vendor_id' : user._id, status : 3}).sort({created_at : -1, _id : -1}).limit(5);
+        
+        if(complete_job.length > 0) {
+          var latest_fiveCompleteJObs = complete_job;
+        }else {
+          var latest_fiveCompleteJObs = "No complete jobs found."
+        }
+
+        response.json({
+          status : true,
+          code : 200,
+          latest_fiveServices : latest_fiveServices,
+          latest_fiveCompleteJObs : latest_fiveCompleteJObs
+        });
+      }
+    }
+
     //stripe functions
     async stripeTopUpCredit ({request, response, auth}) {
       try {
@@ -1371,17 +1422,23 @@ class ApiController {
                 user_job.job_amount = request.input('job_amount');
                 user_job.status = 1;
                 user_job.transaction_id = charge.id;
+                
+                var save_job = await user_job.save();
 
-                if(await user_job.save()) {
+                if(save_job) {
                   if(save_card == 0) {
                     //stripe delete default card
                     var delete_card = await stripe.customers.deleteCard(customer_id,addCard.id);
                   }
-                  response.json({
-                    status : true,
-                    code : 200,
-                    message : "Payment successfully."
-                  });
+
+                  var send_payment_invoice = this.paymentInvoiceEmail(user, charge, save_job);
+                  if(send_payment_invoice == true) {
+                    response.json({
+                      status : true,
+                      code : 200,
+                      message : "Payment successfully."
+                    });
+                  }
                 }
               }
             }else { 
@@ -1433,13 +1490,24 @@ class ApiController {
                 user_job.job_amount = request.input('job_amount');
                 user_job.status = 1;
                 user_job.transaction_id = charge.id;
-                await user_job.save();
 
-                response.json({
-                  status : true,
-                  code : 200,
-                  message : "Payment successfully."
-                });
+                var save_job = await user_job.save();
+
+                if(save_job) {
+                  if(save_card == 0) {
+                    //stripe delete default card
+                    var delete_card = await stripe.customers.deleteCard(customer_id,charge.source.id);
+                  }
+                  
+                  var send_payment_invoice = this.paymentInvoiceEmail(user, charge, save_job);
+                  if(send_payment_invoice == true) {
+                    response.json({
+                      status : true,
+                      code : 200,
+                      message : "Payment successfully."
+                    });
+                  }
+                }
               }
             }else { 
               response.json({
@@ -1510,30 +1578,30 @@ class ApiController {
     }
 
     //change default card
-    // async stripeChangeDefaultCard ({request, response, auth}) {
-    //   var user = await auth.getUser();
-    //   var customer_id = user.stripe_details[0].customer_id;
+    async stripeChangeDefaultCard ({request, response, auth}) {
+      var user = await auth.getUser();
+      var customer_id = user.stripe_details[0].customer_id;
       
-    //   var set_default_card_id = request.input('stripe_card_id');
+      var set_default_card_id = request.input('stripe_card_id');
 
-    //   var save = await stripe.customers.update(customer_id, {
-    //     default_source : set_default_card_id
-    //   });
+      var save = await stripe.customers.update(customer_id, {
+        default_source : set_default_card_id
+      });
 
-    //   if(save) {
-    //     response.json({
-    //       status : true,
-    //       code : 200,
-    //       message : "Default card change successfully."
-    //     });
-    //   }else { 
-    //     response.json({
-    //       status : false,
-    //       code : 400,
-    //       message : "Default card change failed."
-    //     });
-    //   }
-    // }
+      if(save) {
+        response.json({
+          status : true,
+          code : 200,
+          message : "Default card change successfully."
+        });
+      }else { 
+        response.json({
+          status : false,
+          code : 400,
+          message : "Default card change failed."
+        });
+      }
+    }
 
     //associate vendor bank account with stripe connect
     async stripeCreateConnectAccount ({request, response, auth}) {
@@ -2445,6 +2513,124 @@ class ApiController {
                 if(sendEmail.request(emailData)) {
                   return true;       
                 }
+    }
+    //end
+
+    //payment invoice email
+    paymentInvoiceEmail (user, charge, save_job) {
+      var email_body = `<!DOCTYPE html>
+      <html>
+      <head>
+          <title></title>
+      
+      <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+      <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+      <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+      <!------ Include the above in your HEAD tag ---------->
+      
+      </head>
+      <body>
+      
+      <div class="container">
+          <div class="row">
+              <div class="col-xs-12">
+                  <div class="invoice-title">
+                      <h2>Invoice</h2><h3 class="pull-right">Transaction No # ${charge.id}</h3>
+                  </div>
+                  <hr>
+                  <div class="row">
+                      <div class="col-xs-6">
+                          <address>
+                          <strong>Billed To:</strong><br>
+                              ${user.first_name} ${user.middle_name}  ${user.last_name} <br>
+                              ${user.address}<br>
+                              ${user.city}
+                          </address>
+                      </div>
+                      <div class="col-xs-6 text-right">
+                          <address>
+                          <strong>Payment Method:</strong><br>
+                              Card Name: ${charge.source.brand} <br>
+                              Card Number: ***** ${charge.source.last4} <br>
+                              Exp Date: ${charge.source.exp_month}/${charge.source.exp_year} <br>
+                              Cardholder Name : ${charge.source.name}
+                          </address>
+                      </div>
+                  </div>
+                  <div class="row">
+                      <div class="col-xs-6 text-right">
+                          <address>
+                              <strong>Payment Status:</strong><br>
+                              Paid<br><br>
+                          </address>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          
+          <div class="row">
+              <div class="col-md-12">
+                  <div class="panel panel-default">
+                      <div class="panel-heading">
+                          <h3 class="panel-title"><strong>Payment summary</strong></h3>
+                      </div>
+                      <div class="panel-body">
+                          <div class="table-responsive">
+                              <table class="table table-condensed">
+                                  <thead>
+                                      <tr>
+                                          <td class="text-center"><strong>Job ID</strong></td>
+                                          <td class="text-center"><strong>Amount</strong></td>
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                      <tr>
+                                          <td class="text-center">${save_job._id}</td>
+                                          <td class="text-center">${save_job.job_amount}</td>
+                                      </tr>
+                                  </tbody>
+                              </table>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+      
+      <style type="text/css">
+          .invoice-title h2, .invoice-title h3 {
+          display: inline-block;
+      }
+      
+      .table > tbody > tr > .no-line {
+          border-top: none;
+      }
+      
+      .table > thead > tr > .no-line {
+          border-bottom: none;
+      }
+      
+      .table > tbody > tr > .thick-line {
+          border-top: 2px solid;
+      }
+      </style>
+      </body>
+      </html>
+      `;
+
+      var sendEmail = Mailjet.post('send');
+      var emailData = {
+          'FromEmail': 'sobhan.das@intersoftkk.com',
+          'FromName': 'Oh! My Concierge',
+          'Subject': 'Payment Invoice',
+          'Html-part': email_body,
+          'Recipients': [{'Email': user.email}]
+      };
+
+      if(sendEmail.request(emailData)) {
+        return true;       
+      }
+
     }
     //end
 
