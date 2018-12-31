@@ -64,6 +64,8 @@ Route.group(() => {
     Route.get('/api/fetchVendorRatingDetails', 'ApiController.fetchVendorRatingDetails')
     Route.post('/api/vendorProfileFromUser', 'ApiController.vendorProfileFromUser')
     Route.get('/api/fetchAllLatestDetails', 'ApiController.fetchAllLatestDetails')
+    Route.get('/api/vendorTransactionList', 'ApiController.vendorTransactionList')
+    Route.get('/api/vendorJobHistory', 'ApiController.vendorJobHistory')
 
     //all stripe route
     Route.post('/api/vendor/topup-credit-stripe', 'ApiController.stripeTopUpCredit')

@@ -1323,6 +1323,48 @@ class ApiController {
       }
     }
 
+    async vendorTransactionList ({response, auth}) {
+      var user = await auth.getUser();
+
+      var transaction_list = await StripeTransaction.find({user_id : user._id, type : 'OMC_pay_to_Vendor'});
+
+      if (transaction_list.length > 0) {
+        response.json({
+          status : true,
+          code : 200,
+          data : transaction_list
+        });
+      } else {
+        response.json({
+          status : false,
+          code : 400,
+          message : "No transaction details found."
+        });
+      }
+    }
+
+    async vendorJobHistory ({response, auth}) {
+      var user = await auth.getUser() ;
+
+      var jobs_history = await Job.find({'vendor_id' : user._id, status : 3}).sort({ _id : -1}).populate('user_id')
+      .populate('job_industry')
+      .populate('job_category');
+
+      if(jobs_history.length >0) {
+        response.json({
+          status : true,
+          code : 200,
+          data : jobs_history
+        });
+      } else { 
+        response.json({
+          status : false,
+          code : 400,
+          message : "NO jobs history found."
+        });
+      }
+    }
+
     //stripe functions
     async stripeTopUpCredit ({request, response, auth}) {
       try {
