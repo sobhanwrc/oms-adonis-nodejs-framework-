@@ -7,11 +7,11 @@ var service = new Schema ({
     service_title : { type: String},
     service_type : {
         type: Schema.Types.ObjectId,
-        ref: "ServiceType"
+        ref: "JobIndustry"
     },
     service_category : {
         type: Schema.Types.ObjectId,
-        ref: "ServiceCategory"
+        ref: "JobCategory"
     },
     rate : { type :String},
     start_date : { type: Date},

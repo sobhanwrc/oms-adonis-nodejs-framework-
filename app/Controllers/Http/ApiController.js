@@ -208,9 +208,9 @@ class ApiController {
       var user = await User.findOne({email, login_type: 'N'});
 
       if(user){
-        res.json({
+        response.json({
           success: false, 
-          code: 300, 
+          code: 400, 
           message: 'User already exist.'
         });
       }else{
@@ -398,19 +398,55 @@ class ApiController {
         // var city = '';
         var dob = request.input('dob') ? request.input('dob') : user.dob;
 
-        var company_name = request.input('company_name') ? request.input('company_name') : user.business[0].company_name;
-        var company_address = request.input('company_address') ? request.input('company_address') : user.business[0].company_address;
-        var company_ph_no = request.input('company_ph_no') ? request.input('company_ph_no') : user.business[0].company_ph_no;
-        var experience = request.input('experience') ? request.input('experience') : user.business[0].experience;
-        var service_type = request.input('service_type') ? request.input('service_type') : user.business[0].service_type;
-        var services = request.input('services') ? request.input('services') : user.business[0].services;
-        var uen_no = request.input('uen_no') ? request.input('uen_no') : user.uen_no;
+        if(request.input('company_name')) {
+          var company_name = request.input('company_name') ? request.input('company_name') : user.business[0].company_name;
+        }else {
+          var company_name = ''
+        }
+        
+        if(request.input('company_address')) {
+          var company_address = request.input('company_address') ? request.input('company_address') : user.business[0].company_address;
+        }else {
+          var company_address = ''
+        }
+
+        if(request.input('company_ph_no')) {
+          var company_ph_no = request.input('company_ph_no') ? request.input('company_ph_no') : user.business[0].company_ph_no;
+        }else {
+          var company_ph_no = ''
+        }
+        
+        if(request.input('experience')) {
+          var experience = request.input('experience') ? request.input('experience') : user.business[0].experience;
+        }else {
+          var experience = ''
+        }
+        
+        if(request.input('service_type')) {
+          var service_type = request.input('service_type') ? request.input('service_type') : user.business[0].service_type;
+        }else { 
+          var service_type = ''
+        }
+        
+        if(request.input('services')) {
+          var services = request.input('services') ? request.input('services') : user.business[0].services;
+        }else {
+          var services = ''
+        }
+
+        if (request.input('uen_no')) {
+          var uen_no = request.input('uen_no') ? request.input('uen_no') : user.uen_no;
+        }else {
+          var uen_no = ''
+        }
+        
+        
         var location_id = request.input('location_id') ? request.input('location_id') : user.location_id;
 
         user.bank_information = {
-            bank_name : bank_name ? bank_name : user.bank_information[0].bank_name,
-            account_no : account_no ? account_no : user.bank_information[0].account_no,
-            swift_code : swift_code ? swift_code : user.bank_information[0].swift_code,
+            bank_name : '',
+            account_no : '',
+            swift_code : '',
         }
 
         user.first_name = first_name;
@@ -740,8 +776,6 @@ class ApiController {
       var all_jobs_list = await Job.find({user_id: user._id})
       .populate('job_industry')
       .populate('job_category');
-
-      console.log(all_jobs_list);
 
       if(all_jobs_list.length > 0) {
         response.json({
@@ -1275,7 +1309,8 @@ class ApiController {
       if(user.reg_type == 2) {
         var jobs = await Job.find({'user_id' : user._id}).sort({created_at : -1, _id : -1}).limit(5)
         .populate('job_industry')
-        .populate('job_category');
+        .populate('job_category')
+        .populate('user_id');
 
         if(jobs.length > 0) {
           var latest_fiveJobs = jobs;
@@ -1303,10 +1338,13 @@ class ApiController {
         if(services.length > 0) {
           var latest_fiveServices = services;
         }else { 
-          var latest_fiveServices = "NO latest services found."
+          var latest_fiveServices = "No latest services found."
         }
 
-        var complete_job = await Job.find({'vendor_id' : user._id, status : 3}).sort({created_at : -1, _id : -1}).limit(5);
+        var complete_job = await Job.find({'vendor_id' : user._id, status : 3}).sort({created_at : -1, _id : -1}).limit(5)
+        .populate('job_industry')
+        .populate('job_category')
+        .populate('user_id');
         
         if(complete_job.length > 0) {
           var latest_fiveCompleteJObs = complete_job;
@@ -1360,7 +1398,7 @@ class ApiController {
         response.json({
           status : false,
           code : 400,
-          message : "NO jobs history found."
+          message : "No jobs history found."
         });
       }
     }
