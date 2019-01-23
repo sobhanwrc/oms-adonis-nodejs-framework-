@@ -67,13 +67,20 @@ Route.group(() => {
     Route.get('/api/vendorTransactionList', 'ApiController.vendorTransactionList')
     Route.get('/api/vendorJobHistory', 'ApiController.vendorJobHistory')
 
+    Route.post('/api/fetchNearestVendor', 'ApiController.fetchNearestVendor')
+
     //all stripe route
     Route.post('/api/vendor/topup-credit-stripe', 'ApiController.stripeTopUpCredit')
     Route.post('/api/stripePaymentOfUser', 'ApiController.stripePaymentOfUser')
     Route.post('/api/stripeAddCard', 'ApiController.stripeAddCard')
     Route.post('/api/stripeChangeDefaultCard', 'ApiController.stripeChangeDefaultCard')
     Route.get('/api/stripeFetchCustomerAllCard', 'ApiController.stripeFetchCustomerAllCard')
-    Route.post('/api/stripeCreateConnectAccount', 'ApiController.stripeCreateConnectAccount')
+    
+    // Route.get('/api/stripeCreateConnectAccount', 'ApiController.stripeCreateConnectAccount')
+    
+    Route.post('/api/stripeConnectAccountVendor', 'ApiController.stripeConnectAccountVendor')
+    Route.post('/api/checkPayoutsMoodStatus', 'ApiController.checkPayoutsMoodStatus')
+    
     Route.post('/api/stripeFundTransferToVendor', 'ApiController.stripeFundTransferToVendor')
     Route.post('/api/stripePaymentWithSavingCard', 'ApiController.stripePaymentWithSavingCard')
     //end

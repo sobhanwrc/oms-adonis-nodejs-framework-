@@ -56,8 +56,15 @@ class User extends BaseModel {
         customer_created : {type : String, default: ''}
       }],
       uen_no : { type: String, unique: true,  default: '' },
-      latitude: {type : Number,  default: '' },
-      longitude : { type: Number,  default: '' },
+
+      geoLocation : {
+        type : { type : String, default : "Point"},
+        coordinates : { type: [Number], default: [0, 0] } //lat,long
+        // index: '2dsphere'
+      },
+
+      // latitude: {type : String,  default: '' },
+      // longitude : { type: String,  default: '' },
       status: { type: Number, default: 0}, //1 = 'active', 0='Inactive'
       reg_type: { type: String,  default: ''  }, //1=Admin,2=User,3=Vendor
       login_type: { type: String,  default: ''  }, //F=Facebook,G=Google,N=Normal

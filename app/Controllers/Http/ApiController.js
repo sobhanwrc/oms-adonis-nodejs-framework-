@@ -19,7 +19,10 @@ const Helpers = use ('Helpers');
 const ServiceType = use('App/Models/ServiceType');
 const ServiceCategory = use('App/Models/ServiceCategory');
 const Service = use ('App/Models/Service');
-const stripe = use('stripe')('sk_test_1lfdJgJawDb3EFLvNDyi1p7v'); //secret key for test account
+const stripe = use('stripe')('sk_test_1lfdJgJawDb3EFLvNDyi1p7v');
+//('sk_live_AWzzK5YDJT9wNwbb3U8WqoO0') //live key of stripe
+// ('sk_test_1lfdJgJawDb3EFLvNDyi1p7v'); //secret key for test account
+
 const _ = use('lodash');
 const Rating = use ('App/Models/Rating');
 const {rate,average} = use('average-rating');
@@ -78,6 +81,13 @@ class ApiController {
         }
         var bank = {};
 
+        var latitude = request.input('latitude');
+        var longitude = request.input('longitude');
+        var geoLocation = {
+          type : "Point",
+          coordinates : [latitude , longitude]
+        }
+
         const avatar = gravatar.url(email, {
             s: '200', // Size
             r: 'pg', // Rating
@@ -135,7 +145,8 @@ class ApiController {
                 status : 1, //active
                 reg_type : reg_type,
                 login_type : "N",
-                password: password
+                password: password,
+                geoLocation : geoLocation
             });
 
             try{
@@ -729,6 +740,11 @@ class ApiController {
           create_job_id = "JOB-" + 1;
         }
 
+        //job address lat and long
+        // var lat = request.input('lat');
+        // var long = request.input('long');
+        //end
+
         var user_present_address_check = request.input('check_address');
 
         var add_job = new Job({
@@ -746,7 +762,9 @@ class ApiController {
           description : description,
           duration : duration,
           status : 2, // 1= active, 2 = inactive, 3 = complete
-          job_allocated_to_vendor : job_allocated_to_vendor
+          job_allocated_to_vendor : job_allocated_to_vendor,
+          // lat : lat,
+          // long : long
         });
         var jod_id = await add_job.save();
 
@@ -1403,6 +1421,37 @@ class ApiController {
       }
     }
 
+    async fetchNearestVendor ({auth, request, response}) {
+      var user = await auth.getUser();
+
+      if(user.reg_type == 2) {
+        var all_vendors = await User.find({reg_type : 3});
+        var jobs_list = await Job.find({user_id : user._id})
+
+        console.log(jobs_list, 'jobs_list');
+
+        // foreach ($jobs_list as $key => $value) {
+        var fetch_nearest_vendor = await User.find({reg_type : 3,
+            geoLocation: {
+                $near: {
+                    $geometry: { 
+                      type: "Point", 
+                      coordinates: [88.426399,22.579090],
+                    },
+                    $maxDistance: 1000,
+                    $minDistance: 500
+                }
+            }
+        }).sort({ _id : -1})
+
+        // console.log(fetch_nearest_vendor, 'fetch_nearest_vendor'); 
+        response.json({
+          data : fetch_nearest_vendor
+        });
+      }
+
+    }
+
     //stripe functions
     async stripeTopUpCredit ({request, response, auth}) {
       try {
@@ -1683,8 +1732,77 @@ class ApiController {
       }
     }
 
+    //open connect account through API
+    async stripeConnectAccountVendor ({request, response, auth}) {
+      var user = await auth.getUser();
+      if(user.reg_type == 3) {
+        //stripe connect account create
+        var connect_user = await stripe.accounts.create({
+          type: 'standard',
+          country: 'SG',
+          email: user.email
+        });
+
+        if(connect_user) {
+          User.updateOne({
+            _id: user._id //matching with table id
+          },{
+            $set: {
+              stripe_details: [{
+                customer_id : connect_user.id
+              }]
+            }
+          }).then(function (result) {
+            if(result) {
+              response.json({
+                status : true,
+                code : 200,
+                message : "Your stripe account has been successfully associated with us."
+              });
+            }
+          });
+        }
+      }else {
+        response.json({
+          status : false,
+          code : 400,
+          message : "You don't have a permission to create a bank account."
+        });
+      }
+    }
+
+    //check connect user bank payouts active or inactive
+    async checkPayoutsMoodStatus ({request, response, auth}) {
+      var user = await auth.getUser();
+
+      if(user.reg_type == 3) {
+        var connect_user_details = await stripe.accounts.retrieve(user.stripe_details[0].customer_id);
+        
+        if (connect_user_details.payouts_enabled == false) {
+          response.json({
+            status : false,
+            code : 400,
+            message : "Your payouts mood is disabled. Please go to your stripe account and fill up bank details."
+          });
+        }else { 
+          response.json({
+            status : true,
+            code : 200,
+            message : "Your bank details is associated with us."
+          });
+        }
+      }else {
+        response.json({
+          status : false,
+          code : 400,
+          message : "You don't have a permission ."
+        });
+      }
+    }
+
     //associate vendor bank account with stripe connect
     async stripeCreateConnectAccount ({request, response, auth}) {
+      console.log(request);
       var user = await auth.getUser();
       
       var queryString = request.get();
@@ -1748,7 +1866,7 @@ class ApiController {
           var vendor_customer_account_id = user.stripe_details[0].customer_id;
   
           var transfer = await stripe.transfers.create({
-            amount: request.input('release_amount'),
+            amount: request.input('release_amount') * 100,
             currency: "sgd",
             destination: vendor_customer_account_id
           });

@@ -28,6 +28,8 @@ const schema = new Schema({
   status : { type: Number},
   review : { type : Number, default : 0}, // 1 = rating done, 0= rating incomplete
   rating_details : { type : Number},
+  lat : { type : String, default : 0},
+  long : { type : String, default : 0},
   created_at : { type: Date, default : Date.now()}
 });
 
