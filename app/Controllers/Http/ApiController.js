@@ -20,7 +20,6 @@ const ServiceType = use('App/Models/ServiceType');
 const ServiceCategory = use('App/Models/ServiceCategory');
 const Service = use ('App/Models/Service');
 const stripe = use('stripe')('sk_test_1lfdJgJawDb3EFLvNDyi1p7v');
-//('sk_live_AWzzK5YDJT9wNwbb3U8WqoO0') //live key of stripe
 // ('sk_test_1lfdJgJawDb3EFLvNDyi1p7v'); //secret key for test account
 
 const _ = use('lodash');
