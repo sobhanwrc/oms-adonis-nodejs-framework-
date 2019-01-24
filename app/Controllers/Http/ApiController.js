@@ -1451,6 +1451,20 @@ class ApiController {
 
     }
 
+    async updateJobCategories ({response, request }){
+      var update = await JobCategory.updateOne({_id : request.input('id')}, {
+        $set : {
+          category_type : request.input('category_type')
+        }
+      })
+
+      if(update){
+        response.json({
+          message : "Update successfully."
+        })
+      }
+    }
+
     //stripe functions
     async stripeTopUpCredit ({request, response, auth}) {
       try {

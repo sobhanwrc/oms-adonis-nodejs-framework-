@@ -43,7 +43,7 @@ Route.get('/api/serviceTypesCategories', 'ApiController.fetchServiceTypeAndCateg
 Route.post('/api/authRefresh', 'ApiController.authRefresh')
 
 Route.get('/api/stripeView', 'ApiController.stripeView')
-// Route.post('/api/fetchGeoLocation', 'ApiController.fetchGeoLocation')
+Route.post('/api/updateJobCategories', 'ApiController.updateJobCategories')
 
 Route.group(() => { 
     Route.get('/api/userDetails', 'ApiController.userDetails')
