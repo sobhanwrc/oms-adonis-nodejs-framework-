@@ -80,8 +80,8 @@ class ApiController {
         }
         var bank = {};
 
-        var latitude = request.input('latitude');
-        var longitude = request.input('longitude');
+        var latitude = request.input('latitude') ? request.input('latitude') : 0;
+        var longitude = request.input('longitude') ? request.input('longitude') : 0;
         var geoLocation = {
           type : "Point",
           coordinates : [latitude , longitude]
@@ -1743,7 +1743,7 @@ class ApiController {
         });
 
         if(connect_user) {
-          User.updateOne({
+          var user_update = await User.updateOne({
             _id: user._id //matching with table id
           },{
             $set: {
@@ -1751,15 +1751,14 @@ class ApiController {
                 customer_id : connect_user.id
               }]
             }
-          }).then(function (result) {
-            if(result) {
-              response.json({
-                status : true,
-                code : 200,
-                message : "Your stripe account has been successfully associated with us."
-              });
-            }
           });
+          if(user_update) {
+            response.json({
+              status : true,
+              code : 200,
+              message : "Your stripe account has been successfully associated with us."
+            });
+          }
         }
       }else {
         response.json({
