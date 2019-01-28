@@ -673,7 +673,7 @@ class ApiController {
 
     async addJobIndustrty ({request, response}) {
       var add = new JobIndustry ({
-        industry_name : request.input('industry_name'),
+        industry_name : request.input('industry_name').toUpperCase(),
       });
 
       if(await add.save()) {
@@ -687,7 +687,7 @@ class ApiController {
 
     async addJobCategory ({request, response}) {
       var add = new JobCategory ({
-        category_type : request.input('category_type'),
+        category_type : request.input('category_type').toUpperCase(),
       });
 
       if(await add.save()) {
@@ -717,7 +717,7 @@ class ApiController {
 
       if(user.reg_type == 2) {
         var user_id = user._id;
-        var job_title = request.input('job_title');
+        var job_title = request.input('job_title').toUpperCase();
         var service_require_at = request.input('service_require_at');
         var job_industry = request.input('job_industry');
         var job_category = request.input('job_category');
@@ -1432,13 +1432,13 @@ class ApiController {
         // foreach ($jobs_list as $key => $value) {
         var fetch_nearest_vendor = await User.find({reg_type : 3,
             geoLocation: {
-                $near: {
+                $nearSphere: {
                     $geometry: { 
                       type: "Point", 
                       coordinates: [88.426399,22.579090],
                     },
-                    $maxDistance: 1000,
-                    $minDistance: 500
+                    $maxDistance: 900 * 1609.34,
+                    // $minDistance: 500
                 }
             }
         }).sort({ _id : -1})
@@ -1452,9 +1452,9 @@ class ApiController {
     }
 
     async updateJobCategories ({response, request }){
-      var update = await JobCategory.updateOne({_id : request.input('id')}, {
+      var update = await JobIndustry.updateOne({_id : request.input('id')}, {
         $set : {
-          category_type : request.input('category_type')
+          industry_name : request.input('industry_name').toUpperCase()
         }
       })
 
