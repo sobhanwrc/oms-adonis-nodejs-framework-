@@ -122,7 +122,7 @@ class ApiController {
           response.json ({
               status : false,
               code : 400,
-              messages : "UEN number is duplicate. Enter valid UEN number."
+              message : "UEN number is duplicate. Enter valid UEN number."
           });
         }
         else {
@@ -673,7 +673,7 @@ class ApiController {
 
     async addJobIndustrty ({request, response}) {
       var add = new JobIndustry ({
-        industry_name : request.input('industry_name').toUpperCase(),
+        industry_name : this.capitalizeFirstLetter(request.input('industry_name'))
       });
 
       if(await add.save()) {
@@ -686,22 +686,42 @@ class ApiController {
     }
 
     async addJobCategory ({request, response}) {
+      var secretKey = await randomstring.generate({
+          length: 4,
+          charset: 'alphanumeric'
+      });
+
+      var base64Str = request.input('categories_image');
+      var base64Str1 = base64Str.replace(/ /g, '+');
+
+      let base64ImageMimeType = base64Str1.split(';base64,');
+      var type = base64ImageMimeType[0].split(':image/');
+
+      var path ='public/categories_image/';
+
+      var imageFileName = secretKey + '-' + Date.now();
+      var optionalObj = {'fileName': imageFileName, 'type': type[1]};
+      var uploadImage = base64_to_image(base64Str1,path,optionalObj);
+
+      var full_image_path = request.header('Host') + '/categories_image/' + uploadImage.fileName;
+
       var add = new JobCategory ({
-        category_type : request.input('category_type').toUpperCase(),
+        category_type : this.capitalizeFirstLetter(request.input('category_type')),
+        category_image : 'http://'+full_image_path
       });
 
       if(await add.save()) {
         response.json ({
           status : true, 
           code : 200, 
-          message : "Added successfully."
+          message : "Added job categories successfully."
         });
       }
     }
 
     async fetchJobCategoryAndIndustry ({response}) {
-      var all_jobcategory = await JobCategory.find({},{status: 0, created_at: 0, updated_at: 0, __v:0 });
-      var all_jobindustry = await JobIndustry.find({},{status: 0, created_at: 0, updated_at: 0, __v:0 });
+      var all_jobcategory = await JobCategory.find({},{status: 0, created_at: 0, updated_at: 0, __v:0 }, {"sort" : {'category_type' : 'asc'}});
+      var all_jobindustry = await JobIndustry.find({},{status: 0, created_at: 0, updated_at: 0, __v:0 }, {"sort" : {'industry_name' : 'asc'}});
 
       response.json ({
         status : true,
@@ -717,7 +737,7 @@ class ApiController {
 
       if(user.reg_type == 2) {
         var user_id = user._id;
-        var job_title = request.input('job_title').toUpperCase();
+        var job_title = request.input('job_title');
         var service_require_at = request.input('service_require_at');
         var job_industry = request.input('job_industry');
         var job_category = request.input('job_category');
@@ -790,7 +810,7 @@ class ApiController {
 
     async jobList ({request, response, auth}) {
       var user = await auth.getUser();
-      var all_jobs_list = await Job.find({user_id: user._id})
+      var all_jobs_list = await Job.find({user_id: user._id}).sort({ _id : -1 })
       .populate('job_industry')
       .populate('job_category');
 
@@ -815,7 +835,7 @@ class ApiController {
       var job_id = request.input('job_id');
 
       var job_details = await Job.find({_id : job_id, user_id : user._id})
-      .populate('job_industry')
+      // .populate('job_industry')
       .populate('job_category');
 
       if(job_details.length > 0) {
@@ -1425,7 +1445,10 @@ class ApiController {
 
       if(user.reg_type == 2) {
         var all_vendors = await User.find({reg_type : 3});
-        var jobs_list = await Job.find({user_id : user._id})
+        var jobs_list = await Job.find({user_id : user._id, _id : request.input('job_id')})
+        var job_amount = jobs_list.amount;
+        var total_job_duration = jobs_list.duration; 
+        
 
         console.log(jobs_list, 'jobs_list');
 
@@ -1452,9 +1475,9 @@ class ApiController {
     }
 
     async updateJobCategories ({response, request }){
-      var update = await JobIndustry.updateOne({_id : request.input('id')}, {
+      var update = await JobCategory.updateOne({_id : request.input('id')}, {
         $set : {
-          industry_name : request.input('industry_name').toUpperCase()
+          category_type : this.capitalizeFirstLetter(request.input('category_type'))
         }
       })
 
@@ -2841,6 +2864,12 @@ class ApiController {
         return true;       
       }
 
+    }
+    //end
+
+    //first letter capital
+    capitalizeFirstLetter(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1);
     }
     //end
 

@@ -19,6 +19,7 @@ class JobCategory extends BaseModel {
   static get schema () {
     return {
       category_type: { type: String},
+      category_image : { type : String},
       status : { type: Number, default:1},
       created_at : { type: Date, default : Date.now()}
     }
