@@ -720,7 +720,7 @@ class ApiController {
     }
 
     async fetchJobCategoryAndIndustry ({response}) {
-      var all_jobcategory = await JobCategory.find({},{status: 0, created_at: 0, updated_at: 0, __v:0 }, {"sort" : {'category_type' : 'asc'}});
+      var all_jobcategory = await JobCategory.find({},{status: 0, created_at: 0, updated_at: 0, __v:0 });
       var all_jobindustry = await JobIndustry.find({},{status: 0, created_at: 0, updated_at: 0, __v:0 }, {"sort" : {'industry_name' : 'asc'}});
 
       response.json ({
@@ -811,7 +811,7 @@ class ApiController {
     async jobList ({request, response, auth}) {
       var user = await auth.getUser();
       var all_jobs_list = await Job.find({user_id: user._id}).sort({ _id : -1 })
-      .populate('job_industry')
+      // .populate('job_industry')
       .populate('job_category');
 
       if(all_jobs_list.length > 0) {
@@ -1444,32 +1444,19 @@ class ApiController {
       var user = await auth.getUser();
 
       if(user.reg_type == 2) {
-        var all_vendors = await User.find({reg_type : 3});
+        var all_vendors = await User.find({reg_type : 3, job_allocated_to_vendor : 2});
         var jobs_list = await Job.find({user_id : user._id, _id : request.input('job_id')})
         var job_amount = jobs_list.amount;
-        var total_job_duration = jobs_list.duration; 
-        
+        var total_job_duration = jobs_list.duration;
 
-        console.log(jobs_list, 'jobs_list');
+        var vendors_list = await User.find({reg_type : 3}, {_id : 1});
 
-        // foreach ($jobs_list as $key => $value) {
-        var fetch_nearest_vendor = await User.find({reg_type : 3,
-            geoLocation: {
-                $nearSphere: {
-                    $geometry: { 
-                      type: "Point", 
-                      coordinates: [88.426399,22.579090],
-                    },
-                    $maxDistance: 900 * 1609.34,
-                    // $minDistance: 500
-                }
-            }
-        }).sort({ _id : -1})
+        var all_vendor_list = _.map(vendors_list, '_id');
 
-        // console.log(fetch_nearest_vendor, 'fetch_nearest_vendor'); 
-        response.json({
-          data : fetch_nearest_vendor
-        });
+        _.chunk(all_vendor_list,4).map(id => {
+          console.log(id);
+        })
+        return false;
       }
 
     }

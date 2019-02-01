@@ -7,10 +7,10 @@ const schema = new Schema({
   user_id : {type : Schema.Types.ObjectId, ref:"User"},
   job_title : { type: String, unique: true},
   service_require_at : { type: String},
-  job_industry : {
-    type: Schema.Types.ObjectId,
-    ref: "JobIndustry"
-  },
+  // job_industry : {
+  //   type: Schema.Types.ObjectId,
+  //   ref: "JobIndustry"
+  // },
   job_category : {
     type: Schema.Types.ObjectId,
     ref: "JobCategory"
