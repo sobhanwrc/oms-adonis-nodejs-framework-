@@ -10,6 +10,30 @@ class LoginController {
         return view.render('index')
     }
 
+    async forgot_password ({view, request, response}) {
+        var queryString = request.get();
+        var secret_key = queryString.key;
+        var date = queryString.date;
+        
+        var check_user_forgot_pw = await User.find({forgot_pw_key : secret_key});
+
+        if(check_user_forgot_pw.length > 0) {
+            var date1 = new Date(check_user_forgot_pw[0].forgot_pw_email_sent_date);
+            var date2 = new Date();
+            var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+            var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+            if(diffDays <= 2) {
+                return view.render('forgot_password', { key : secret_key, date : date,});
+            }else {
+                return view.render('forgot_password', { key : 0});
+            }
+        }else {
+            return view.render('forgot_password', { key : ''});
+        }
+        
+    }
+
     async login ({request, response, session}) {
         const rules = {
             username: 'required',

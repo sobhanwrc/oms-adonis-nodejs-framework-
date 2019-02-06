@@ -19,6 +19,7 @@ const Helpers = use ('Helpers');
 const ServiceType = use('App/Models/ServiceType');
 const ServiceCategory = use('App/Models/ServiceCategory');
 const Service = use ('App/Models/Service');
+const VendorAllocation = use ('App/Models/VendorAllocation');
 const stripe = use('stripe')('sk_test_1lfdJgJawDb3EFLvNDyi1p7v');
 // ('sk_test_1lfdJgJawDb3EFLvNDyi1p7v'); //secret key for test account
 
@@ -611,7 +612,7 @@ class ApiController {
                     response.json({
                         status : true,
                         code : 200,
-                        message : "Already sent you password reset email. Please check your email."
+                        message : "Password reset link already sent to your email. Please check your email."
                     });
                     
                 } else { 
@@ -620,7 +621,8 @@ class ApiController {
                         length: 16,
                         charset: 'alphanumeric'
                     });
-                    var link = "http://"+request.header('Host')+"/forgot-password";
+                    // var link = "http://"+request.header('Host')+"/forgot-password";
+                    var link = "http://"+request.header('Host')+"/forgot-password"+ "?key=" + secretKey + "&date="+ Date.now();
         
                     user.forgot_pw_key = secretKey;
                     user.forgot_pw_email_sent_date = Date.now();
@@ -643,7 +645,8 @@ class ApiController {
                     length: 16,
                     charset: 'alphanumeric'
                 });
-                var link = "http://"+request.header('Host')+"/forgot-password";
+                // var link = "http://"+request.header('Host')+"/forgot-password";
+                var link = "http://"+request.header('Host')+"/forgot-password"+ "?key=" + secretKey + "&date="+ Date.now();
     
                 user.forgot_pw_key = secretKey;
                 user.forgot_pw_email_sent_date = Date.now();
@@ -669,6 +672,32 @@ class ApiController {
                 message: "Your email not registered with us."
             });
         }
+    }
+
+    async updateForgotPW ({request, response}) {
+      var secret_key = request.input('secret_key');
+      var new_password = await Hash.make(request.input('new_password'));
+
+      var user = await User.findOne({forgot_pw_key : secret_key});
+      if(user){
+        user.password = new_password;
+        user.status = 1;
+        user.forgot_pw_key = '';
+
+        if(await user.save()) {
+            response.json ({
+                status : true,
+                code : 200,
+                message : "Password updated successfully."
+            });
+        }
+      }else {
+        response.json ({
+            status : false,
+            code : 400,
+            message : "Password updated failed."
+        });
+      }
     }
 
     async addJobIndustrty ({request, response}) {
@@ -707,7 +736,9 @@ class ApiController {
 
       var add = new JobCategory ({
         category_type : this.capitalizeFirstLetter(request.input('category_type')),
-        category_image : 'http://'+full_image_path
+        category_image : 'http://'+full_image_path,
+        price : request.input('price'),
+        description : request.input('description')
       });
 
       if(await add.save()) {
@@ -792,6 +823,9 @@ class ApiController {
             user.user_address2 = service_require_at
             await user.save();
           }
+          
+          await this.fetchNearestVendor(user,jod_id);
+
           response.json({
             status : true,
             code : 200,
@@ -808,10 +842,102 @@ class ApiController {
       }
     }
 
+    async fetchNearestVendor (user, job) {
+      user.reg_type = 2;
+
+      if(user.reg_type == 2) {
+
+        var vendors_list = await User.find({reg_type : 3}, {_id : 1});
+
+        var all_vendor_list = _.map(vendors_list, '_id');
+        var total_assign_value = 1;
+        var withOutAllocatedVendors = [];
+
+        for(var i = 0; i < all_vendor_list.length; i++) {
+          var status = await Job.find({vendor_id : all_vendor_list[i]})
+          if(status.length > 0) {
+          }else { 
+            withOutAllocatedVendors.push(all_vendor_list[i]);
+          }
+        }
+
+        await _.chunk(withOutAllocatedVendors,4).map(id => {
+          _.forEach(id, function(value) {
+            Service.find({user_id : value, service_category : job.job_category})
+            .then(function (matching_vendor_with_service) {
+              if(matching_vendor_with_service.length > 0) {
+                 
+                if (total_assign_value <= 4) {
+
+                  _.forEach(matching_vendor_with_service, function(value) {
+                    var add = new VendorAllocation ({
+                      user_id : value.user_id,
+                      job_id : job._id,
+                      status : 0 // 0 = not allocated, 1 = allocated
+                    });
+                    
+                    if(add.save()) {
+                      total_assign_value = total_assign_value + 1;
+                    }
+  
+                  });
+
+                }else { 
+                  return false;
+                }
+              }else {
+                return "No vendor found."
+              }
+            });
+          });
+        });
+      }
+    }
+
+    async sendPushToAllocatedVendor ({request, response}) {
+      var job_id = request.input ('job_id');
+
+      var find_allocated_vendor = await VendorAllocation.find({job_id : job_id, status : 0}).limit(1).populate('user_id').populate('job_id');
+      console.log(find_allocated_vendor, 'find_allocated_vendor_details');
+
+      if(find_allocated_vendor.length > 0) {
+        var vendor_email = find_allocated_vendor[0].user_id.email;
+
+        var update_job = await Job.findOne({_id : find_allocated_vendor[0].job_id._id})
+        update_job.vendor_id = find_allocated_vendor[0].user_id._id;
+        update_job.job_allocated_to_vendor = 1;
+
+        await update_job.save();
+
+        var sendEmail = Mailjet.post('send');
+        var emailData = {
+            'FromEmail': 'sobhan.das@intersoftkk.com',
+            'FromName': 'Oh! My Concierge',
+            'Subject': 'Vendor Allocation',
+            'Html-part': "You are allocated.",
+            'Recipients': [{'Email': 'sobhan.das@mailinator.com'}]
+        };
+        
+        if (sendEmail.request(emailData)) {
+          response.json({
+            status : true,
+            code : 200,
+            message : "Vendor allocated successfully."
+          })
+        }
+      }else {
+        response.json({
+          status : false,
+          code : 400,
+          message : "No vendor available."
+        })
+      }
+    }
+
     async jobList ({request, response, auth}) {
       var user = await auth.getUser();
       var all_jobs_list = await Job.find({user_id: user._id}).sort({ _id : -1 })
-      // .populate('job_industry')
+      .populate('vendor_id')
       .populate('job_category');
 
       if(all_jobs_list.length > 0) {
@@ -1005,7 +1131,7 @@ class ApiController {
           var add_service = new Service ({
             user_id : user._id,
             service_title : request.input('service_title'),
-            service_type : request.input('service_type'),
+            // service_type : request.input('service_type'),
             service_category : request.input('service_category'),
             rate : request.input('rate'),
             start_date : request.input('start_date'),
@@ -1439,32 +1565,33 @@ class ApiController {
         });
       }
     }
-
-    async fetchNearestVendor ({auth, request, response}) {
-      var user = await auth.getUser();
-
-      if(user.reg_type == 2) {
-        var all_vendors = await User.find({reg_type : 3, job_allocated_to_vendor : 2});
-        var jobs_list = await Job.find({user_id : user._id, _id : request.input('job_id')})
-        var job_amount = jobs_list.amount;
-        var total_job_duration = jobs_list.duration;
-
-        var vendors_list = await User.find({reg_type : 3}, {_id : 1});
-
-        var all_vendor_list = _.map(vendors_list, '_id');
-
-        _.chunk(all_vendor_list,4).map(id => {
-          console.log(id);
-        })
-        return false;
-      }
-
-    }
-
+    
     async updateJobCategories ({response, request }){
+      // var secretKey = await randomstring.generate({
+      //     length: 4,
+      //     charset: 'alphanumeric'
+      // });
+
+      // var base64Str = request.input('categories_image');
+      // var base64Str1 = base64Str.replace(/ /g, '+');
+
+      // let base64ImageMimeType = base64Str1.split(';base64,');
+      // var type = base64ImageMimeType[0].split(':image/');
+
+      // var path ='public/categories_image/';
+
+      // var imageFileName = secretKey + '-' + Date.now();
+      // var optionalObj = {'fileName': imageFileName, 'type': type[1]};
+      // var uploadImage = base64_to_image(base64Str1,path,optionalObj);
+
+      // var full_image_path = request.header('Host') + '/categories_image/' + uploadImage.fileName;
+
       var update = await JobCategory.updateOne({_id : request.input('id')}, {
         $set : {
-          category_type : this.capitalizeFirstLetter(request.input('category_type'))
+          // category_type : this.capitalizeFirstLetter(request.input('category_type')),
+          // price : request.input('price'),
+          // category_image : 'http://'+full_image_path
+          description : request.input('description')
         }
       })
 

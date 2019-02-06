@@ -17,6 +17,7 @@
 const Route = use('Route')
 
 Route.get('/', 'LoginController.index')
+Route.get('/forgot-password', 'LoginController.forgot_password')
 Route.get('/user-login', 'LoginController.user_login')
 Route.get('/social-login/facebook', 'LoginController.facebook')
 Route.get('/callback/facebook', 'LoginController.callback_fb')
@@ -32,6 +33,7 @@ Route.post('/api/registration', 'ApiController.registration')
 Route.post('/api/submitLogin', 'ApiController.submitLogin')
 Route.post('/api/socialLogin', 'ApiController.socialLogin')
 Route.post('/api/forgotPassword', 'ApiController.forgotPassword')
+Route.post('/api/updateForgotPW', 'ApiController.updateForgotPW')
 Route.post('/api/addJobIndustrty', 'ApiController.addJobIndustrty')
 Route.post('/api/addJobCategory', 'ApiController.addJobCategory')
 Route.get('/api/fetchJobCategoryAndIndustry', 'ApiController.fetchJobCategoryAndIndustry')
@@ -68,6 +70,7 @@ Route.group(() => {
     Route.get('/api/vendorJobHistory', 'ApiController.vendorJobHistory')
 
     Route.post('/api/fetchNearestVendor', 'ApiController.fetchNearestVendor')
+    Route.post('/api/sendPushToAllocatedVendor', 'ApiController.sendPushToAllocatedVendor')
 
     //all stripe route
     Route.post('/api/vendor/topup-credit-stripe', 'ApiController.stripeTopUpCredit')

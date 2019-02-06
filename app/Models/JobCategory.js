@@ -20,6 +20,8 @@ class JobCategory extends BaseModel {
     return {
       category_type: { type: String},
       category_image : { type : String},
+      price : { type : String},
+      description : { type : String},
       status : { type: Number, default:1},
       created_at : { type: Date, default : Date.now()}
     }

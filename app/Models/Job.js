@@ -23,7 +23,7 @@ const schema = new Schema({
   duration : {type : String},
   job_amount : {type : Number, default : 0},
   job_allocated_to_vendor : {type : Number},
-  vendor_id : { type : String, default :''},
+  vendor_id : { type : Schema.Types.ObjectId, ref:"User"},
   transaction_id : {type : String, default :''},
   status : { type: Number},
   review : { type : Number, default : 0}, // 1 = rating done, 0= rating incomplete
