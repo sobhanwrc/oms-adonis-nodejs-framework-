@@ -20,6 +20,7 @@ const ServiceType = use('App/Models/ServiceType');
 const ServiceCategory = use('App/Models/ServiceCategory');
 const Service = use ('App/Models/Service');
 const VendorAllocation = use ('App/Models/VendorAllocation');
+const Coupon = use ('App/Models/Coupon');
 const stripe = use('stripe')('sk_test_1lfdJgJawDb3EFLvNDyi1p7v');
 // ('sk_test_1lfdJgJawDb3EFLvNDyi1p7v'); //secret key for test account
 
@@ -1599,6 +1600,117 @@ class ApiController {
         response.json({
           message : "Update successfully."
         })
+      }
+    }
+
+    async addCoupons ({request, response}) {
+      var coupons_title = request.input('coupons_title');
+      var coupons_amount = request.input('coupons_amount');
+      var coupons_valid_from = request.input('start_date');
+      var coupons_valid_to = request.input('end_date');
+      var coupons_code = request.input('coupons_code').toUpperCase();
+
+      var add = new Coupon({
+        coupons_title : coupons_title,
+        coupons_amount : coupons_amount,
+        coupons_valid_from : coupons_valid_from,
+        coupons_valid_to : coupons_valid_to,
+        coupons_code : coupons_code
+      });
+      
+      await add.save();
+
+      response.json({
+        status : true,
+        code : 200,
+        message : "Coupon added successfully."
+      });
+    }
+
+    async assignCouponsToUser ({request, response}) {
+      var user = request.input('user_id');
+      var coupon_id = request.input('coupon_id');
+
+      var isCheck = await AssignCouponToUser.find({coupon_id : coupon_id, user_id : user});
+
+      if(isCheck.length > 0) {
+        response.json({
+          status : false,
+          code : 400,
+          message : "Coupon already assign to this user."
+        });
+      }else {
+        var user_details = await User.findOne({_id : user});
+
+        var assign = new AssignCouponToUser({
+          user_id : user,
+          coupon_id : coupon_id
+        })
+
+        if(await assign.save()) {
+          var coupon_details = await Coupon.findOne({_id : coupon_id})
+          var sendEmail = Mailjet.post('send');
+          var emailData = {
+              'FromEmail': 'sobhan.das@intersoftkk.com',
+              'FromName': 'Oh! My Concierge',
+              'Subject': 'Promocode',
+              'Html-part': "You are allocated.",
+              'Recipients': [{'Email': user_details.email}]
+          };
+          await sendEmail.request(emailData);
+
+          response.json({
+            status : true,
+            code : 200,
+            message : "Coupon successfully assigned to the user."
+          });
+        }
+      }
+    }
+    
+    //check date format and age 
+    checkDate ({request,response}) {
+      var date = request.input('date');
+      var dob_check = request.input('dob_check');
+      if (dob_check == 1) {
+        var checking = moment(date, "YYYY-MM-DD").isValid();
+        if(checking == true) {
+          var years = moment().diff(date, 'years');
+          if(years >= 18) {
+            response.json({
+              status : true,
+              code : 200,
+              message : "Date is correct and user is above 18 years old."
+            });
+          }else { 
+            response.json({
+              status : false,
+              code : 400,
+              message : "Sorry, you are not eligible to register. Age should be above 18 years."
+            })
+          }
+        }else {
+          response.json({
+            status : false,
+            code : 400,
+            message : "Date is not correct."
+          })
+        }
+      }else {
+        var checking = moment(date, "YYYY-MM-DD").isValid();
+        if(checking == true) {
+          response.json({
+            status : true,
+            code : 200,
+            message : "Date is correct."
+          });
+        }else {
+          response.json({
+            status : false,
+            code : 400,
+            message : "Date is not correct."
+          })
+        }
       }
     }
 

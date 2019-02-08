@@ -46,6 +46,8 @@ Route.post('/api/authRefresh', 'ApiController.authRefresh')
 
 Route.get('/api/stripeView', 'ApiController.stripeView')
 Route.post('/api/updateJobCategories', 'ApiController.updateJobCategories')
+Route.post('/api/addCoupons', 'ApiController.addCoupons');
+Route.post('/api/checkDate', 'ApiController.checkDate');
 
 Route.group(() => { 
     Route.get('/api/userDetails', 'ApiController.userDetails')
