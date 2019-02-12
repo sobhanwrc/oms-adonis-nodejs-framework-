@@ -21,6 +21,7 @@ const ServiceCategory = use('App/Models/ServiceCategory');
 const Service = use ('App/Models/Service');
 const VendorAllocation = use ('App/Models/VendorAllocation');
 const Coupon = use ('App/Models/Coupon');
+const AssignCouponToUser = use ('App/Models/AssignCouponToUser');
 const stripe = use('stripe')('sk_test_1lfdJgJawDb3EFLvNDyi1p7v');
 // ('sk_test_1lfdJgJawDb3EFLvNDyi1p7v'); //secret key for test account
 
@@ -795,6 +796,16 @@ class ApiController {
         // var lat = request.input('lat');
         // var long = request.input('long');
         //end
+        var final_job_amount = 0;
+        var coupon_id = request.input('coupon_id') ? request.input('coupon_id') : '';
+        if(coupon_id != '') {
+          var coupon_details = await Coupon.findOne({_id : coupon_id});
+          var coupon_discount_amount = coupon_details.coupons_amount;
+          var discount_amount = parseFloat((job_amount *  coupon_discount_amount) / 100).toFixed(2) ;
+          final_job_amount = parseFloat(job_amount - discount_amount);
+        }else {
+          final_job_amount = job_amount;
+        }
 
         var user_present_address_check = request.input('check_address');
 
@@ -803,7 +814,7 @@ class ApiController {
           user_id : user_id,
           job_title : job_title,
           service_require_at : service_require_at,
-          job_amount : job_amount,
+          job_amount : final_job_amount,
           job_industry : job_industry,
           job_category : job_category,
           job_date : job_date,
@@ -826,6 +837,13 @@ class ApiController {
           }
           
           await this.fetchNearestVendor(user,jod_id);
+
+          if(coupon_id != '') {
+            var update = await AssignCouponToUser.findOne({user_id : user._id, coupon_id : coupon_id});
+            update.status = "Redeemed";
+
+            await update.save();
+          }
 
           response.json({
             status : true,
@@ -904,11 +922,14 @@ class ApiController {
       if(find_allocated_vendor.length > 0) {
         var vendor_email = find_allocated_vendor[0].user_id.email;
 
-        var update_job = await Job.findOne({_id : find_allocated_vendor[0].job_id._id})
-        update_job.vendor_id = find_allocated_vendor[0].user_id._id;
-        update_job.job_allocated_to_vendor = 1;
+        // var update_job = await Job.findOne({_id : find_allocated_vendor[0].job_id._id})
+        // update_job.vendor_id = find_allocated_vendor[0].user_id._id;
+        // update_job.job_allocated_to_vendor = 1;
 
-        await update_job.save();
+        // await update_job.save();
+        find_allocated_vendor[0].status = 3 ; // 3 = invitation sent.
+        await find_allocated_vendor[0].save();
+
 
         var sendEmail = Mailjet.post('send');
         var emailData = {
@@ -933,6 +954,20 @@ class ApiController {
           message : "No vendor available."
         })
       }
+    }
+
+    async jobAllocationDecline ({request, response, auth}) {
+      var  allocation_id = request.input('allocation_id');
+      var job_id = request.input('job_id');
+
+      var allocation_details_update = await VendorAllocation.findOne({_id : allocation_id, job_id : job_id});
+      allocation_details_update.status = 2;
+
+      if(await allocation_details_update.save()) {
+        var fetch_new_allocated_vendor = await VendorAllocation.find({job_id : job_id, status : 0}).limit(1).populate('user_id').populate('job_id');
+        console.log(find_allocated_vendor, 'find_allocated_vendor_details');
+      }
+
     }
 
     async jobList ({request, response, auth}) {
@@ -1667,6 +1702,55 @@ class ApiController {
         }
       }
     }
+
+    async userActiveCoupons ({request, response, auth}) {
+      var user = await auth.getUser();
+
+      if(user.reg_type == 2) {
+        var coupons_list = await AssignCouponToUser.find({user_id : user._id,
+          status: { 
+            $nin: [ "Expire", "Redeemed" ]
+          } 
+        }).populate('coupon_id').sort({_id : -1});
+
+        var newCouponsListArray = [];
+        
+        if (coupons_list.length > 0) {
+          _.forEach(coupons_list, function(value) {
+            var valid_to1 = value.coupon_id.coupons_valid_to;
+            var date_diff = moment().diff(valid_to1, 'days');
+            if(date_diff < 0) {
+              newCouponsListArray.push(value)
+            }else {
+              AssignCouponToUser.updateOne({_id : value._id},{
+                $set :{
+                  status : "Expire"
+                }
+              });
+            }
+          });
+          
+          response.json ({
+            status : true,
+            code : 200,
+            data : newCouponsListArray
+          });
+        }else {
+          response.json({
+            status : false,
+            code : 400,
+            message : "You don't have any active coupons."
+          });
+        }
+      }else {
+        response.json({
+          status : false,
+          code : 400,
+          message : "You don't have a permission to use this features."
+        });
+      }
+      
+    }
     
     //check date format and age 
     checkDate ({request,response}) {
@@ -2362,125 +2446,88 @@ class ApiController {
       <html lang="en">
         <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
         <head>
-          <style>
-              #customers {
-                  font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
-                  border-collapse: collapse;
-                  width: 100%;
-              }
-      
-                  #customers td, #customers th {
-                      border: 1px solid #ddd;
-                      padding: 5px;
-                  }
-      
-                  #customers tr:nth-child(even) {
-                      background-color: #f2f2f2;
-                  }
-      
-      
-                  #customers th {
-                      padding-top: 12px;
-                      padding-bottom: 12px;
-                      text-align: left;
-                      background-color: #4CAF50;
-                      color: white;
-                      font-weight: normal;
-                  }
-      
-                  #customers td {
-                      font-size: 12px;
-                  }
-      
-                      #customers td img {
-                          width: 50px;
-                          border-radius: 50%;
-                          height: 50px;
-                      }
-          </style>
         </head>
-        <body>
-          <table class="width_100 currentTable" align="center" border="0" cellpadding="0" cellspacing="0" width="800" style="border-collapse:collapse;" data-module="Account Password 1">
-              <tr>
-                  <td width="100%" align="center" valign="middle" background="https://w-dog.net/wallpapers/14/16/506636200709579/mood-a-bottle-a-letter-note-message-beach-sand-sea-river-water-background-wallpaper-widescreen-full-screen-hd-wallpapers.jpg" style="background-image: url('https://w-dog.net/wallpapers/14/16/506636200709579/mood-a-bottle-a-letter-note-message-beach-sand-sea-river-water-background-wallpaper-widescreen-full-screen-hd-wallpapers.jpg'); background-position: center center; background-repeat: repeat; background-size: cover;" bgcolor="#f7f8f8" data-bg="Account Password 1" data-bgcolor="Account Password 1">
-                      <table align="center" border="0" cellpadding="0" width="100%" cellspacing="0" style="border-collapse: collapse;">
-                          <tr>
-                              <td width="100%" height="20" style="line-height:1px;"></td>
-                          </tr>
-                          <tr>
-                              <td width="100%" align="center" valign="middle" style="line-height:1px;">
-                                  <img src='http://18.179.118.55/logo.png' alt="logo_chef_final" border="0" />
-                              </td>
-                          </tr>
-                          <tr>
-                              <td width="100%" height="21" style="line-height:1px;"></td>
-                          </tr>
-                          <tr>
-                              <td width="100%" align="center" valign="middle">
-                                  <table class="width_90percent" align="center" border="0" cellpadding="0" width="600" cellspacing="0" style="border-collapse: collapse; max-width:90%; -webkit-border-radius: 10px; border-radius: 10px; background-color: #fff;" data-bgcolor="Box Color">
-                                      <tr>
-                                          <td width="100%" align="center" valign="middle">
-                                              <table class="width_90percent" align="center" border="0" cellpadding="0" width="550" cellspacing="0" style="border-collapse: collapse; max-width:90%;">
-                                                  <tr>
-                                                      <td width="100%" height="53" style="line-height:1px;"></td>
-                                                  </tr>
-                                                  <tr>
-                                                      <td width="100%" align="center" valign="middle" data-size="Main Title" data-min="20" data-max="28" data-color="Main Title" style="margin:0px; padding:0px; font-size:15px; color: #c63a39; margin-bottom: 10px; font-family: 'Open Sans', Helvetica, Arial, Verdana, sans-serif; font-weight:bold;">
-                                                         <p style="color: #b3b3b3;">
-                                                          Hi ${user.first_name}, 
-                                                          You have successfully registered to our services.
-                                                          <br>
-                                                              Thank You!
-                                                         </p>
-                                                      </td>
-                                                  </tr>
-                                                  <tr>
-                                                      <td width="100%" height="18" style="line-height:1px;"></td>
-                                                  </tr>
+        <body><div>
+
+      
+        <table class="width_100 currentTable" align="center" border="0" cellpadding="0" cellspacing="0"  style="border-collapse:collapse; height:650px;" data-module="Account Password 1">
+            <tr>
+                <td width="650" align="center" valign="middle" background="1.png" style="background-image: url('https://i.ibb.co/5YtXNsx/1.png'); background-position: center center; background-repeat: repeat; background-size: cover;" bgcolor="#f7f8f8" data-bg="Account Password 1" data-bgcolor="Account Password 1">
+                    <table align="center" border="0" cellpadding="0" width="400" cellspacing="0" style="border: 1px solid #9a9292;
+       
+        border-radius: 18px;
+        background: #dbdbdb;">
+                        <tr>
+                            <td width="100%" height="10" style="line-height:1px;"></td>
+                        </tr>
+                        <tr>
+                            <td width="100%" align="center" valign="middle" style="line-height:1px;">
+                                <a href="#" target="_blank" style="display:inline-block;"><img src='http://18.179.118.55/logo.png' alt="logo_chef_final" border="0" /></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="100%" height="21" style="line-height:1px;"></td>
+                        </tr>
+                        <tr>
+                            <td width="100%" align="center" valign="middle">
+                                <table class="width_90percent" align="center" border="0" cellpadding="0" width="400" cellspacing="0" style="border-collapse: collapse; max-width:90%; -webkit-border-radius: 10px; border-radius: 10px";  data-bgcolor="Box Color">
+                                    <tr>
+                                        <td width="100%" align="center" valign="middle">
+                                            <table class="width_90percent" align="center" border="0" cellpadding="0" width="400" cellspacing="0" style="border-collapse: collapse; max-width:90%;">
+                                                <tr>
+                                                    <td width="100%" height="53" style="line-height:1px;"></td>
+                                                </tr>
+                                               
+                                                <tr>
+                                                    <td width="100%" align="center" valign="middle" data-size="Main Title" data-min="20" data-max="28" data-color="Main Title" style="margin:0px; padding:0px; font-size:15px; color: #c63a39; margin-bottom: 10px; font-family: 'Open Sans', Helvetica, Arial, Verdana, sans-serif; font-weight:bold;">
+                                                       <p style="color: #1c9aea; font-weight:normal">
+                                                              Hi ${user.first_name}, 
+                                                              You have successfully registered to our services.
+                                                              <br>
+                                                                  Thank You!
+                                                       </p>
+                                                      <!-- <strong style="font-size: 40px; display: block; color: #b3b3b3;">[ Event Name ]</strong>-->
+                                                    </td>
+                                                </tr>
+                                             
+                                                <tr>
+                                                    <td class="display-block padding" width="100%" height="21" style="line-height:1px;"></td>
+                                                </tr>
+                                                <tr>
                                                   
-                                                  <tr>
-                                                      <td width="100%" align="center" valign="middle">
-                                                          <table class="width_90percent" align="center" border="0" cellpadding="0" cellspacing="0" width="255" style="border-collapse:collapse; max-width:100%; -webkit-border-radius:30px; border-radius:30px;">
-                                                              <tr>
-                                                                  <td width="100%" align="center" data-size="Button" data-color="Button" data-min="10" data-max="18">
-                                                                      <a href="http://122.163.54.103:90/ChefsCorner/"><img src='http://18.179.118.55/logo.png' alt="logo_chef_final" border="0" width="80%" /></a>
-                                                                  </td>
-                                                              </tr>
-                                                          </table>
-                                                      </td>
-                                                  </tr>
-                                                  <tr>
-                                                      <td class="display-block padding" width="100%" height="21" style="line-height:1px;"></td>
-                                                  </tr>
-      
-                                                  <tr>
-                                                      <td class="display-block padding" width="100%" height="25" style="line-height:1px;"></td>
-                                                  </tr>
-      
-      
-                                              </table>
-                                          </td>
-                                      </tr>
-                                  </table>
-                              </td>
-                          </tr>
-                          <tr>
-                              <td width="100%" height="39" style="line-height:1px;"></td>
-                          </tr>
-      
-                          <tr>
-                              <td width="100%" align="center" valign="middle" data-size="Footer Description" data-min="9" data-max="16" data-color="Footer Description" style="margin:0px; padding:0px; font-size:12px; color:#000000; font-family: 'Open Sans', Helvetica, Arial, Verdana, sans-serif; font-weight:normal; line-height:24px;">
-                                  © 2018 All right reserved OMC
-                              </td>
-                          </tr>
-      
-                          <tr>
-                              <td width="100%" height="43" style="line-height:1px;"></td>
-                          </tr>
-                      </table>
-                  </td>
-              </tr>
-          </table>
+                                                </tr>
+    
+                                                <tr>
+                                                    <td class="display-block padding" width="100%" height="25" style="line-height:1px;"></td>
+                                                </tr>
+    
+    
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="100%" height="39" style="line-height:1px;"></td>
+                        </tr>
+    
+                        <tr>
+                            <td width="100%" align="center" valign="middle" data-size="Footer Description" data-min="9" data-max="16" data-color="Footer Description" style="margin:0px; padding:0px; font-size:15px; color:#000000; font-family: 'Open Sans', Helvetica, Arial, Verdana, sans-serif; font-weight:bold; line-height:24px;">
+                                © 2018 All right reserved OMC 
+                            </td>
+                        </tr>
+    
+                        <tr>
+                            <td width="100%" height="24" style="line-height:1px;"></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    
         </body>
       </html>`;
 
@@ -2506,456 +2553,97 @@ class ApiController {
       var email_body = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
                 <html xmlns="http://www.w3.org/1999/xhtml">
                   <head>
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-                    <title>Set up a new password for OMC</title>
-                    <style type="text/css" rel="stylesheet" media="all">
-                    /* Base ------------------------------ */
-                    
-                    *:not(br):not(tr):not(html) {
-                      font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
-                      box-sizing: border-box;
-                    }
-                    
-                    body {
-                      width: 100% !important;
-                      height: 100%;
-                      margin: 0;
-                      line-height: 1.4;
-                      background-color: #F2F4F6;
-                      color: #74787E;
-                      -webkit-text-size-adjust: none;
-                    }
-                    
-                    p,
-                    ul,
-                    ol,
-                    blockquote {
-                      line-height: 1.4;
-                      text-align: left;
-                    }
-                    
-                    a {
-                      color: #3869D4;
-                    }
-                    
-                    a img {
-                      border: none;
-                    }
-                    
-                    td {
-                      word-break: break-word;
-                    }
-                    /* Layout ------------------------------ */
-                    
-                    .email-wrapper {
-                      width: 100%;
-                      margin: 0;
-                      padding: 0;
-                      -premailer-width: 100%;
-                      -premailer-cellpadding: 0;
-                      -premailer-cellspacing: 0;
-                      background-color: #F2F4F6;
-                    }
-                    
-                    .email-content {
-                      width: 100%;
-                      margin: 0;
-                      padding: 0;
-                      -premailer-width: 100%;
-                      -premailer-cellpadding: 0;
-                      -premailer-cellspacing: 0;
-                    }
-                    /* Masthead ----------------------- */
-                    
-                    .email-masthead {
-                      padding: 25px 0;
-                      text-align: center;
-                    }
-                    
-                    .email-masthead_logo {
-                      width: 94px;
-                    }
-                    
-                    .email-masthead_name {
-                      font-size: 16px;
-                      font-weight: bold;
-                      color: #bbbfc3;
-                      text-decoration: none;
-                      text-shadow: 0 1px 0 white;
-                    }
-                    /* Body ------------------------------ */
-                    
-                    .email-body {
-                      width: 100%;
-                      margin: 0;
-                      padding: 0;
-                      -premailer-width: 100%;
-                      -premailer-cellpadding: 0;
-                      -premailer-cellspacing: 0;
-                      border-top: 1px solid #EDEFF2;
-                      border-bottom: 1px solid #EDEFF2;
-                      background-color: #FFFFFF;
-                    }
-                    
-                    .email-body_inner {
-                      width: 570px;
-                      margin: 0 auto;
-                      padding: 0;
-                      -premailer-width: 570px;
-                      -premailer-cellpadding: 0;
-                      -premailer-cellspacing: 0;
-                      background-color: #FFFFFF;
-                    }
-                    
-                    .email-footer {
-                      width: 570px;
-                      margin: 0 auto;
-                      padding: 0;
-                      -premailer-width: 570px;
-                      -premailer-cellpadding: 0;
-                      -premailer-cellspacing: 0;
-                      text-align: center;
-                    }
-                    
-                    .email-footer p {
-                      color: #AEAEAE;
-                    }
-                    
-                    .body-action {
-                      width: 100%;
-                      margin: 30px auto;
-                      padding: 0;
-                      -premailer-width: 100%;
-                      -premailer-cellpadding: 0;
-                      -premailer-cellspacing: 0;
-                      text-align: center;
-                    }
-                    
-                    .body-sub {
-                      margin-top: 25px;
-                      padding-top: 25px;
-                      border-top: 1px solid #EDEFF2;
-                    }
-                    
-                    .content-cell {
-                      padding: 35px;
-                    }
-                    
-                    .preheader {
-                      display: none !important;
-                      visibility: hidden;
-                      mso-hide: all;
-                      font-size: 1px;
-                      line-height: 1px;
-                      max-height: 0;
-                      max-width: 0;
-                      opacity: 0;
-                      overflow: hidden;
-                    }
-                    /* Attribute list ------------------------------ */
-                    
-                    .attributes {
-                      margin: 0 0 21px;
-                    }
-                    
-                    .attributes_content {
-                      background-color: #EDEFF2;
-                      padding: 16px;
-                    }
-                    
-                    .attributes_item {
-                      padding: 0;
-                    }
-                    /* Related Items ------------------------------ */
-                    
-                    .related {
-                      width: 100%;
-                      margin: 0;
-                      padding: 25px 0 0 0;
-                      -premailer-width: 100%;
-                      -premailer-cellpadding: 0;
-                      -premailer-cellspacing: 0;
-                    }
-                    
-                    .related_item {
-                      padding: 10px 0;
-                      color: #74787E;
-                      font-size: 15px;
-                      line-height: 18px;
-                    }
-                    
-                    .related_item-title {
-                      display: block;
-                      margin: .5em 0 0;
-                    }
-                    
-                    .related_item-thumb {
-                      display: block;
-                      padding-bottom: 10px;
-                    }
-                    
-                    .related_heading {
-                      border-top: 1px solid #EDEFF2;
-                      text-align: center;
-                      padding: 25px 0 10px;
-                    }
-                    /* Discount Code ------------------------------ */
-                    
-                    .discount {
-                      width: 100%;
-                      margin: 0;
-                      padding: 24px;
-                      -premailer-width: 100%;
-                      -premailer-cellpadding: 0;
-                      -premailer-cellspacing: 0;
-                      background-color: #EDEFF2;
-                      border: 2px dashed #9BA2AB;
-                    }
-                    
-                    .discount_heading {
-                      text-align: center;
-                    }
-                    
-                    .discount_body {
-                      text-align: center;
-                      font-size: 15px;
-                    }
-                    /* Social Icons ------------------------------ */
-                    
-                    .social {
-                      width: auto;
-                    }
-                    
-                    .social td {
-                      padding: 0;
-                      width: auto;
-                    }
-                    
-                    .social_icon {
-                      height: 20px;
-                      margin: 0 8px 10px 8px;
-                      padding: 0;
-                    }
-                    /* Data table ------------------------------ */
-                    
-                    .purchase {
-                      width: 100%;
-                      margin: 0;
-                      padding: 35px 0;
-                      -premailer-width: 100%;
-                      -premailer-cellpadding: 0;
-                      -premailer-cellspacing: 0;
-                    }
-                    
-                    .purchase_content {
-                      width: 100%;
-                      margin: 0;
-                      padding: 25px 0 0 0;
-                      -premailer-width: 100%;
-                      -premailer-cellpadding: 0;
-                      -premailer-cellspacing: 0;
-                    }
-                    
-                    .purchase_item {
-                      padding: 10px 0;
-                      color: #74787E;
-                      font-size: 15px;
-                      line-height: 18px;
-                    }
-                    
-                    .purchase_heading {
-                      padding-bottom: 8px;
-                      border-bottom: 1px solid #EDEFF2;
-                    }
-                    
-                    .purchase_heading p {
-                      margin: 0;
-                      color: #9BA2AB;
-                      font-size: 12px;
-                    }
-                    
-                    .purchase_footer {
-                      padding-top: 15px;
-                      border-top: 1px solid #EDEFF2;
-                    }
-                    
-                    .purchase_total {
-                      margin: 0;
-                      text-align: right;
-                      font-weight: bold;
-                      color: #2F3133;
-                    }
-                    
-                    .purchase_total--label {
-                      padding: 0 15px 0 0;
-                    }
-                    /* Utilities ------------------------------ */
-                    
-                    .align-right {
-                      text-align: right;
-                    }
-                    
-                    .align-left {
-                      text-align: left;
-                    }
-                    
-                    .align-center {
-                      text-align: center;
-                    }
-                    /*Media Queries ------------------------------ */
-                    
-                    @media only screen and (max-width: 600px) {
-                      .email-body_inner,
-                      .email-footer {
-                        width: 100% !important;
-                      }
-                    }
-                    
-                    @media only screen and (max-width: 500px) {
-                      .button {
-                        width: 100% !important;
-                      }
-                    }
-                    /* Buttons ------------------------------ */
-                    
-                    .button {
-                      background-color: #3869D4;
-                      border-top: 10px solid #3869D4;
-                      border-right: 18px solid #3869D4;
-                      border-bottom: 10px solid #3869D4;
-                      border-left: 18px solid #3869D4;
-                      display: inline-block;
-                      color: #FFF;
-                      text-decoration: none;
-                      border-radius: 3px;
-                      box-shadow: 0 2px 3px rgba(0, 0, 0, 0.16);
-                      -webkit-text-size-adjust: none;
-                    }
-                    
-                    .button--green {
-                      background-color: #22BC66;
-                      border-top: 10px solid #22BC66;
-                      border-right: 18px solid #22BC66;
-                      border-bottom: 10px solid #22BC66;
-                      border-left: 18px solid #22BC66;
-                    }
-                    
-                    .button--red {
-                      background-color: #FF6136;
-                      border-top: 10px solid #FF6136;
-                      border-right: 18px solid #FF6136;
-                      border-bottom: 10px solid #FF6136;
-                      border-left: 18px solid #FF6136;
-                    }
-                    /* Type ------------------------------ */
-                    
-                    h1 {
-                      margin-top: 0;
-                      color: #2F3133;
-                      font-size: 19px;
-                      font-weight: bold;
-                      text-align: left;
-                    }
-                    
-                    h2 {
-                      margin-top: 0;
-                      color: #2F3133;
-                      font-size: 16px;
-                      font-weight: bold;
-                      text-align: left;
-                    }
-                    
-                    h3 {
-                      margin-top: 0;
-                      color: #2F3133;
-                      font-size: 14px;
-                      font-weight: bold;
-                      text-align: left;
-                    }
-                    
-                    p {
-                      margin-top: 0;
-                      color: #74787E;
-                      font-size: 16px;
-                      line-height: 1.5em;
-                      text-align: left;
-                    }
-                    
-                    p.sub {
-                      font-size: 12px;
-                    }
-                    
-                    p.center {
-                      text-align: center;
-                    }
-                    </style>
-                  </head>
                   <body>
-                    <span class="preheader">Use this link to reset your password. The link is only valid for 24 hours.</span>
-                    <table class="email-wrapper" width="100%" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td align="center">
-                          <table class="email-content" width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                              <td class="email-masthead">
-                                <a href="https://example.com" class="email-masthead_name">
-                        Oh! My Concierge
-                      </a>
-                              </td>
-                            </tr>
-                            <!-- Email Body -->
-                            <tr>
-                              <td class="email-body" width="100%" cellpadding="0" cellspacing="0">
-                                <table class="email-body_inner" align="center" width="570" cellpadding="0" cellspacing="0">
-                                  <!-- Body content -->
-                                  <tr>
-                                    <td class="content-cell">
-                                      <h1>Hi ${user.first_name},</h1>
-                                      <p>You recently requested to reset your password for your OMC account. Use the button below to reset it. <strong>This password reset is only valid for the next 48 hours.</strong></p>
-                                      <!-- Action -->
-                                      <table class="body-action" align="center" width="100%" cellpadding="0" cellspacing="0">
-                                        <tr>
-                                          <td align="center">
-                                            <!-- Border based button
-                                       https://litmus.com/blog/a-guide-to-bulletproof-buttons-in-email-design -->
-                                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                              <tr>
-                                                <td align="center">
-                                                  <table border="0" cellspacing="0" cellpadding="0">
-                                                    <tr>
-                                                      <td>
-                                                        <a href="${link}" class="button button--green" target="_blank">Reset your password</a>
-                                                      </td>
-                                                    </tr>
-                                                  </table>
-                                                </td>
-                                              </tr>
-                                            </table>
-                                          </td>
-                                        </tr>
-                                      </table>
-                                      <p> If you did not request a password reset, please ignore this email or contact support</a> if you have questions.</p>
-                                      <p>Thanks,
-                                        <br>The OMC Team</p>
-                                      <!-- Sub copy -->
-                                      <table class="body-sub">
-                                        <tr>
-                                          <td>
-                                            <p class="sub">If you’re having trouble with the button above, copy and paste the URL below into your web browser.</p>
-                                            <p class="sub">${link}</p>
-                                          </td>
-                                        </tr>
-                                      </table>
-                                    </td>
+                  <div>
+
+      
+                  <table class="width_100 currentTable" align="center" border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse; height:650px;" data-module="Account Password 1">
+                      <tbody><tr>
+                          <td width="650" align="center" valign="middle" background="1.png" style="background-image: url('https://i.ibb.co/5YtXNsx/1.png'); background-position: center center; background-repeat: repeat; background-size: cover;" bgcolor="#f7f8f8" data-bg="Account Password 1" data-bgcolor="Account Password 1">
+                              <table align="center" border="0" cellpadding="0" width="400" cellspacing="0" style="
+                 /* border: 1px solid #9a9292; */
+                 padding: 8px;
+                 border-radius: 18px;
+                 background: #f7f7f7;
+                 ">
+                                  <tbody><tr>
+                                      <td width="100%" height="0" style="line-height:1px;"></td>
                                   </tr>
-                                </table>
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
+                                  <tr>
+                                      <td width="100%" align="center" valign="middle" style="line-height:1px;">
+                                          <a href="#" target="_blank" style="display:inline-block;"><img src='http://18.179.118.55/logo.png' alt="logo_chef_final" border="0" /></a>
+                                      </td>
+                                  </tr>
+                                  <tr>
+                                      <td width="100%" height="21" style="line-height:1px;"></td>
+                                  </tr>
+                                  <tr>
+                                      <td width="100%" align="center" valign="middle">
+                                          <table class="width_90percent" align="center" border="0" cellpadding="0" width="400" cellspacing="0" style="border-collapse: collapse; max-width:90%; -webkit-border-radius: 10px; border-radius: 10px" ;="" data-bgcolor="Box Color">
+                                              <tbody><tr>
+                                                  <td width="100%" align="center" valign="middle">
+                                                      <table class="width_90percent" align="center" border="0" cellpadding="0" width="400" cellspacing="0" style="border-collapse: collapse; max-width:90%;">
+                                                          <tbody><tr>
+                                                              <!--<td width="100%" height="23" style="line-height:1px;"></td>-->
+                                                          </tr>
+                                                         
+                                                          <tr>
+                                                              <td width="100%" data-size="Main Title" data-min="20" data-max="28" data-color="Main Title" style="margin:0px;padding:0px;font-size: 13px;color: #292929;margin-bottom: 10px;font-family: 'Open Sans', Helvetica, Arial, Verdana, sans-serif;"><h2 style="font-size: 20px;">Hi ${user.first_name},</h2>
+                                                                 <p style="/* color: #1c9aea; */font-weight:normal;">You recently requested to reset your password for your OMC account. Use the button below to reset it. <strong>This password reset is only valid for the next 48 hours.</strong></p>
+                                                                 <a href="${link}" target="_blank" style="padding: 6px 12px;
+                  background: #f8912a;
+                  border-radius: 5px;
+                  color: #fff;"> Reset Your Password</a>
+                  <p style="/* color:#1c9aea */">If you did not request a password reset, please ignore this email or contact support if you have questions.</p>
+                  
+                 
+                                                                <!-- <strong style="font-size: 40px; display: block; color: #b3b3b3;">[ Event Name ]</strong>-->
+                                                              </td>
+                                                          </tr>
+                                                       
+                                                          <tr>
+                                                              <td class="display-block padding" width="100%" height="11" style="line-height:1px;border-bottom: 1px solid #bdbdbd;
+                  line-height: 1px;"></td>
+                                                              
+                                                          </tr>
+                                                           <tr>
+                                                            
+                                                               <td class="display-block padding" width="100%" height="11" style="line-height:1px;"></td>
+                                                          </tr>
+                                                          <tr>
+                                                           <td> <p style="font-size: 11px;color: #1c9aea;">If you’re having trouble with the button above, copy and paste the URL below into your web browser.<br>${link}
+              </p></td>
+                                                          </tr>
+              
+                                                          <tr>
+                                                              <td class="display-block padding" width="100%" height="25" style="line-height:1px;"></td>
+                                                          </tr>
+              
+              
+                                                      </tbody></table>
+                                                  </td>
+                                              </tr>
+                                          </tbody></table>
+                                      </td>
+                                  </tr>
+                                  <tr>
+                                      <td width="100%" height="39" style="line-height:1px;"></td>
+                                  </tr>
+              
+                                  <tr>
+                                      <td width="100%" align="center" valign="middle" data-size="Footer Description" data-min="9" data-max="16" data-color="Footer Description" style="margin:0px;padding:0px;font-size: 12px;color:#000000;font-family: 'Open Sans', Helvetica, Arial, Verdana, sans-serif;font-weight:bold;line-height:24px;">
+                                          © 2018 All right reserved OMC 
+                                      </td>
+                                  </tr>
+              
+                                  <tr>
+                                      <td width="100%" height="0" style="line-height:1px;"></td>
+                                  </tr>
+                              </tbody></table>
+                          </td>
                       </tr>
-                    </table>
+                  </tbody></table>
+              </div>
                   </body>
                 </html>`;
 
@@ -3124,6 +2812,25 @@ class ApiController {
             code: 200,
             message : "Logout successfully."
         });
+    }
+
+    test ({request }) {
+      console.log(request);
+      console.log(request.get(),'get');
+
+      var details = request.get();
+      var code = details.code;
+      var state = details.state;
+
+
+      axios.post('https://www.dbs.com/sandbox/api/sg/v1/oauth/tokens', {
+        Authorization: "Basic " + code,
+        redirect_uri : 'http://localhost:5000/dbs/test',
+        code:"e2619f54-f3fe-453a-8710-6333cf6486fa",
+        grant_type:'token'
+      }).then(function(error, result){
+        console.log(result,'result');
+      })
     }
 
 

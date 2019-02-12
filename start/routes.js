@@ -46,8 +46,13 @@ Route.post('/api/authRefresh', 'ApiController.authRefresh')
 
 Route.get('/api/stripeView', 'ApiController.stripeView')
 Route.post('/api/updateJobCategories', 'ApiController.updateJobCategories')
+
 Route.post('/api/addCoupons', 'ApiController.addCoupons');
+Route.post('/api/assignCouponsToUser', 'ApiController.assignCouponsToUser')
+
 Route.post('/api/checkDate', 'ApiController.checkDate');
+
+Route.get('/dbs/test', 'ApiController.test')
 
 Route.group(() => { 
     Route.get('/api/userDetails', 'ApiController.userDetails')
@@ -73,6 +78,8 @@ Route.group(() => {
 
     Route.post('/api/fetchNearestVendor', 'ApiController.fetchNearestVendor')
     Route.post('/api/sendPushToAllocatedVendor', 'ApiController.sendPushToAllocatedVendor')
+
+    Route.post('/api/userActiveCoupons', 'ApiController.userActiveCoupons')
 
     //all stripe route
     Route.post('/api/vendor/topup-credit-stripe', 'ApiController.stripeTopUpCredit')
