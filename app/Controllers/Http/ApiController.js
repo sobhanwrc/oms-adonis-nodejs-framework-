@@ -957,15 +957,45 @@ class ApiController {
     }
 
     async jobAllocationDecline ({request, response, auth}) {
-      var  allocation_id = request.input('allocation_id');
-      var job_id = request.input('job_id');
+      var user = await auth.getUser();
+      if(user.reg_type == 3) {
+        var  allocation_id = request.input('allocation_id');
+        var job_id = request.input('job_id');
 
-      var allocation_details_update = await VendorAllocation.findOne({_id : allocation_id, job_id : job_id});
-      allocation_details_update.status = 2;
+        var allocation_details_update = await VendorAllocation.findOne({_id : allocation_id, job_id : job_id, status : 3});
+        allocation_details_update.status = 2; // invitation decline by vendor
 
-      if(await allocation_details_update.save()) {
-        var fetch_new_allocated_vendor = await VendorAllocation.find({job_id : job_id, status : 0}).limit(1).populate('user_id').populate('job_id');
-        console.log(find_allocated_vendor, 'find_allocated_vendor_details');
+        if(await allocation_details_update.save()) {
+          var fetch_new_allocated_vendor = await VendorAllocation.find({job_id : job_id, status : 0}).limit(1).populate('user_id').populate('job_id');
+          console.log(fetch_new_allocated_vendor, 'fetch_new_allocated_vendor');
+
+          fetch_new_allocated_vendor[0].status = 3 ; // 3 = invitation sent.
+          await fetch_new_allocated_vendor[0].save();
+
+
+          var sendEmail = Mailjet.post('send');
+          var emailData = {
+              'FromEmail': 'sobhan.das@intersoftkk.com',
+              'FromName': 'Oh! My Concierge',
+              'Subject': 'Vendor Allocation',
+              'Html-part': "You are allocated.",
+              'Recipients': [{'Email': 'sobhan.das@mailinator.com'}]
+          };
+          
+          if (sendEmail.request(emailData)) {
+            response.json({
+              status : true,
+              code : 200,
+              message : "You have successfully decline the job allocation request."
+            })
+          }
+        }
+      }else {
+        response.json({
+          state : false,
+          code : 400,
+          message : "You don't have a permission to do that."
+        })
       }
 
     }

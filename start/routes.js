@@ -78,6 +78,7 @@ Route.group(() => {
 
     Route.post('/api/fetchNearestVendor', 'ApiController.fetchNearestVendor')
     Route.post('/api/sendPushToAllocatedVendor', 'ApiController.sendPushToAllocatedVendor')
+    Route.post('/api/jobAllocationDecline', 'ApiController.jobAllocationDecline')
 
     Route.post('/api/userActiveCoupons', 'ApiController.userActiveCoupons')
 
