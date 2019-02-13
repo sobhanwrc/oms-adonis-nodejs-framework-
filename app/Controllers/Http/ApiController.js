@@ -935,16 +935,16 @@ class ApiController {
         var emailData = {
             'FromEmail': 'sobhan.das@intersoftkk.com',
             'FromName': 'Oh! My Concierge',
-            'Subject': 'Vendor Allocation',
-            'Html-part': "You are allocated.",
-            'Recipients': [{'Email': 'sobhan.das@mailinator.com'}]
+            'Subject': 'Invitation for Job Request',
+            'Html-part': "You are invited for a job. Please see your job requests section.",
+            'Recipients': [{'Email': vendor_email}]
         };
         
         if (sendEmail.request(emailData)) {
           response.json({
             status : true,
             code : 200,
-            message : "Vendor allocated successfully."
+            message : "Invitation has sent to a particular vendor successfully."
           })
         }
       }else {
@@ -977,9 +977,9 @@ class ApiController {
           var emailData = {
               'FromEmail': 'sobhan.das@intersoftkk.com',
               'FromName': 'Oh! My Concierge',
-              'Subject': 'Vendor Allocation',
-              'Html-part': "You are allocated.",
-              'Recipients': [{'Email': 'sobhan.das@mailinator.com'}]
+              'Subject': 'Invitation for Job Request',
+              'Html-part': "You are invited for a job. Please see your job requests section.",
+              'Recipients': [{'Email': fetch_new_allocated_vendor[0].user_id.email}]
           };
           
           if (sendEmail.request(emailData)) {
@@ -1000,11 +1000,66 @@ class ApiController {
 
     }
 
+    async jobAllocationAccept ({request, response, auth}) {
+      var user = await auth.getUser();
+      if(user.reg_type == 3) {
+        var  allocation_id = request.input('allocation_id');
+        var job_id = request.input('job_id');
+
+        var fetch_allocated_details = await VendorAllocation.findOne({job_id : job_id, status : 3, _id : allocation_id}).populate('user_id').populate('job_id');
+        
+        console.log(fetch_allocated_details, 'fetch_allocated_details');
+
+        fetch_allocated_details.status = 1 ; // 1 = invitation accept by vendor.
+        
+        if(await fetch_allocated_details.save()) {
+          var update_job = await Job.findOne({_id : fetch_allocated_details.job_id._id})
+          update_job.vendor_id = fetch_allocated_details.user_id._id;
+          update_job.job_allocated_to_vendor = 1;
+
+          await update_job.save();
+
+          response.json({
+            status : true,
+            code : 200,
+            message : "You have successfully accept this job request."
+          })
+        }
+
+      }else {
+        response.json({
+          status : false,
+          code : 400,
+          message : "You don't have a permission to do that."
+        })
+      }
+    }
+
+    async vendorsAllJobRequest ({response, auth}) {
+      var user = await auth.getUser();
+
+      var job_request_list = await VendorAllocation.find({user_id : user._id}).populate('job_id');
+
+      if(job_request_list.length > 0) {
+        response.json({
+          status : true,
+          code : 200,
+          data : job_request_list
+        })
+      }else {
+        response.json({
+          status : false,
+          code : 400,
+          message : "No record found."
+        })
+      }
+    }
+
     async jobList ({request, response, auth}) {
       var user = await auth.getUser();
       var all_jobs_list = await Job.find({user_id: user._id}).sort({ _id : -1 })
-      .populate('vendor_id')
-      .populate('job_category');
+      .populate('job_category')
+      .populate('vendor_id');
 
       if(all_jobs_list.length > 0) {
         response.json({
@@ -1767,8 +1822,8 @@ class ApiController {
           });
         }else {
           response.json({
-            status : false,
-            code : 400,
+            status : true,
+            code : 200,
             message : "You don't have any active coupons."
           });
         }
@@ -1784,7 +1839,14 @@ class ApiController {
     
     //check date format and age 
     checkDate ({request,response}) {
-      var date = request.input('date');
+      var date_str = request.input('date'); 
+      // dd/mm/yyyy
+      var date_arr = date_str.split('/');
+      var y = date_arr[2];
+      var m = date_arr[1];
+      var d = date_arr[0];
+      var date = y+'-'+m+'-'+d;
+
       var dob_check = request.input('dob_check');
       if (dob_check == 1) {
         var checking = moment(date, "YYYY-MM-DD").isValid();
