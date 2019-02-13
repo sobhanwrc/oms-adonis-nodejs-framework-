@@ -1851,6 +1851,7 @@ class ApiController {
       if (dob_check == 1) {
         var checking = moment(date, "YYYY-MM-DD").isValid();
         if(checking == true) {
+          // var future_date_isValid = moment().isBefore(date);
           var years = moment().diff(date, 'years');
           if(years >= 18) {
             response.json({
@@ -1864,7 +1865,7 @@ class ApiController {
               code : 400,
               message : "Sorry, you are not eligible to register. Age should be above 18 years."
             })
-          }
+          } 
         }else {
           response.json({
             status : false,
@@ -1875,11 +1876,21 @@ class ApiController {
       }else {
         var checking = moment(date, "YYYY-MM-DD").isValid();
         if(checking == true) {
-          response.json({
-            status : true,
-            code : 200,
-            message : "Date is correct."
-          });
+          var future_date_isValid = moment().isBefore(date);
+          if(future_date_isValid == true){
+            response.json({
+              status : true,
+              code : 200,
+              message : "Date is correct."
+            });
+          }else {
+            response.json({
+              status : false,
+              code : 400,
+              message : "Past date can't be accepted. Only future date allow from today"
+            });
+          }
+          
         }else {
           response.json({
             status : false,
