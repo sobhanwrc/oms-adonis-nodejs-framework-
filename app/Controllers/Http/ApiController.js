@@ -774,7 +774,15 @@ class ApiController {
         var service_require_at = request.input('service_require_at');
         var job_industry = request.input('job_industry');
         var job_category = request.input('job_category');
+        
         var job_date = request.input('job_date');
+        // dd/mm/yyyy
+        var date_arr = job_date.split('/');
+        var y = date_arr[2];
+        var m = date_arr[1];
+        var d = date_arr[0];
+        var date = y+'-'+m+'-'+d;
+
         var job_endDate = request.input('job_endDate');
         var job_amount = request.input('job_amount');
         var job_time = request.input('job_time');
@@ -817,7 +825,7 @@ class ApiController {
           job_amount : final_job_amount,
           job_industry : job_industry,
           job_category : job_category,
-          job_date : job_date,
+          job_date : date,
           job_endDate : job_endDate,
           job_time : job_time,
           job_end_time : job_end_time,
@@ -1887,7 +1895,7 @@ class ApiController {
             response.json({
               status : false,
               code : 400,
-              message : "Past date can't be accepted. Only future date allow from today"
+              message : "Past date can't be accepted. Only future date allow from today."
             });
           }
           
