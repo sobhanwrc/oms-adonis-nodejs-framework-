@@ -1930,7 +1930,7 @@ class ApiController {
         if(checking == true) {
           // var future_date_isValid = moment().isBefore(date);
           var years = moment().diff(date, 'years');
-          if(years >= 18) {
+          if(years >= 18 && years <= 70) {
             response.json({
               status : true,
               code : 200,
@@ -1940,7 +1940,7 @@ class ApiController {
             response.json({
               status : false,
               code : 400,
-              message : "Sorry, you are not eligible to register. Age should be above 18 years."
+              message : "Sorry, you are not eligible to register. Age should be above 18 years and not more than 70 years."
             })
           } 
         }else {
