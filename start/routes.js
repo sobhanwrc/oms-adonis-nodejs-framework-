@@ -82,6 +82,7 @@ Route.group(() => {
     Route.post('/api/jobAllocationAccept', 'ApiController.jobAllocationAccept')
 
     Route.get('/api/vendorsAllJobRequest', 'ApiController.vendorsAllJobRequest')
+    Route.get('/api/vendorAllAcceptAndDeclineJobs', 'ApiController.vendorAllAcceptAndDeclineJobs')
 
     Route.post('/api/userActiveCoupons', 'ApiController.userActiveCoupons')
 

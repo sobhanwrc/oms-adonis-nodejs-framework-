@@ -1046,13 +1046,35 @@ class ApiController {
     async vendorsAllJobRequest ({response, auth}) {
       var user = await auth.getUser();
 
-      var job_request_list = await VendorAllocation.find({user_id : user._id}).populate('job_id');
+      var job_request_list = await VendorAllocation.find({user_id : user._id, status :3}).populate('job_id').sort({_id : -1});
 
       if(job_request_list.length > 0) {
         response.json({
           status : true,
           code : 200,
           data : job_request_list
+        })
+      }else {
+        response.json({
+          status : false,
+          code : 400,
+          message : "No record found."
+        })
+      }
+    }
+
+    async vendorAllAcceptAndDeclineJobs ({response, auth}) {
+      var user = await auth.getUser();
+
+      var job_request_list_of_accept_decline = await VendorAllocation.find({user_id : user._id, status :{
+        $in : [1,2]
+      }}).populate('job_id').sort({_id : -1});
+
+      if(job_request_list_of_accept_decline.length > 0) {
+        response.json({
+          status : true,
+          code : 200,
+          data : job_request_list_of_accept_decline
         })
       }else {
         response.json({
@@ -1256,18 +1278,29 @@ class ApiController {
     async serviceAdd ({request, response, auth}) {
       try {
         var user = await auth.getUser();
+        // console.log(user,'user');
         if(user.reg_type == 3) {
+          var start_date = request.input('start_date');
+          var date_arr = start_date.split('/');
+          var y = date_arr[2];
+          var m = date_arr[1];
+          var d = date_arr[0];
+          var date = y+'-'+m+'-'+d;
+
           var add_service = new Service ({
             user_id : user._id,
             service_title : request.input('service_title'),
             // service_type : request.input('service_type'),
             service_category : request.input('service_category'),
             rate : request.input('rate'),
-            start_date : request.input('start_date'),
+            start_date : date,
             end_date : request.input('end_date'),
             description : request.input('description'),
             status : request.input('status') // 1 ='active',2='Inactive'
           });
+
+          // console.log(add_service,'add_service');
+          // return false;
   
           if(await add_service.save()) {
             response.json ({
@@ -1297,10 +1330,9 @@ class ApiController {
       var user = await auth.getUser();
       if(user.reg_type == 3) {
         var all_services = await Service.find({'user_id' : user._id})
-        .populate('service_type')
         .populate('service_category');
 
-        if(all_services) {
+        if(all_services.length > 0) {
           response.json({
             status : true,
             code : 200,
@@ -1811,13 +1843,21 @@ class ApiController {
         if (coupons_list.length > 0) {
           _.forEach(coupons_list, function(value) {
             var valid_to1 = value.coupon_id.coupons_valid_to;
+
             var date_diff = moment().diff(valid_to1, 'days');
-            if(date_diff < 0) {
+
+            if(date_diff <= 0) {
               newCouponsListArray.push(value)
             }else {
               AssignCouponToUser.updateOne({_id : value._id},{
                 $set :{
                   status : "Expire"
+                }
+              }).then(function(error, result){
+                if(error){
+                  throw error;
+                }else {
+                  console.log(result,'result');
                 }
               });
             }
@@ -1830,8 +1870,8 @@ class ApiController {
           });
         }else {
           response.json({
-            status : true,
-            code : 200,
+            status : false,
+            code : 400,
             message : "You don't have any active coupons."
           });
         }
@@ -1878,7 +1918,7 @@ class ApiController {
           response.json({
             status : false,
             code : 400,
-            message : "Date is not correct."
+            message : "Date is empty or not valid."
           })
         }
       }else {
@@ -1889,7 +1929,7 @@ class ApiController {
             response.json({
               status : true,
               code : 200,
-              message : "Date is correct."
+              message : "Date is empty or not valid."
             });
           }else {
             response.json({
@@ -1903,7 +1943,7 @@ class ApiController {
           response.json({
             status : false,
             code : 400,
-            message : "Date is not correct."
+            message : "Date is empty or not valid."
           })
         }
       }
@@ -2573,7 +2613,7 @@ class ApiController {
                         </tr>
                         <tr>
                             <td width="100%" align="center" valign="middle" style="line-height:1px;">
-                                <a href="#" target="_blank" style="display:inline-block;"><img src='http://18.179.118.55/logo.png' alt="logo_chef_final" border="0" /></a>
+                                <a href="#" target="_blank" style="display:inline-block;"><img src='http://18.179.118.55:5000/logo.png' alt="logo_chef_final" border="0" /></a>
                             </td>
                         </tr>
                         <tr>
@@ -2682,7 +2722,7 @@ class ApiController {
                                   </tr>
                                   <tr>
                                       <td width="100%" align="center" valign="middle" style="line-height:1px;">
-                                          <a href="#" target="_blank" style="display:inline-block;"><img src='http://18.179.118.55/logo.png' alt="logo_chef_final" border="0" /></a>
+                                          <a href="#" target="_blank" style="display:inline-block;"><img src='http://18.179.118.55:5000/logo.png' alt="logo_chef_final" border="0" /></a>
                                       </td>
                                   </tr>
                                   <tr>

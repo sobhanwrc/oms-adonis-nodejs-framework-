@@ -1,0 +1,36 @@
+/* You can add global styles to this file, and also import other style files */
+/* @import"assets/frontEnd/css/bootstrap.min.css"; */
+@import"https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css";
+
+/* @import"assets/userdash/plugins/bootstrap/css/bootstrap.css"; */
+@import"assets/frontEnd/css/jquery-ui.css";
+
+@import"assets/frontEnd/css/fontawesome-all.min.css";
+@import"assets/frontEnd/css/magnific-popup.css";
+@import"assets/frontEnd/css/owl.carousel.min.css";
+@import"assets/frontEnd/css/animate.css";
+@import"assets/frontEnd/fonts/flaticon.css";
+@import"assets/frontEnd/css/style.css";
+@import"assets/frontEnd/css/slicknav.min.css";
+@import"assets/frontEnd/css/tempusdominus-bootstrap-4.min.css";
+@import"assets/frontEnd/css/responsive.css";
+
+
+
+
+
+@import"assets/userdash/plugins/node-waves/waves.css";
+@import"assets/userdash/plugins/animate-css/animate.css";
+@import"assets/userdash/plugins/morrisjs/morris.css";
+@import"assets/userdash/css/font-awesome.css";
+
+@import"assets/userdash/css/user-style.css";
+/* @import"assets/userdash/plugins/bootstrap/css/bootstrap.css"; */
+
+
+@import"assets/userdash/css/font-awesome.min.css";
+@import"assets/userdash/plugins/jquery-datatable/skin/bootstrap/css/dataTables.bootstrap.css";
+@import"assets/userdash/plugins/bootstrap-select/css/bootstrap-select.css";
+@import"assets/userdash/plugins/bootstrap-material-datetimepicker/css/bootstrap-material-datetimepicker.css";
+@import"assets/userdash/css/themes/all-themes.css";
+

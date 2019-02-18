@@ -1,0 +1,207 @@
+<section class="content" *ngIf="userClaims">
+  <div class="container-fluid">
+      <div class="block-header">
+          <h2>PROFILE</h2>
+      </div>
+      <div class="row clearfix profile_edit">
+          <div class="body">
+              <ol class="breadcrumb breadcrumb-col-orange">
+                  <li><a href="javascript:void(0);">Dashboard</a></li>
+                  <li class="active">Profile</li>
+              </ol>
+          </div>
+          <a routerLink='/editProf' class="edit_sec">
+                      <i class="material-icons">mode_edit</i> 
+                  </a>
+      </div>
+      <div class="row clearfix" >
+          <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+              <div class="card text-center profile_info">
+                  <div class="profile_avatar img-circle">
+                      <img src={{userClaims.data.profile_image}} alt="avatar-5" class="img-circle"/>
+                  </div>
+                  <div class="profile_name">
+                      <h2>{{userClaims.data.first_name}}</h2>
+                      <p>
+                          Lorem ipsum dolor sit amet, consectetur adipiscing elit.Lorem ipsum dolor sit amet
+                      </p>
+                  </div>
+                  <ul class="profile_infolist">
+                      <li>
+                          <i class="fa fa-phone col-orange" aria-hidden="true"></i>
+                          <span>{{userClaims.data.phone_number}}</span>
+                      </li>
+                      <li>
+                          <i class="fa fa-map-marker col-orange" aria-hidden="true"></i>
+                          <span>{{userClaims.data.city}}</span>
+                      </li>
+                      <li>
+                          <i class="fa fa-envelope-o col-orange" aria-hidden="true"></i>
+                          <span><a href="javascript:void(0);">{{userClaims.data.email}}</a></span>
+                      </li>
+                  </ul>
+              </div>
+          </div>
+          <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
+              <div class="card profile_info">
+                  <div class="body">
+                      <!-- Nav tabs -->
+                      <ul class="nav nav-tabs tab-col-deep-orange" role="tablist">
+                          <li role="presentation" class="active">
+                              <a href="#home_with_icon_title" data-toggle="tab">
+                                  <i class="material-icons">person_outline</i> Personal Info
+                              </a>
+                          </li>
+                          <li role="presentation">
+                              <a href="#profile_with_icon_title" data-toggle="tab">
+                                  <i class="material-icons">credit_card</i> Account Info
+                              </a>
+                          </li>
+                          <li role="presentation">
+                              <a href="#messages_with_icon_title" data-toggle="tab">
+                                  <i class="material-icons">local_offer</i> Promo
+                              </a>
+                          </li>
+                         
+                      </ul>
+
+                      <!-- Tab panes -->
+                      <div class="tab-content">
+                          <div role="tabpanel" class="tab-pane fade in active" id="home_with_icon_title">
+                              <div class="basic_info_sec">
+                                  <div class="row clearfix">
+                                      <div class="col-lg-6">
+                                          <strong>Full Name :</strong>
+                                          <span>{{userClaims.data.first_name+" "+userClaims.data.middle_name+" "+userClaims.data.last_name}}</span>
+                                      </div>
+                                      <div class="col-lg-6">
+                                          <strong>Email :</strong>
+                                          <span><a href="javascript:void(0);">{{userClaims.data.email}}</a></span>
+                                      </div>
+                                      <div class="col-lg-6">
+                                          <strong>Gender :</strong>
+                                          <span>{{userClaims.data.gender}}</span>
+                                      </div>
+                                      <div class="col-lg-6">
+                                          <strong>Phone :</strong>
+                                          <span>{{userClaims.data.phone_number}}</span>
+                                      </div>
+                                      <div class="col-lg-6">
+                                          <strong>Date of Birth :</strong>
+                                          <span>{{userClaims.data.dob}}</span>
+                                      </div>
+                                      <div class="col-lg-6">
+                                          <strong>Location :</strong>
+                                          <span>{{userClaims.data.city}}</span>
+                                      </div>
+                                      <div class="col-lg-6">
+                                          <strong>Ref No:</strong>
+                                          <a href="#"><span>AHJKH67586</span></a>
+                                      </div>
+                                      <div class="col-lg-6">
+                                          <strong>Address :</strong>
+                                          <span>{{userClaims.data.address}} </span>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                          <div role="tabpanel" class="tab-pane fade" id="profile_with_icon_title">
+                              <div class="professional_info">
+                                  <div class="row clearfix">
+                                      <div class="col-lg-6">
+                                          <strong>Bank Name :</strong>
+                                          <span>{{userClaims.data.bank_information.bank_name}}</span>
+                                      </div>
+                                      <div class="col-lg-6">
+                                          <strong>Card Number :</strong>
+                                          <span>{{userClaims.data.bank_information.account_no}}</span>
+                                      </div>
+                                      <div class="col-lg-6">
+                                          <strong>Swifth Code :</strong>
+                                          <span>{{userClaims.data.bank_information.swift_code}}</span>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                          <div role="tabpanel" class="tab-pane fade" id="messages_with_icon_title">
+                              <div class="body promo_offer_sec">
+                                  <!-- Nav tabs -->
+                                  <ul class="nav nav-tabs tab-nav-right tab-col-deep-orange" role="tablist">
+                                      <li role="presentation" class="active"><a href="#actively" data-toggle="tab">Active Promo</a></li>
+                                      <li role="presentation"><a href="#expired" data-toggle="tab">Expired Promo</a></li>
+                                  </ul>
+
+                                  <!-- Tab panes -->
+                                  <div class="tab-content">
+                                      <div role="tabpanel" class="tab-pane fade in active" id="actively">
+                                          <div class="body table-responsive">
+                                              <table class="table">
+                                                  <thead>
+                                                      <tr>
+                                                          
+                                                          <th>Description</th>
+                                                          <th>Action</th>
+                                                      </tr>
+                                                  </thead>
+                                                  <tbody>
+                                                      <tr>
+                                                          
+                                                          <td><strong class="col-pink font-24"><i class="fa fa-tag" aria-hidden="true"></i> 50% </strong> off on Lorem restaurant</td>
+                                                          <td><span class="label bg-green">Redeem</span></td>
+                                                      </tr>
+                                                      <tr>
+                                                          
+                                                          <td><strong class="col-orange font-24"><i class="fa fa-tag" aria-hidden="true"></i> 60% </strong>cashback on Lorem dish in Ipsum resturant.</td>
+                                                          <td><span class="label bg-green">Redeem</span></td>
+                                                      </tr>
+                                                      <tr>
+                                                          
+                                                          <td><strong class="col-purple font-24"><i class="fa fa-tag" aria-hidden="true"></i> Free </strong>1 lorem dish free with beverage. </td>
+                                                          <td><span class="label bg-green">Redeem</span></td>
+                                                      </tr>
+                                                  </tbody>
+                                              </table>
+                                          </div>
+                                      </div>
+                                      <div role="tabpanel" class="tab-pane fade" id="expired">
+                                          <div class="body table-responsive">
+                                            <table class="table">
+                                              <thead>
+                                                  <tr>
+                                                      
+                                                      <th>Description</th>
+                                                      <th>Action</th>
+                                                  </tr>
+                                              </thead>
+                                              <tbody>
+                                                  <tr>
+                                                      
+                                                      <td><strong class="col-pink font-24"><i class="fa fa-tag" aria-hidden="true"></i> 50% </strong> off on Lorem restaurant</td>
+                                                      <td><span class="label bg-blue-grey">Redeemed</span></td>
+                                                  </tr>
+                                                  <tr>
+                                                      
+                                                      <td><strong class="col-orange font-24"><i class="fa fa-tag" aria-hidden="true"></i> 60% </strong>cashback on Lorem dish in Ipsum resturant.</td>
+                                                      <td><span class="label bg-deep-orange">Not Redeemed</span></td>
+
+                                                  </tr>
+                                                  <tr>
+                                                      
+                                                      <td><strong class="col-purple font-24"><i class="fa fa-tag" aria-hidden="true"></i> Free </strong>1 lorem dish free with beverage. </td>
+                                                      <td><span class="label bg-deep-orange">Not Redeemed</span></td>
+
+                                                  </tr>
+                                              </tbody>
+                                          </table>
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</section>
