@@ -922,8 +922,10 @@ class ApiController {
     }
 
     async sendPushToAllocatedVendor ({request, response}) {
+      // console.log(request.body,'body param');
       var job_id = request.input('job_id');
-      console.log(job_id,'job_id');
+      // console.log(job_id,'job_id');
+      // return false
 
       var find_allocated_vendor = await VendorAllocation.find({job_id : job_id, status : 0}).limit(1).populate('user_id').populate('job_id');
       console.log(find_allocated_vendor, 'find_allocated_vendor_details');
@@ -931,10 +933,6 @@ class ApiController {
 
       if(find_allocated_vendor.length > 0) {
         var vendor_email = find_allocated_vendor[0].user_id.email;
-
-        // var update_job = await Job.findOne({_id : find_allocated_vendor[0].job_id._id})
-        // update_job.vendor_id = find_allocated_vendor[0].user_id._id;
-        // update_job.job_allocated_to_vendor = 1;
 
         // await update_job.save();
         find_allocated_vendor[0].status = 3 ; // 3 = invitation sent.
@@ -954,7 +952,8 @@ class ApiController {
           response.json({
             status : true,
             code : 200,
-            message : "Invitation has sent to a particular vendor successfully."
+            message : "Invitation has sent to a particular vendor successfully.",
+            // data : allocation_details
           })
         }
       }else {
@@ -1143,7 +1142,22 @@ class ApiController {
         var service_require_at = request.input('service_require_at') ? request.input('service_require_at') : job_update.service_require_at;
         var job_industry = request.input('job_industry') ? request.input('job_industry') : job_update.job_industry;
         var job_category = request.input('job_category') ? request.input('job_category') : job_update.job_category;
-        var job_date = request.input('job_date') ? request.input('job_date') : job_update.job_date;
+        
+        // var job_date = request.input('job_date') ? request.input('job_date') : job_update.job_date;
+
+        if(request.input('job_date')) {
+          var job_date = request.input('job_date');
+          // dd/mm/yyyy
+          var date_arr = job_date.split('/');
+          var y = date_arr[2];
+          var m = date_arr[1];
+          var d = date_arr[0];
+          var date = y+'-'+m+'-'+d; 
+        }else {
+          var date = job_update.job_date;
+        }
+
+
         var job_time = request.input('job_time') ? request.input('job_time') : job_update.job_time;
         var description = request.input('description') ? request.input('description') : job_update.description;
         var job_endDate = request.input('job_endDate') ? request.input('job_endDate') : job_update.job_endDate;
@@ -1156,7 +1170,7 @@ class ApiController {
         job_update.service_require_at = service_require_at;
         job_update.job_industry = job_industry;
         job_update.job_category = job_category;
-        job_update.job_date = job_date;
+        job_update.job_date = date;
         job_update.job_time = job_time;
         job_update.description = description;
         job_update.job_endDate = job_endDate;
@@ -1290,28 +1304,38 @@ class ApiController {
           var d = date_arr[0];
           var date = y+'-'+m+'-'+d;
 
-          var add_service = new Service ({
-            user_id : user._id,
-            service_title : request.input('service_title'),
-            // service_type : request.input('service_type'),
-            service_category : request.input('service_category'),
-            rate : request.input('rate'),
-            start_date : date,
-            end_date : request.input('end_date'),
-            description : request.input('description'),
-            status : request.input('status') // 1 ='active',2='Inactive'
-          });
-
-          // console.log(add_service,'add_service');
-          // return false;
-  
-          if(await add_service.save()) {
-            response.json ({
-              status : true,
-              code : 200,
-              message : "Service added successfully."
+          var already_post_or_not = await Service.find({user_id : user._id, service_category : request.input('service_category')});
+          if(already_post_or_not.length > 0) {
+            response.json({
+              status : false,
+              code : 400,
+              message : "You have already post a service with this category."
+            })
+          }else {
+            var add_service = new Service ({
+              user_id : user._id,
+              service_title : request.input('service_title'),
+              // service_type : request.input('service_type'),
+              service_category : request.input('service_category'),
+              rate : request.input('rate'),
+              start_date : date,
+              end_date : request.input('end_date'),
+              description : request.input('description'),
+              status : request.input('status') // 1 ='active',2='Inactive'
             });
-          } 
+  
+            // console.log(add_service,'add_service');
+            // return false;
+    
+            if(await add_service.save()) {
+              response.json ({
+                status : true,
+                code : 200,
+                message : "Service added successfully."
+              });
+            } 
+          }
+          
         }else { 
           response.json ({
             status : true,
@@ -1333,7 +1357,7 @@ class ApiController {
       var user = await auth.getUser();
       if(user.reg_type == 3) {
         var all_services = await Service.find({'user_id' : user._id})
-        .populate('service_category');
+        .populate('service_category').sort({_id : -1});
 
         if(all_services.length > 0) {
           response.json({
@@ -1772,13 +1796,15 @@ class ApiController {
       var coupons_valid_from = request.input('start_date');
       var coupons_valid_to = request.input('end_date');
       var coupons_code = request.input('coupons_code').toUpperCase();
+      var coupon_type = request.input('coupon_type');
 
       var add = new Coupon({
         coupons_title : coupons_title,
         coupons_amount : coupons_amount,
         coupons_valid_from : coupons_valid_from,
         coupons_valid_to : coupons_valid_to,
-        coupons_code : coupons_code
+        coupons_code : coupons_code,
+        coupon_type : coupon_type
       });
       
       await add.save();
@@ -1932,7 +1958,7 @@ class ApiController {
             response.json({
               status : true,
               code : 200,
-              message : "Date is empty or not valid."
+              message : "Date is correct."
             });
           }else {
             response.json({
