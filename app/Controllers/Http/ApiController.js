@@ -1304,6 +1304,15 @@ class ApiController {
           var d = date_arr[0];
           var date = y+'-'+m+'-'+d;
 
+          //end date
+          var end_date = request.input('end_date');
+          // console.log(end_date,'end_date');
+          var date_arr_end_date = end_date.split('/');
+          var y = date_arr_end_date[2];
+          var m = date_arr_end_date[1];
+          var d = date_arr_end_date[0];
+          var end_date_modified = y+'-'+m+'-'+d;
+
           var already_post_or_not = await Service.find({user_id : user._id, service_category : request.input('service_category')});
           if(already_post_or_not.length > 0) {
             response.json({
@@ -1319,7 +1328,7 @@ class ApiController {
               service_category : request.input('service_category'),
               rate : request.input('rate'),
               start_date : date,
-              end_date : request.input('end_date'),
+              end_date : end_date_modified,
               description : request.input('description'),
               status : request.input('status') // 1 ='active',2='Inactive'
             });
@@ -1428,9 +1437,39 @@ class ApiController {
 
           service_details.rate = request.input('rate') ? request.input('rate') : service_details.rate;
 
-          service_details.start_date = request.input('start_date') ? request.input('start_date') : service_details.start_date;
+          // service_details.start_date = request.input('start_date') ? request.input('start_date') : service_details.start_date;
+          if(request.input('start_date')) {
+            var start_date = request.input('start_date');
+            // dd/mm/yyyy
+            var date_arr = start_date.split('/');
+            var y = date_arr[2];
+            var m = date_arr[1];
+            var d = date_arr[0];
+            var date = y+'-'+m+'-'+d; 
 
-          service_details.end_date = request.input('end_date') ? request.input('end_date') : service_details.end_date;
+            service_details.start_date = date;
+          }else {
+            service_details.start_date = service_details.start_date;
+          }
+
+
+          // service_details.end_date = request.input('end_date') ? request.input('end_date') : service_details.end_date;
+          if(request.input('end_date')) {
+            //end date
+            var end_date = request.input('end_date');
+            // console.log(end_date,'end_date');
+            var date_arr_end_date = end_date.split('/');
+            var y = date_arr_end_date[2];
+            var m = date_arr_end_date[1];
+            var d = date_arr_end_date[0];
+            var end_date_modified = y+'-'+m+'-'+d;
+
+            service_details.end_date = end_date_modified;
+          }else {
+            service_details.end_date = service_details.end_date;
+          }
+
+
 
           service_details.description = request.input('description') ? request.input('description') : service_details.description;
 
