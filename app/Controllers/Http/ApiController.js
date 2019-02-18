@@ -922,10 +922,12 @@ class ApiController {
     }
 
     async sendPushToAllocatedVendor ({request, response}) {
-      var job_id = request.input ('job_id');
+      var job_id = request.input('job_id');
+      console.log(job_id,'job_id');
 
       var find_allocated_vendor = await VendorAllocation.find({job_id : job_id, status : 0}).limit(1).populate('user_id').populate('job_id');
       console.log(find_allocated_vendor, 'find_allocated_vendor_details');
+      // return false;
 
       if(find_allocated_vendor.length > 0) {
         var vendor_email = find_allocated_vendor[0].user_id.email;
@@ -1281,6 +1283,7 @@ class ApiController {
         // console.log(user,'user');
         if(user.reg_type == 3) {
           var start_date = request.input('start_date');
+          // console.log(start_date,'start_date');
           var date_arr = start_date.split('/');
           var y = date_arr[2];
           var m = date_arr[1];

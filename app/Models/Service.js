@@ -5,10 +5,10 @@ const Schema = mongoose.Schema;
 var service = new Schema ({
     user_id : {type : Schema.Types.ObjectId, ref: 'User'},
     service_title : { type: String},
-    service_type : {
-        type: Schema.Types.ObjectId,
-        ref: "JobIndustry"
-    },
+    // service_type : {
+    //     type: Schema.Types.ObjectId,
+    //     ref: "JobIndustry"
+    // },
     service_category : {
         type: Schema.Types.ObjectId,
         ref: "JobCategory"
