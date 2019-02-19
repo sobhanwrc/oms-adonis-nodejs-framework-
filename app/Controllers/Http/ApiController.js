@@ -1308,22 +1308,22 @@ class ApiController {
         var user = await auth.getUser();
         // console.log(user,'user');
         if(user.reg_type == 3) {
-          var start_date = request.input('start_date');
-          // console.log(start_date,'start_date');
-          var date_arr = start_date.split('/');
-          var y = date_arr[2];
-          var m = date_arr[1];
-          var d = date_arr[0];
-          var date = y+'-'+m+'-'+d;
+          // var start_date = request.input('start_date');
+          // // console.log(start_date,'start_date');
+          // var date_arr = start_date.split('/');
+          // var y = date_arr[2];
+          // var m = date_arr[1];
+          // var d = date_arr[0];
+          // var date = y+'-'+m+'-'+d;
 
           //end date
-          var end_date = request.input('end_date');
-          // console.log(end_date,'end_date');
-          var date_arr_end_date = end_date.split('/');
-          var y = date_arr_end_date[2];
-          var m = date_arr_end_date[1];
-          var d = date_arr_end_date[0];
-          var end_date_modified = y+'-'+m+'-'+d;
+          // var end_date = request.input('end_date');
+          // // console.log(end_date,'end_date');
+          // var date_arr_end_date = end_date.split('/');
+          // var y = date_arr_end_date[2];
+          // var m = date_arr_end_date[1];
+          // var d = date_arr_end_date[0];
+          // var end_date_modified = y+'-'+m+'-'+d;
 
           var already_post_or_not = await Service.find({user_id : user._id, service_category : request.input('service_category')});
           if(already_post_or_not.length > 0) {
@@ -1339,8 +1339,8 @@ class ApiController {
               // service_type : request.input('service_type'),
               service_category : request.input('service_category'),
               rate : request.input('rate'),
-              start_date : date,
-              end_date : end_date_modified,
+              start_date : '',
+              end_date : '',
               description : request.input('description'),
               status : request.input('status') // 1 ='active',2='Inactive'
             });

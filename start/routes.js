@@ -16,16 +16,24 @@
 /** @type {typeof import('@adonisjs/framework/src/Route/Manager')} */
 const Route = use('Route')
 
-Route.get('/', 'LoginController.index')
+// Route.get('/', 'LoginController.index')
 Route.get('/forgot-password', 'LoginController.forgot_password')
-Route.get('/user-login', 'LoginController.user_login')
-Route.get('/social-login/facebook', 'LoginController.facebook')
-Route.get('/callback/facebook', 'LoginController.callback_fb')
-Route.get('/social-login/google', 'LoginController.google')
-Route.get('/callback/google', 'LoginController.callback_google')
-Route.group( () => {
-    Route.post('/login', 'LoginController.login')
-}).middleware(['guest'])
+// Route.get('/user-login', 'LoginController.user_login')
+// Route.get('/social-login/facebook', 'LoginController.facebook')
+// Route.get('/callback/facebook', 'LoginController.callback_fb')
+// Route.get('/social-login/google', 'LoginController.google')
+// Route.get('/callback/google', 'LoginController.callback_google')
+// Route.group( () => {
+//     Route.post('/login', 'LoginController.login')
+// }).middleware(['guest'])
+
+//admin routes
+Route.get('/admin', 'AdminController.login_view')
+Route.post('/admin-login-submit', 'AdminController.login_submit')
+// Route.group(() => { 
+    Route.get('/admin/dashboard', 'AdminController.dashboard') 
+// }).middleware(['auth:session'])
+//end
 
 
 //api routes
@@ -105,5 +113,3 @@ Route.group(() => {
     Route.get('/api/logout', 'ApiController.userLogout')
 
 }).middleware(['auth:jwt'])
-
-// Route.get('/fetchUser', 'ApiController.fetchUser')
