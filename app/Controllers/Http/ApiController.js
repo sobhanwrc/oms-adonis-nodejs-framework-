@@ -372,11 +372,23 @@ class ApiController {
     async userDetails ({ request, response, auth}) {
         try {
           var user_details = await auth.getUser();
-          var user_location_id = user_details.location_id;
-
-          if(user_location_id) {
-            var location_details = await Location.findOne({_id : user_location_id})
-            var location_place_name = location_details.name;
+          // console.log(user_details);
+          // return false
+          if(user_details.location_id != '') {
+            var user_location_id = user_details.location_id;
+            if(user_location_id) {
+              var location_details = await Location.findOne({_id : user_location_id})
+              // console.log(location_details,'location_details');
+              // return false
+              if(location_details != null){
+                var location_place_name = location_details.name;
+              }else {
+                var location_place_name = "N/A";
+              }
+              
+            }
+          }else {
+            var location_place_name = "N/A";
           }
 
           response.json ({
