@@ -9,8 +9,15 @@ class Admin {
    * @param {Request} ctx.request
    * @param {Function} next
    */
-  async handle ({ request }, next) {
+  async handle ({ request, response }, next) {
+    response.header('Cache-Control', 'nocache, no-store, max-age=0, must-revalidate')
+    response.header('Pragma', 'no-cache')
     // call next to advance the request
+    try {
+      await auth.check()
+      return response.redirect('/admin')
+    } catch (e) {}
+    
     await next()
   }
 

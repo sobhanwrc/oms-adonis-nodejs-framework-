@@ -12071,7 +12071,7 @@ body[ng-controller] .modal {
 	font-size: 23px
 }
 .dashboard-stat2 .display .number small {
-	font-size: 14px;
+	font-size: 12px;
 	color: #AAB5BC;
 	font-weight: 600;
 	text-transform: uppercase

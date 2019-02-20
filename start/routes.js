@@ -28,11 +28,15 @@ Route.get('/forgot-password', 'LoginController.forgot_password')
 // }).middleware(['guest'])
 
 //admin routes
-Route.get('/admin', 'AdminController.login_view')
-Route.post('/admin-login-submit', 'AdminController.login_submit')
-// Route.group(() => { 
-    Route.get('/admin/dashboard', 'AdminController.dashboard') 
-// }).middleware(['auth:session'])
+Route.group(() => { 
+    Route.get('/admin', 'AdminController.login_view')
+    Route.post('/admin-login-submit', 'AdminController.login_submit')
+}).middleware(['admin'])
+
+Route.group(() => { 
+    Route.get('/admin/dashboard', 'AdminController.dashboard')
+    Route.get('/admin/logout', 'AdminController.logout')
+}).middleware(['auth:session'])
 //end
 
 

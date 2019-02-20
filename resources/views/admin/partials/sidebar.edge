@@ -10,7 +10,7 @@
                 <div class="sidebar-toggler"> <span></span> </div>
             </li>
             
-            <li class="nav-item start  active open"> <a href="dashboard.html" class="nav-link nav-toggle"> <i class="icon-home"></i> <span class="title">Dashboard</span> </a> </li>
+            <li class="nav-item start {{ (request.match(['/admin/dashboard']) ? 'active open' : '') }}"> <a href="/admin/dashboard" class="nav-link nav-toggle"> <i class="icon-home"></i> <span class="title">Dashboard</span> </a> </li>
 
             <li class="nav-item start"> <a href="vendor_list.html" class="nav-link nav-toggle"> <i class="icon-user"></i> <span class="title">
             vendor Lists</span> </a> </li>

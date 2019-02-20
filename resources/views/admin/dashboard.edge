@@ -48,7 +48,7 @@
 
                             <h3 class="font-green-sharp">
 
-                                <span data-counter="counterup" data-value="800">800</span>
+                            <span data-counter="counterup" data-value="800">{{totals_jobs_posted}}</span>
 
 
 
@@ -70,9 +70,9 @@
 
                         <div class="progress">
 
-                            <span style="width: 76%;" class="progress-bar progress-bar-success green-sharp">
+                        <span style="width: {{job_progress_bar}};" class="progress-bar progress-bar-success green-sharp">
 
-                                <span class="sr-only">80% jobs</span>
+                                <span class="sr-only">{{job_progress_bar}} jobs</span>
 
                             </span>
 
@@ -82,7 +82,7 @@
 
                             <div class="status-title"> jobs </div>
 
-                            <div class="status-number"> 80% </div>
+                            <div class="status-number"> {{job_progress_bar}} </div>
 
                         </div>
 
@@ -92,7 +92,7 @@
 
             </div>
 
-            <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+            <!--<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
 
                 <div class="dashboard-stat2 ">
 
@@ -246,7 +246,8 @@
 
                 </div>
 
-            </div>
+            </div>-->
+            
             <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
 
                 <div class="dashboard-stat2 ">
@@ -308,7 +309,7 @@
 
                             <h3 class="font-purple-plum">
 
-                                <span data-counter="counterup" data-value="130">130</span>
+                            <span data-counter="counterup" data-value="130">{{total_vendors}}</span>
 
                             </h3>
 
@@ -328,9 +329,9 @@
 
                         <div class="progress">
 
-                            <span style="width: 57%;" class="progress-bar progress-bar-success purple-plum">
+                        <span style="width: {{vendor_progress_bar}};" class="progress-bar progress-bar-success purple-plum">
 
-                                <span class="sr-only">10% vendors</span>
+                                <span class="sr-only">{{vendor_progress_bar}} vendors</span>
 
                             </span>
 
@@ -340,7 +341,7 @@
 
                             <div class="status-title"> vendors</div>
 
-                            <div class="status-number"> 10% </div>
+                            <div class="status-number"> {{vendor_progress_bar}} </div>
 
                         </div>
 
@@ -359,7 +360,7 @@
 
                             <h3 class="font-yellow-saffron">
 
-                                <span data-counter="counterup" data-value="300">300</span>
+                            <span data-counter="counterup" data-value="300">{{total_users}}</span>
 
                             </h3>
 
@@ -379,9 +380,9 @@
 
                         <div class="progress">
 
-                            <span style="width: 57%;" class="progress-bar progress-bar-success yellow-saffron">
+                            <span style="width: {{user_progress_bar}}" class="progress-bar progress-bar-success yellow-saffron">
 
-                                <span class="sr-only">20% users</span>
+                                <span class="sr-only">{{user_progress_bar}} users</span>
 
                             </span>
 
@@ -391,7 +392,7 @@
 
                             <div class="status-title"> users</div>
 
-                            <div class="status-number"> 20% </div>
+                            <div class="status-number"> {{user_progress_bar}} </div>
 
                         </div>
 

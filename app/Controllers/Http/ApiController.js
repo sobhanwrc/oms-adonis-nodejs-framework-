@@ -154,7 +154,7 @@ class ApiController {
             try{
                 if(await add.save()) {
                     const user = await User.findOne({email : email});
-                    var generate_token = await auth.generate(user);
+                    var generate_token = await auth.authenticator('jwt').generate(user);
                     var send_registration_email = this.registrationEmailData(user);
 
                     if(send_registration_email == true) {
@@ -188,7 +188,7 @@ class ApiController {
           const isSame = await Hash.verify(request.input('password'), user.password);
 
           if(user != null && isSame && user.status === 1) {
-            var generate_token = await auth.generate(user);
+            var generate_token = await auth.authenticator('jwt').generate(user);
 
               return response.json({
                   status: true,
@@ -459,11 +459,11 @@ class ApiController {
           var services = ''
         }
 
-        if (request.input('uen_no')) {
-          var uen_no = request.input('uen_no') ? request.input('uen_no') : user.uen_no;
-        }else {
-          var uen_no = ''
-        }
+        // if (request.input('uen_no')) {
+        //   var uen_no = request.input('uen_no') ? request.input('uen_no') : user.uen_no;
+        // }else {
+        //   var uen_no = ''
+        // }
         
         
         var location_id = request.input('location_id') ? request.input('location_id') : user.location_id;
@@ -482,7 +482,7 @@ class ApiController {
         user.address = address;
         user.location_id = location_id;
         user.dob = dob;
-        user.uen_no = uen_no;
+        // user.uen_no = uen_no;
         user.business = {
             company_name : company_name,
             company_address : company_address,
@@ -1520,7 +1520,7 @@ class ApiController {
       // validate the user credentials and generate a JWT token
       var email = request.input('email');
       const user = await User.findOne({email : email});
-      var generate_token = await auth.generate(user);
+      var generate_token = await auth.authenticator('jwt').generate(user);
 
       return response.json({
           status : true, 

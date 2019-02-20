@@ -37,7 +37,7 @@ class User extends BaseModel {
           company_name: { type : String,  default: '' },
           company_address : { type : String,  default: '' },
           company_ph_no : { type: String,  default: '' },
-          experience : { type : Number,  default: '' },
+          experience : { type : String,  default: '' },
           service_type : { type : String,  default: '' },
           services: { type : String,  default: '' }
         }

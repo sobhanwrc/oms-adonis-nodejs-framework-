@@ -29,6 +29,8 @@ class ExceptionHandler extends BaseExceptionHandler {
         code : 266,
         message : "Token expired. Please login or refresh."
       });
+    }else if (error.code == 'E_INVALID_SESSION') {
+      return response.redirect('/admin')
     }else if (error.code == 'E_INVALID_JWT_TOKEN') {
       response.json({
         status : false,
