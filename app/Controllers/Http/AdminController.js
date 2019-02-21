@@ -111,7 +111,7 @@ class AdminController {
         var user_all_coupon_list = await AssignCouponToUser.find({user_id : user_id, status : {
             $nin : ['Expire']
         }}).sort({_id : -1}).populate('coupon_id');
-        console.log(user_all_coupon_list, 'user_all_coupon_list');
+        // console.log(user_all_coupon_list, 'user_all_coupon_list');
         // return false
 
         if (user_all_coupon_list.length > 0) {
@@ -119,7 +119,7 @@ class AdminController {
         }else { 
             var coupon_list_total = 0;
         }
-        console.log(coupon_list_total,'coupon_list_total');
+        // console.log(coupon_list_total,'coupon_list_total');
         return view.render('admin.user.user_profile', {user_details : user, location  : location_name, coupon_list : user_all_coupon_list, coupon_list_total : coupon_list_total});
     }
 
@@ -133,9 +133,10 @@ class AdminController {
     async vendor_profile ({view,params}) {
         var vendor_id = params.id;
         var vendor_details = await User.findOne({_id : vendor_id});
-        console.log(vendor_details);
+        var vendor_location_id = await Location.findOne({_id : vendor_details.location_id});
+        var location_name = vendor_location_id.name;
 
-        return view.render('admin.vendor.vendor_profile', {vendor_details : vendor_details})
+        return view.render('admin.vendor.vendor_profile', {vendor_details : vendor_details, location_name : location_name})
     }
 }
 

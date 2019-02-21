@@ -85,21 +85,27 @@
                           <div class="row">
                             <div class="form-group col-sm-6 col-xs-12">
                               <label class="control-label">Gender</label>
-                              <input type="text" placeholder="Male" class="form-control" readonly>
+                              @if(vendor_details.gender == '')
+                                <input type="text" class="form-control" value="" readonly>
+                                @elseif(vendor_details.gender == 'M')
+                                    <input type="text" placeholder="Male" class="form-control" value="Male" readonly>
+                                @elseif(vendor_details.gender == 'F')
+                                    <input type="text" placeholder="Male" class="form-control" value="Female" readonly>
+                                @endif
                             </div>
                             <div class="form-group col-sm-6 col-xs-12">
                               <label class="control-label">Location</label>
-                              <input type="text" placeholder="Singapore" class="form-control" readonly>
+                            <input type="text" value="{{location_name}}" class="form-control" readonly>
                             </div>
                           </div>
                           <div class="row">
-                            <div class="form-group col-sm-6 col-xs-12">
+                            <!--<div class="form-group col-sm-6 col-xs-12">
                               <label class="control-label">Ref No</label>
                               <input type="text" placeholder="AHX34" class="form-control" readonly>
-                            </div>
+                            </div>-->
                             <div class="form-group col-sm-6 col-xs-12">
                               <label class="control-label">Address</label>
-                              <input type="text" placeholder="Sis Buillding" class="form-control" readonly>
+                            <input type="text" value="{{vendor_details.address}}" class="form-control" readonly>
                             </div>
                           </div>
 
@@ -116,14 +122,14 @@
                           <div class="row">
                             <div class="form-group col-sm-6 col-xs-12">
                               <label class="control-label">Company Name</label>
-                              <input type="text" placeholder="Singapore Bank" class="form-control" readonly>
+                            <input type="text" value="{{vendor_details.business[0].company_name}}" class="form-control" readonly>
                             </div>
                             <div class="form-group col-sm-6 col-xs-12">
                               <label class="control-label">UEN No</label>
-                              <input type="text" placeholder="4554" class="form-control" readonly>
+                              <input type="text" value="{{vendor_details.uen_no}}" class="form-control" readonly>
                             </div>
                           </div>
-                          <div class="row">
+                          <!--<div class="row">
                             <div class="form-group col-sm-6 col-xs-12">
                               <label class="control-label"> Industry</label>
                               <input type="text" placeholder="Singapore Industry" class="form-control" readonly>
@@ -132,45 +138,31 @@
                               <label class="control-label">Service Type</label>
                               <input type="text" placeholder="Education" class="form-control" readonly>
                             </div>
-                          </div>
+                          </div>-->
                           <div class="row">
                             <div class="form-group col-sm-6 col-xs-12">
                               <label class="control-label">Year(s) of Experience</label>
-                              <input type="text" placeholder="2" class="form-control" readonly>
+                                @if(vendor_details.business[0].experience == null)
+                                    <input type="text" value="N/A" class="form-control" readonly>
+                                @else 
+                                    <input type="text" value="{{vendor_details.business[0].experience}}" class="form-control" readonly>
+                                @endif
                             </div>
                             <div class="form-group col-sm-6 col-xs-12">
                               <label class="control-label">Office Phone</label>
-                              <input type="text" placeholder="8545788958" class="form-control" readonly>
+                              <input type="text" value="{{vendor_details.business[0].company_ph_no}}" class="form-control" readonly>
                             </div>
                           </div>
                           <div class="row">
-                            <div class="form-group col-sm-6 col-xs-12">
+                            <!--<div class="form-group col-sm-6 col-xs-12">
                               <label class="control-label">Bank Name</label>
                               <input type="text" placeholder="Singapore Bank" class="form-control" readonly>
-                            </div>
+                            </div>-->
                             <div class="form-group col-sm-6 col-xs-12">
                               <label class="control-label">Office Location</label>
-                              <input type="text" placeholder="Sis Building" class="form-control" readonly>
+                              <input type="text" value="{{vendor_details.business[0].company_address}}" class="form-control" readonly>
                             </div>
                           </div>
-                          <div class="row">
-                          <div class="form-group col-sm-6 col-xs-12">
-                              <label class="control-label">Bank Account </label>
-                              <input type="text" placeholder="Singapore" class="form-control" readonly>
-                            </div>
-                            <div class="form-group col-sm-6 col-xs-12">
-                              <label class="control-label">Swift Code </label>
-                              <input type="text" placeholder="SNP54" class="form-control" readonly>
-                            </div>
-
-                          </div>
-
-
-
-
-
-
-
                           </form>
                         </div>
                         <!-- END CHANGE PASSWORD TAB -->
