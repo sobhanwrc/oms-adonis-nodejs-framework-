@@ -66,8 +66,8 @@ class AdminController {
     }
 
     async dashboard({view}) {
-        var fetch_total_users = await User.find({reg_type : 2, status : 1});
-        var fetch_total_vendors = await User.find({reg_type : 3, status : 1});
+        var fetch_total_users = await User.find({reg_type : 2});
+        var fetch_total_vendors = await User.find({reg_type : 3});
         var totals_jobs_posted = await Job.find();
 
         var user_progress_bar = 0;
@@ -101,7 +101,7 @@ class AdminController {
         return view.render('admin.user.user_list', {users : all_user_list})
     }
 
-    async user_profile ({view, response, request, params}) {
+    async user_profile ({view,params}) {
         var user_id = params.id;
         var user = await User.findOne({_id : user_id});
         var user_location_id = await Location.findOne({_id : user.location_id});
@@ -121,6 +121,21 @@ class AdminController {
         }
         console.log(coupon_list_total,'coupon_list_total');
         return view.render('admin.user.user_profile', {user_details : user, location  : location_name, coupon_list : user_all_coupon_list, coupon_list_total : coupon_list_total});
+    }
+
+    async vendor_list ({view}) {
+        var all_vendors = await User.find({reg_type : 3}).sort({_id : -1});
+        console.log(all_vendors);
+
+        return view.render('admin.vendor.vendor_list', {vendor_lists : all_vendors})
+    }
+
+    async vendor_profile ({view,params}) {
+        var vendor_id = params.id;
+        var vendor_details = await User.findOne({_id : vendor_id});
+        console.log(vendor_details);
+
+        return view.render('admin.vendor.vendor_profile', {vendor_details : vendor_details})
     }
 }
 

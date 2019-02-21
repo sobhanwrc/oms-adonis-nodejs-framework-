@@ -1,0 +1,267 @@
+@layout('admin.dashboard_layouts')
+@section('content')
+
+<div class="page-content">
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+        <li> <a href="/admin/dashboard">Home</a> <i class="fa fa-circle"></i> </li>
+        <li> <a href="/admin/vendor-list">VendorList</a> <i class="fa fa-circle"></i> </li>
+        <li> <span>Vendor Profile</span> </li>
+        </ul>
+    </div>
+    <h1 class="page-title"> </h1>
+    <div class="row">
+          <div class="col-md-12">
+            <!-- BEGIN PROFILE SIDEBAR -->
+            <div class="profile-sidebar">
+              <!-- PORTLET MAIN -->
+              <div class="portlet light profile-sidebar-portlet ">
+                <!-- SIDEBAR USERPIC -->
+              <div class="profile-userpic"> <img src="{{vendor_details.profile_image}}" class="img-responsive" alt=""> </div>
+                <!-- END SIDEBAR USERPIC -->
+                <!-- SIDEBAR USER TITLE -->
+                <div class="profile-usertitle">
+                  <div class="profile-usertitle-name"> {{ upperFirst(vendor_details.first_name) }} {{ upperFirst(vendor_details.last_name) }}</div>
+                  <div class="profile-usertitle-job"> Vendor </div>
+                </div>
+                <!-- END SIDEBAR USER TITLE -->
+                <!-- SIDEBAR BUTTONS -->
+                <div class="profile-userbuttons text-center">
+
+                  <button type="button" class="btn btn-circle red btn-sm">Suspend</button>
+                </div>
+                <!-- END SIDEBAR BUTTONS -->
+                <!-- SIDEBAR MENU -->
+
+                <!-- END MENU -->
+              </div>
+              <!-- END PORTLET MAIN -->
+              <!-- PORTLET MAIN -->
+              <!-- END PORTLET MAIN -->
+            </div>
+            <!-- END BEGIN PROFILE SIDEBAR -->
+            <!-- BEGIN PROFILE CONTENT -->
+            <div class="profile-content">
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="portlet light ">
+                    <div class="portlet-title tabbable-line">
+                      <div class="caption caption-md"> <i class="icon-globe theme-font hide"></i> <span class="caption-subject font-blue-madison bold uppercase">Profile Account</span> </div>
+                      <ul class="nav nav-tabs">
+                        <li class="active"> <a href="#tab_1_2 " data-toggle="tab" aria-expanded="false">Personal Info</a> </li>
+                        <li class=""> <a href="#tab_1_3" data-toggle="tab" aria-expanded="false">Business Info</a> </li>
+                        <li class=""> <a href="#tab_1_4" data-toggle="tab" aria-expanded="false">Rating</a> </li>
+                         <li class=""> <a href="#tab_1_5" data-toggle="tab" aria-expanded="false">Sales</a> </li>
+                      </ul>
+                    </div>
+                    <div class="portlet-body">
+                      <div class="tab-content">
+                        <!-- PERSONAL INFO TAB -->
+
+                        <!-- END PERSONAL INFO TAB -->
+                        <!-- CHANGE AVATAR TAB -->
+                        <div class="tab-pane active" id="tab_1_2">
+                          <form role="form" action="#">
+                          <div class="row">
+                            <div class="form-group col-sm-6 col-xs-12">
+                              <label class="control-label">Full Name</label>
+                              <input type="text" placeholder="John" value="{{ upperFirst(vendor_details.first_name) }} {{ upperFirst(vendor_details.last_name) }}"  class="form-control" readonly>
+                            </div>
+                            <div class="form-group col-sm-6 col-xs-12">
+                              <label class="control-label">Email</label>
+                            <input type="text" value="{{vendor_details.email}}" class="form-control" readonly>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="form-group col-sm-6 col-xs-12">
+                              <label class="control-label">Phone Number</label>
+                              <input type="text" value="{{vendor_details.phone_number}}"  class="form-control" readonly>
+                            </div>
+                            <div class="form-group col-sm-6 col-xs-12">
+                              <label class="control-label">Date of Birth</label>
+                              <input type="text" value="{{vendor_details.dob}}"  class="form-control" readonly>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="form-group col-sm-6 col-xs-12">
+                              <label class="control-label">Gender</label>
+                              <input type="text" placeholder="Male" class="form-control" readonly>
+                            </div>
+                            <div class="form-group col-sm-6 col-xs-12">
+                              <label class="control-label">Location</label>
+                              <input type="text" placeholder="Singapore" class="form-control" readonly>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="form-group col-sm-6 col-xs-12">
+                              <label class="control-label">Ref No</label>
+                              <input type="text" placeholder="AHX34" class="form-control" readonly>
+                            </div>
+                            <div class="form-group col-sm-6 col-xs-12">
+                              <label class="control-label">Address</label>
+                              <input type="text" placeholder="Sis Buillding" class="form-control" readonly>
+                            </div>
+                          </div>
+
+
+
+
+
+                          </form>
+                        </div>
+                        <!-- END CHANGE AVATAR TAB -->
+                        <!-- CHANGE PASSWORD TAB -->
+                        <div class="tab-pane" id="tab_1_3">
+                          <form role="form" action="#">
+                          <div class="row">
+                            <div class="form-group col-sm-6 col-xs-12">
+                              <label class="control-label">Company Name</label>
+                              <input type="text" placeholder="Singapore Bank" class="form-control" readonly>
+                            </div>
+                            <div class="form-group col-sm-6 col-xs-12">
+                              <label class="control-label">UEN No</label>
+                              <input type="text" placeholder="4554" class="form-control" readonly>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="form-group col-sm-6 col-xs-12">
+                              <label class="control-label"> Industry</label>
+                              <input type="text" placeholder="Singapore Industry" class="form-control" readonly>
+                            </div>
+                            <div class="form-group col-sm-6 col-xs-12">
+                              <label class="control-label">Service Type</label>
+                              <input type="text" placeholder="Education" class="form-control" readonly>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="form-group col-sm-6 col-xs-12">
+                              <label class="control-label">Year(s) of Experience</label>
+                              <input type="text" placeholder="2" class="form-control" readonly>
+                            </div>
+                            <div class="form-group col-sm-6 col-xs-12">
+                              <label class="control-label">Office Phone</label>
+                              <input type="text" placeholder="8545788958" class="form-control" readonly>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="form-group col-sm-6 col-xs-12">
+                              <label class="control-label">Bank Name</label>
+                              <input type="text" placeholder="Singapore Bank" class="form-control" readonly>
+                            </div>
+                            <div class="form-group col-sm-6 col-xs-12">
+                              <label class="control-label">Office Location</label>
+                              <input type="text" placeholder="Sis Building" class="form-control" readonly>
+                            </div>
+                          </div>
+                          <div class="row">
+                          <div class="form-group col-sm-6 col-xs-12">
+                              <label class="control-label">Bank Account </label>
+                              <input type="text" placeholder="Singapore" class="form-control" readonly>
+                            </div>
+                            <div class="form-group col-sm-6 col-xs-12">
+                              <label class="control-label">Swift Code </label>
+                              <input type="text" placeholder="SNP54" class="form-control" readonly>
+                            </div>
+
+                          </div>
+
+
+
+
+
+
+
+                          </form>
+                        </div>
+                        <!-- END CHANGE PASSWORD TAB -->
+                        <!-- PRIVACY SETTINGS TAB -->
+                        <div class="tab-pane" id="tab_1_4">
+                         <div class="row"> <div class="col-xs-12 text-center"><img src="/img/rating.jpg" /></div></div>
+                        </div>
+                        <!-- END PRIVACY SETTINGS TAB -->
+                        <div class="tab-pane" id="tab_1_5">
+                          <form action="#">
+
+                          <div class="col-md-12 text-center">
+                                                        <div class="input-group input-large date-picker input-daterange" style="
+    margin: 0 auto;
+">
+                                                            <input type="text" class="form-control" name="from" placeholder="08/3/2018" readonly="">
+                                                            <span class="input-group-addon"> to </span>
+                                                            <input type="text" class="form-control" name="to" placeholder="07/11/2018" readonly=""> </div>
+
+                                                    </div>
+
+
+                                                    <div class="col-xs-12 text-center">
+                                        <h4 style="
+    margin-top: 40px;
+    font-weight: 700; margin-bottom:30px;
+"> Total Income:$170 </h4>
+                                    </div>
+                            <div class="portlet-body">
+                                        <div class="table-scrollable">
+                                            <table class="table table-striped table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th> # </th>
+                                                        <th> Date </th>
+                                                        <th> No. Sale </th>
+                                                        <th> Breakdown Sale </th>
+                                                        <th> Total Income </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td> 1 </td>
+                                                        <td> 03/10/2018 </td>
+                                                        <td> 8 </td>
+                                                         <td> 3 </td>
+                                                        <td> 30$ </td>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td> 2 </td>
+                                                        <td> 04/10/2018  </td>
+                                                        <td> 4 </td>
+                                                         <td> 6 </td>
+                                                        <td> 40$ </td>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td> 3 </td>
+                                                        <td> 05/10/2018  </td>
+                                                         <td> 2 </td>
+                                                        <td> 5 </td>
+                                                        <td> 60$ </td>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td> 4 </td>
+                                                        <td> 06/10/2018  </td>
+                                                         <td> 9 </td>
+                                                        <td> 6 </td>
+                                                        <td> 40$ </td>
+
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                            <!--end profile-settings-->
+
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- END PROFILE CONTENT -->
+          </div>
+        </div>
+
+      </div>
+  
+@endsection

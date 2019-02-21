@@ -36,8 +36,12 @@ Route.group(() => {
 Route.group(() => { 
     Route.get('/admin/dashboard', 'AdminController.dashboard')
     Route.get('/admin/logout', 'AdminController.logout')
+    
     Route.get('/admin/user-list', 'AdminController.user_list')
-    Route.get('/admin/user/profile/:id', 'AdminController.user_profile')
+    Route.get('/admin/user-list/profile/:id', 'AdminController.user_profile')
+
+    Route.get('/admin/vendor-list', 'AdminController.vendor_list')
+    Route.get('/admin/vendor-list/profile/:id', 'AdminController.vendor_profile')
 }).middleware(['auth:session'])
 //end
 
