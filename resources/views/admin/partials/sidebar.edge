@@ -12,10 +12,10 @@
             
             <li class="nav-item start {{ (request.match(['/admin/dashboard']) ? 'active open' : '') }}"> <a href="/admin/dashboard" class="nav-link nav-toggle"> <i class="icon-home"></i> <span class="title">Dashboard</span> </a> </li>
 
-            <li class="nav-item start"> <a href="vendor_list.html" class="nav-link nav-toggle"> <i class="icon-user"></i> <span class="title">
+            <li class="nav-item start "> <a href="vendor_list.html" class="nav-link nav-toggle"> <i class="icon-user"></i> <span class="title">
             vendor Lists</span> </a> </li>
 
-            <li class="nav-item start"> <a href="user_list.html" class="nav-link nav-toggle"> <i class="icon-users"></i> <span class="title">User Lists</span> </a> </li>
+            <li class="nav-item start {{ (request.match(['/admin/user-list']) ? 'active open' : '') }}"> <a href="/admin/user-list" class="nav-link nav-toggle"> <i class="icon-users"></i> <span class="title">User Lists</span> </a> </li>
 
             <li class="nav-item start"> <a href="service_list.html" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title">Services</span> </a> </li>
 

@@ -2,6 +2,9 @@
 const User = use('App/Models/User')
 const Hash = use('Hash')
 const Job = use ('App/Models/Job')
+const Location = use ('App/Models/Location')
+const AssignCouponToUser = use ('App/Models/AssignCouponToUser');
+const Coupon = use ('App/Models/Coupon');
 
 class AdminController {
     login_view({view}) {
@@ -90,6 +93,34 @@ class AdminController {
         }
 
         return view.render('admin.dashboard',{total_users:fetch_total_users.length, total_vendors: fetch_total_vendors.length, user_progress_bar:user_progress_bar, vendor_progress_bar:vendor_progress_bar, totals_jobs_posted : totals_jobs_posted.length, job_progress_bar : totals_jobs_posted_progress_bar})
+    }
+
+    async user_list ({view}) {
+        var all_user_list = await User.find({reg_type : 2}).sort({_id : -1});
+
+        return view.render('admin.user.user_list', {users : all_user_list})
+    }
+
+    async user_profile ({view, response, request, params}) {
+        var user_id = params.id;
+        var user = await User.findOne({_id : user_id});
+        var user_location_id = await Location.findOne({_id : user.location_id});
+        var location_name = user_location_id.name;
+
+        //coupons
+        var user_all_coupon_list = await AssignCouponToUser.find({user_id : user_id, status : {
+            $nin : ['Expire']
+        }}).sort({_id : -1}).populate('coupon_id');
+        console.log(user_all_coupon_list, 'user_all_coupon_list');
+        // return false
+
+        if (user_all_coupon_list.length > 0) {
+            var coupon_list_total = user_all_coupon_list.length;
+        }else { 
+            var coupon_list_total = 0;
+        }
+        console.log(coupon_list_total,'coupon_list_total');
+        return view.render('admin.user.user_profile', {user_details : user, location  : location_name, coupon_list : user_all_coupon_list, coupon_list_total : coupon_list_total});
     }
 }
 

@@ -27,7 +27,8 @@
         {{ style("/css/layout.min.css") }}
         {{ style("/css/darkblue.min.css") }}
         {{ style("/css/custom.min.css") }}
-
+        {{ style("/css/datatables.bootstrap.css") }}
+        {{ style("/css/profile.min.css") }}
 
         <link rel="shortcut icon" href="favicon.png" /> </head>
 
@@ -98,6 +99,10 @@
         {{ script('/js/jquery.min.js') }}
         {{ script('/js/bootstrap.min.js') }}
         {{ script('/js/jquery.slimscroll.min.js') }}
+        {{ script('/js/datatable.js') }}
+        {{ script('/js/datatables.min.js') }}
+        {{ script('/js/datatables.bootstrap.js') }}
+        {{ script('/js/table-datatables-managed.min.js') }}
         {{ script('/js/morris.min.js') }}
         {{ script('/js/moment.min.js') }}
         {{ script('/js/app.min.js') }}
@@ -108,7 +113,9 @@
         {{ script('/js/quick-sidebar.min.js') }}
         {{ script('/js/quick-nav.min.js') }}
 
-
+        <script type="text/javascript">
+            $("#sample_1_2").dataTable();
+        </script>
 
 </body>
 
