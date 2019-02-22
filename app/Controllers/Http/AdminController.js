@@ -30,33 +30,6 @@ class AdminController {
             
             return response.redirect('/admin')
         }
-
-        // if(user === null) {
-        //     session.flash({ login_error: 'Wrong username or password.' })
-        //     return response.redirect('back')
-        // } else{ 
-        //     if(Object.keys(user).length > 0) {
-        //         const isSame = await Hash.verify(password, user.password);
-
-        //         if(user != null && isSame && user.status === 1) {
-        //             var generate_token = await auth.generate(user);
-
-        //             // return response.json({
-        //             //     status: true,
-        //             //     code : 200,
-        //             //     token: 'Bearer ' + generate_token.token,
-        //             //     message : "Login successfully."
-        //             // })
-        //             return response.redirect('/admin/dashboard')
-
-        //         }else { 
-        //             session.flash({ login_error: 'Wrong username or password.' })
-            
-        //             return response.redirect('back')
-        //         }
-                
-        //     }
-        // }
     }
     
     async logout ({auth, response}) {
@@ -102,17 +75,52 @@ class AdminController {
         return view.render('admin.profile', {admin_details : admin_details, all_location_details : all_location_details})
     }
 
-    async changePassword ({auth, request}) {
+    async profile_edit ({auth, request, response, session}){
         var user = await auth.getUser();
-        console.log(user);
 
-        var user_old_password = request.input('old_password');
+        var full_name = request.body.full_name;
+        var data = full_name.split(" ");
+        var first_name = data[0];
+        var last_name = data[1];
+
+        var gender = request.input('gender') ? request.input('gender') : user.gender; //M ='Male', F='Female'
+
+        var phone_number = request.body.phone_number;
+        var address = request.body.address;
+        var dob = request.body.dob;
+        
+        
+        var location_id = request.body.location_id;
+
+        user.first_name = first_name;
+        user.last_name = last_name;
+        user.gender = gender;
+        user.phone_number = phone_number;
+        user.address = address;
+        user.location_id = location_id;
+        user.dob = dob;
+
+        if(await user.save()) {          
+            session.flash({ profile_edit : 'Profile successfully updated.' })
+            
+            return response.redirect('/admin/profile')
+        }else { 
+            response.json ({
+                status : false,
+                code : 400,
+                message : "Profile updated failed."
+            });
+        }
+    }
+
+    async changePassword ({auth, request, response}) {
+        var user = await auth.getUser();
 
         //for checking db existing pw with user given pw
-        const isSame = await Hash.verify(user_old_password, user.password);
+        const isSame = await Hash.verify(request.body.old_password, user.password);
 
         if(isSame) {
-            var new_password = await Hash.make(request.input('new_password'));
+            var new_password = await Hash.make(request.body.confirm_password);
             user.password = new_password;
 
             if(await user.save()) {

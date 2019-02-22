@@ -1,32 +1,72 @@
 $('#admin_change_password_submit').on('click', function () {
-    var valid = $('#change_password_form').valid();
-    console.log(valid,'valid');
-    if(valid) {
-        alert ($('#old_Password').val());
-    }
-});
+    var old_password = $('#old_Password').val();
+    var new_password = $('#new_Password').val();
+    var confirm_password = $('#confirm_Password').val();
 
-$('#change_password_form').validate({
-    rules:{
-        old_Password:{
-            required : true
-        },
-        new_Password : {
-            required : true
-        },
-        confirm_Password : {
-            required : true
-        }
-    },
-    messages:{
-        old_Password:{
-            required : "<font color='red'>Please enter your old password.</font>"
-        },
-        new_Password : {
-            required : "<font color='red'>Please enter your new password.</font>"
-        },
-        confirm_Password : {
-            required : "<font color='red'>Please enter your confirm password.</font>"
-        }
+    if(old_password == '' || new_password == '' || confirm_password == '') {
+        $.alert({
+            title: 'Alert !',
+            content: 'Old password or New password or Confirm password filed can not be left blank.',
+            // icon: 'fa fa-rocket',
+            animation: 'scale',
+            closeAnimation: 'scale',
+            buttons: {
+                okay: {
+                    text: 'Okay',
+                    btnClass: 'btn-blue'
+                }
+            }
+        });
+    }else if (new_password != confirm_password) {
+        $.alert({
+            title: 'Alert !',
+            content: 'New password and Confirm password should be same.',
+            animation: 'scale',
+            closeAnimation: 'scale',
+            buttons: {
+                okay: {
+                    text: 'Okay',
+                    btnClass: 'btn-blue'
+                }
+            }
+        });
+    }else {
+        $.ajax({
+            type : "POST",
+            url : "/admin/changePassword",
+            data : {
+                old_password : old_password,
+                confirm_password : confirm_password
+            },
+            success : function (result) {
+                if(result.status == 200) {
+                    $.alert({
+                        title: 'Confirmation !',
+                        content: result.message,
+                        animation: 'scale',
+                        closeAnimation: 'scale',
+                        buttons: {
+                            okay: function (){
+                                window.location.reload();
+                            }
+                        }
+                    });
+                }else {
+                    $.alert({
+                        title: 'Alert !',
+                        content: result.message,
+                        animation: 'scale',
+                        closeAnimation: 'scale',
+                        buttons: {
+                            okay: function() {
+                                $('#old_Password').val('');
+                                $('#new_Password').val('');
+                                $('#confirm_Password').val('');
+                            }
+                        }
+                    });
+                }
+            }
+        })
     }
 });

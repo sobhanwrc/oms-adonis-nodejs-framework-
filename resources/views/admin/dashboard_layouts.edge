@@ -29,6 +29,7 @@
         {{ style("/css/custom.min.css") }}
         {{ style("/css/datatables.bootstrap.css") }}
         {{ style("/css/profile.min.css") }}
+        {{ style('https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.4/jquery-confirm.min.css') }}
 
         <link rel="shortcut icon" href="/favicon.png" /> </head>
 
@@ -115,9 +116,22 @@
         {{ script('/js/quick-nav.min.js') }}
         {{ script('/js/profile.min.js') }}
         {{ script('/js/change_password') }}
+        {{ script('https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.4/jquery-confirm.min.js') }}
 
         <script type="text/javascript">
             $("#sample_1_2").dataTable();
+            $(document).ready(function () {
+                $(document).on('click','.edt', function(event) {
+                    $(this).closest('.tab-pane').find('form input').removeAttr('readonly');
+                    $(this).closest('.tab-pane').find('.sav').css('display', 'block');
+                });
+                $(".sav").on('click', function() {
+                    $(this).closest('.tab-pane').find('form input').attr('readonly', 'true');
+                    $('.sav').css('display', 'none');
+                    $('#admin_profile_edit').submit();
+                });
+
+            })
         </script>
 
 </body>
