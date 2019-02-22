@@ -36,6 +36,8 @@ Route.group(() => {
 Route.group(() => { 
     Route.get('/admin/dashboard', 'AdminController.dashboard')
     Route.get('/admin/logout', 'AdminController.logout')
+    Route.get('/admin/profile', 'AdminController.profile')
+    Route.post('/admin/changePassword', 'AdminController.changePassword')
     
     Route.get('/admin/user-list', 'AdminController.user_list')
     Route.get('/admin/user-list/profile/:id', 'AdminController.user_profile')

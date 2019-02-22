@@ -95,6 +95,42 @@ class AdminController {
         return view.render('admin.dashboard',{total_users:fetch_total_users.length, total_vendors: fetch_total_vendors.length, user_progress_bar:user_progress_bar, vendor_progress_bar:vendor_progress_bar, totals_jobs_posted : totals_jobs_posted.length, job_progress_bar : totals_jobs_posted_progress_bar})
     }
 
+    async profile ({view}) {
+        var admin_details = await User.findOne({reg_type : 1});
+        var all_location_details = await Location.find();
+
+        return view.render('admin.profile', {admin_details : admin_details, all_location_details : all_location_details})
+    }
+
+    async changePassword ({auth, request}) {
+        var user = await auth.getUser();
+        console.log(user);
+
+        var user_old_password = request.input('old_password');
+
+        //for checking db existing pw with user given pw
+        const isSame = await Hash.verify(user_old_password, user.password);
+
+        if(isSame) {
+            var new_password = await Hash.make(request.input('new_password'));
+            user.password = new_password;
+
+            if(await user.save()) {
+                response.json ({
+                    status : true,
+                    code : 200,
+                    message : "Password updated successfully."
+                });
+            }
+        }else{ 
+            response.json ({
+                status : false,
+                code : 400,
+                message : "Old password does not match."
+            });
+        }
+    }
+
     async user_list ({view}) {
         var all_user_list = await User.find({reg_type : 2}).sort({_id : -1});
 
