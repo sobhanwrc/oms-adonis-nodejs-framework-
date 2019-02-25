@@ -131,6 +131,16 @@
                     $('#admin_profile_edit').submit();
                 });
 
+                $('#admin_profile_image_submit').on('click', function () {
+                    var file = $('#profile_pic').val();
+                    if(file == '') {
+                        alert ('Please choose any images for upload.');
+                        return false
+                    }else {
+                        $('#profile_image').submit();
+                    }
+                })
+
             })
         </script>
 

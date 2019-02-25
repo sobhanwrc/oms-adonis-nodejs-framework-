@@ -1,6 +1,8 @@
 'use strict'
 const User = use('App/Models/User')
 const Hash = use('Hash')
+const Helpers = use('Helpers')
+
 const Job = use ('App/Models/Job')
 const Location = use ('App/Models/Location')
 const AssignCouponToUser = use ('App/Models/AssignCouponToUser');
@@ -137,6 +139,32 @@ class AdminController {
                 message : "Old password does not match."
             });
         }
+    }
+
+    async change_profile_image ({request, response, auth}) {
+        
+        var user = await auth.getUser();
+
+        var imageFileName = 'admin_profile_image_'+Date.now()+'.jpg';
+
+        const profilePic = request.file('profile_pic', {
+            types: ['image'],
+            size: '2mb'
+        })
+
+        await profilePic.move(Helpers.publicPath('profile_image'), {
+            name: imageFileName
+        })
+        
+        if (!profilePic.moved()) {
+            return profilePic.error()
+        }
+
+        user.profile_image = 'http://'+request.header('Host') + '/profile_image/' + imageFileName;
+        user.save();
+
+        return response.redirect('/admin/profile');
+        
     }
 
     async user_list ({view}) {
