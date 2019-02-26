@@ -46,6 +46,8 @@ Route.group(() => {
 
     Route.get('/admin/vendor-list', 'AdminController.vendor_list')
     Route.get('/admin/vendor-list/profile/:id', 'AdminController.vendor_profile')
+
+    Route.get('/admin/service-list', 'AdminController.service_list')
 }).middleware(['auth:session'])
 //end
 

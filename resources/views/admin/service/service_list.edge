@@ -1,0 +1,61 @@
+@layout('admin.dashboard_layouts')
+
+@section('content')
+
+<div class="page-content" style="min-height: 1001px;">
+        <div class="page-bar">
+          <ul class="page-breadcrumb">
+            <li> <a href="/admin/dashboard">Home</a> <i class="fa fa-circle"></i> </li>
+            <li> <span>Service Lists</span> </li>
+          </ul>
+        </div>
+        <div class="portlet light bordered" style="margin-top:20px;">
+          <div class="portlet-title">
+                                        <!-- <div class="tools">
+                  <div class="btn-group"> <a id="sample_editable_1_new" href="service_listpending.html" class="btn sbold green"> Pending Services </a> </div>
+                </div> -->
+                                    </div>
+          <div class="portlet-body">
+            <div class="chef_list">
+              <table class="table table-striped table-bordered table-hover table-checkable order-column dataTable" id="sample_1_2" role="grid" aria-describedby="sample_1_2_info">
+                <thead>
+                  <tr role="row">
+                    <th class="sorting_asc" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-sort="ascending" aria-label=" Username : activate to sort column descending" style="width: 148px;"> # </th>
+                    <th class="sorting_asc" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-sort="ascending" aria-label=" Username : activate to sort column descending" style="width: 148px;"> Service Name </th>
+                    <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Email : activate to sort column ascending" style="width: 224px;"> Service Category </th>
+                    <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Status : activate to sort column ascending" style="width: 150px;">Posted By</th>
+
+                    <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Joined : activate to sort column ascending" style="width: 120px;"> Posted On</th>
+                    <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Actions : activate to sort column ascending" style="width: 100px;"> Status </th>
+                  </tr>
+                </thead>
+                <tbody>
+                    @each(service in all_services)
+                        <tr class="gradeX odd" role="row">
+                            <td class=""> {{ ($loop.index + 1) }} </td>
+                            <td class="center"> {{service.service_title}}</td>
+                            <td>{{service.service_category.category_type}}</td>
+                            <td>{{service.user_id.first_name}} {{service.user_id.last_name}}</td>
+                            <td>{{service.created_at}}</td>
+                            <td>
+                                @if(service.status == 1)
+                                    <div class="profile-userbuttons"> 
+                                        <a class="btn green-meadow" href="#" > Active </a> 
+                                    </div>
+                                @elseif(service.status == 2)
+                                    <div class="profile-userbuttons"> 
+                                        <a class="btn yellow-crusta" href="#" > Inactive </a> 
+                                    </div>
+                                @endif
+                            </td>
+                        </tr>
+                    @endeach
+                  
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+@endsection

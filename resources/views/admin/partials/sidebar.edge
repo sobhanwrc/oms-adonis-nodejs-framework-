@@ -17,7 +17,7 @@
 
             <li class="nav-item start {{ (request.match(['/admin/user-list', '/admin/user-list/profile/:id']) ? 'active open' : '') }}"> <a href="/admin/user-list" class="nav-link nav-toggle"> <i class="icon-users"></i> <span class="title">User Lists</span> </a> </li>
 
-            <li class="nav-item start"> <a href="service_list.html" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title">Services</span> </a> </li>
+            <li class="nav-item start {{ (request.match(['/admin/service-list']) ? 'active open' : '') }}"> <a href="/admin/service-list" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title">Services</span> </a> </li>
 
             <li class="nav-item start"> <a href="companions_list.html" class="nav-link nav-toggle"> <i class="fa fa-cutlery"></i> <span class="title">Eating Companions List</span> </a> </li>
 

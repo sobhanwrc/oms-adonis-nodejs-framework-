@@ -7,6 +7,8 @@ const Job = use ('App/Models/Job')
 const Location = use ('App/Models/Location')
 const AssignCouponToUser = use ('App/Models/AssignCouponToUser');
 const Coupon = use ('App/Models/Coupon');
+const Service = use ('App/Models/Service');
+const JobCategory = use('App/Models/JobCategory')
 
 class AdminController {
     login_view({view}) {
@@ -17,6 +19,7 @@ class AdminController {
         var user_email = request.input('username')
         var password = request.input('password')
         var reg_type = 1; 
+        console.log(user_email, password);
 
         // const user = await User.findOne({email : user_email, reg_type : reg_type});
         // var user_details = await auth.attempt(user_email, password)
@@ -24,7 +27,8 @@ class AdminController {
         // return false
 
         try{
-            await auth.attempt(user_email, password)
+            var result = await auth.attempt(user_email, password)
+            console.log(result);
 
             return response.redirect('/admin/dashboard')
         }catch(e) {
@@ -209,6 +213,19 @@ class AdminController {
         var location_name = vendor_location_id.name;
 
         return view.render('admin.vendor.vendor_profile', {vendor_details : vendor_details, location_name : location_name})
+    }
+
+    async service_list ({auth,view, response}) {
+        if(await auth.check()) {
+            var all_services = await Service.find()
+            .populate('user_id')
+            .populate('service_category')
+            .sort({_id : -1});
+            
+            return view.render('admin.service.service_list', {all_services : all_services})
+        }else {
+            response.redirect('/admin')
+        }
     }
 }
 
