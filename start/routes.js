@@ -51,7 +51,8 @@ Route.group(() => {
 
     Route.get('/admin/Location', 'AdminController.location')
     Route.post('/admin/location/add', 'AdminController.location_add')
-    Route.get('/admin/location/edit/:id', 'AdminController.location_edit')
+    Route.post('/admin/location/details/:id', 'AdminController.location_details')
+    Route.post('/admin/location/edit', 'AdminController.location_edit')
     Route.get('/admin/location/delete/:id', 'AdminController.location_delete')
 }).middleware(['auth:session'])
 //end

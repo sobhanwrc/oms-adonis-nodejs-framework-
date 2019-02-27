@@ -19,12 +19,6 @@ class AdminController {
         var user_email = request.input('username')
         var password = request.input('password')
         var reg_type = 1; 
-        console.log(user_email, password);
-
-        // const user = await User.findOne({email : user_email, reg_type : reg_type});
-        // var user_details = await auth.attempt(user_email, password)
-        // console.log(user_details,'user_details');
-        // return false
 
         try{
             var result = await auth.attempt(user_email, password)
@@ -231,7 +225,6 @@ class AdminController {
     async location ({auth, view, response}) {
         if(await auth.check()) {
             var fetch_all_locations = await Location.find().sort({_id : -1});
-            console.log(fetch_all_locations);
             return view.render('admin.location.index', { fetch_all_locations: fetch_all_locations})
         }else {
             return response.redirect('/admin')
@@ -247,6 +240,39 @@ class AdminController {
 
         if(await add.save()) {
             session.flash({ location_add_msg: 'Location added successfully.' });
+            return response.redirect('/admin/location');
+        }
+    }
+
+    async location_delete ({auth, session, response, params}) {
+        if(await auth.check()) {
+            var location_delete = await Location.remove({_id : params.id});
+            if(location_delete) {
+                session.flash({ location_add_msg: 'Location deleted successfully.' });
+                return response.redirect('/admin/location');
+            }
+        }else {
+            return response.redirect('/admin')
+        }
+    }
+
+    async location_details ({auth, session, response, params}) {
+        var location_details = await Location.find({_id : params.id})
+        return location_details;
+    }
+
+    async location_edit ({request, response, session}) {
+        var location_id = request.input('location_id');
+        var location_name = request.input('edit_location_name');
+
+        var edit = await Location.updateOne({ _id :  location_id}, {
+            $set :{
+                name : location_name
+            }
+        })
+
+        if(edit) {
+            session.flash({ location_add_msg: 'Location name updated successfully.' });
             return response.redirect('/admin/location');
         }
     }

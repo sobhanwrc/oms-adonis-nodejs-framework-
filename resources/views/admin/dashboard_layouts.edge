@@ -151,6 +151,31 @@
                     }
                 })
 
+                $(".location_name_edit").on('click', function() {
+                    var locations_id = $(this).attr('location_id');
+                    $.ajax({
+                        type : "POST",
+                        url : "/admin/location/details/"+locations_id,
+                        success : function (data) {
+                            if(data != ''){
+                                $('#location_id').val(data[0]._id);
+                                $("#edit_location_name").val(data[0].name);
+                                $('#modal-default-edit').modal('show');
+                            }
+                        }
+                    })
+                })
+
+                $('#location_edit_submit').on('click', function() {
+                    var name = $('#edit_location_name').val();
+                    if(name == '') {
+                        alert ('Location name can not be left blank.');
+                        return false;
+                    }else {
+                        $('#edit_location_form').submit();
+                    }
+                })
+
             })
         </script>
 

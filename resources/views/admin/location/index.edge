@@ -37,7 +37,7 @@
                             <td class=""> {{ ($loop.index + 1) }} </td>
                             <td class="center"> {{locations.name}}</td>
                             <td>
-                                <a title="Edit" href="/admin/location/edit/{{locations._id}}" class="btn btn-primary btn-sm"><i class="fa fa-pencil"></i></a>
+                                <a title="Edit" href="javascript:void(0)" class="btn btn-primary btn-sm location_name_edit" id="" location_id='{{locations._id}}'><i class="fa fa-pencil"></i></a>
 
                                 <a title="Delete" href="/admin/location/delete/{{locations._id}}" onclick="return confirm('Do you really want to delete the current record ?');" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
 
@@ -54,7 +54,7 @@
   
 
 
-
+    <!--add-->  
     <div class="modal fade" id="modal-default">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -83,5 +83,36 @@
         </div>
         <!-- /.modal-dialog -->
     </div>
+
+    <!--edit-->
+    <div class="modal fade" id="modal-default-edit">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Edit Location</h4>
+                    </div>
+    
+                    <form action="/admin/location/edit" method="POST" name="edit_location_form" id="edit_location_form">
+                        <input type="hidden" name="location_id" id="location_id" value="">
+                        {{ csrfField() }}
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Location Name</label>
+                                <input type="text" class="form-control" placeholder="Location Name" id="edit_location_name" name="edit_location_name">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" id="location_edit_submit">Save</button>
+                        </div>
+                    </form>
+                
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
 
 @endsection
