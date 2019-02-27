@@ -48,6 +48,11 @@ Route.group(() => {
     Route.get('/admin/vendor-list/profile/:id', 'AdminController.vendor_profile')
 
     Route.get('/admin/service-list', 'AdminController.service_list')
+
+    Route.get('/admin/Location', 'AdminController.location')
+    Route.post('/admin/location/add', 'AdminController.location_add')
+    Route.get('/admin/location/edit/:id', 'AdminController.location_edit')
+    Route.get('/admin/location/delete/:id', 'AdminController.location_delete')
 }).middleware(['auth:session'])
 //end
 

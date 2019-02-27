@@ -4994,17 +4994,11 @@ margin-top:2px
 	background-color: #0362fd;
 	transition: all .3s
 }
-.close {
-	display: inline-block;
-	margin-top: 0;
-	margin-right: 0;
-	width: 9px;
-	height: 9px;
-	background-repeat: no-repeat!important;
-	text-indent: -10000px;
-	outline: 0;
-	background-image: url(../img/remove-icon-small.png)!important
-}
+ .close {
+	color:#000 !important;
+	opacity: 1;
+} 
+
 .dropdown.open>.dropdown-toggle, .dropup.open>.dropdown-toggle {
 	border-color: #ddd
 }

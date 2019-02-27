@@ -227,6 +227,35 @@ class AdminController {
             response.redirect('/admin')
         }
     }
+
+    async location ({auth, view, response}) {
+        if(await auth.check()) {
+            var fetch_all_locations = await Location.find().sort({_id : -1});
+            console.log(fetch_all_locations);
+            return view.render('admin.location.index', { fetch_all_locations: fetch_all_locations})
+        }else {
+            return response.redirect('/admin')
+        }
+    }
+
+    async location_add ({auth, request, response, session}) {
+        var location_name = this.capitalizeFirstLetter(request.input('location_name'));
+
+        var add = new Location({
+            name : location_name
+        });
+
+        if(await add.save()) {
+            session.flash({ location_add_msg: 'Location added successfully.' });
+            return response.redirect('/admin/location');
+        }
+    }
+
+    //first letter capital
+    capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+      //end
 }
 
 module.exports = AdminController

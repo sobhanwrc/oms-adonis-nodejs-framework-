@@ -843,7 +843,7 @@ class ApiController {
           job_end_time : job_end_time,
           description : description,
           duration : duration,
-          status : 2, // 1= active, 2 = inactive, 3 = complete
+          status : 1, // 1= active, 2 = inactive, 3 = complete
           job_allocated_to_vendor : job_allocated_to_vendor,
           // lat : lat,
           // long : long
