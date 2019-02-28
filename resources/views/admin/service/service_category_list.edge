@@ -1,0 +1,61 @@
+@layout('admin.dashboard_layouts')
+
+@section('content')
+
+@layout('admin.dashboard_layouts')
+
+@section('content')
+
+<div class="page-content" style="min-height: 1001px;">
+        <div class="page-bar">
+          <ul class="page-breadcrumb">
+            <li> <a href="/admin/dashboard">Home</a> <i class="fa fa-circle"></i> </li>
+            <li> <span>Category Lists</span> </li>
+          </ul>
+        </div>
+        <div class="portlet light bordered" style="margin-top:20px;">
+          <div class="portlet-title">
+                                        <!-- <div class="tools">
+                  <div class="btn-group"> <a id="sample_editable_1_new" href="service_listpending.html" class="btn sbold green"> Pending Services </a> </div>
+                </div> -->
+                                    </div>
+          <div class="portlet-body">
+            <div class="chef_list">
+              <table class="table table-striped table-bordered table-hover table-checkable order-column dataTable" id="sample_1_2" role="grid" aria-describedby="sample_1_2_info">
+                <thead>
+                  <tr role="row">
+                    <th class="sorting_asc" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-sort="ascending" aria-label=" Username : activate to sort column descending" style="width: 148px;"> Sr. No </th>
+                    <th class="sorting_asc" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-sort="ascending" aria-label=" Username : activate to sort column descending" style="width: 148px;">Category Image </th>
+                    <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Email : activate to sort column ascending" style="width: 224px;"> Category Name </th>
+                    <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Status : activate to sort column ascending" style="width: 150px;">Category Price</th>
+
+                    <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Joined : activate to sort column ascending" style="width: 120px;"> Created at</th>
+                    <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Actions : activate to sort column ascending" style="width: 100px;"> Status </th>
+                  </tr>
+                </thead>
+                <tbody>
+                    @each(category in service_category)
+                        <tr class="gradeX odd" role="row">
+                            <td class=""> {{ ($loop.index + 1) }} </td>
+                        <td><img src="{{category.category_image}}"  style="width: 50px; height: 50px;"/></td>
+                            <td class="center"> {{category.category_type}}</td>
+                            <td>${{category.price}}</td>
+                            <td>{{category.created_at}}</td>
+                            <td>
+                                <a title="Edit" href="javascript:void(0)" class="btn btn-primary btn-sm location_name_edit" id="" location_id='{{locations._id}}'><i class="fa fa-pencil"></i></a>
+
+                                <a title="Delete" href="/admin/location/delete/{{locations._id}}" onclick="return confirm('Do you really want to delete the current record ?');" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
+                            </td>
+                        </tr>
+                    @endeach
+                  
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+@endsection
+
+@endsection

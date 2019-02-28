@@ -277,6 +277,15 @@ class AdminController {
         }
     }
 
+    async service_category_view ({auth, response, view}) {
+        if(await auth.check()) {
+            var service_category = await JobCategory.find();
+            return view.render('admin.service.service_category_list', {service_category,service_category})
+        }else {
+            return response.redirect('/admin')
+        }
+    }
+
     //first letter capital
     capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);

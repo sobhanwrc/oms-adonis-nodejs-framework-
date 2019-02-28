@@ -23,9 +23,9 @@
                     <th class="sorting_asc" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-sort="ascending" aria-label=" Username : activate to sort column descending" style="width: 148px;"> # </th>
                     <th class="sorting_asc" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-sort="ascending" aria-label=" Username : activate to sort column descending" style="width: 148px;"> Service Name </th>
                     <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Email : activate to sort column ascending" style="width: 224px;"> Service Category </th>
-                    <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Status : activate to sort column ascending" style="width: 150px;">Posted By</th>
+                    <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Status : activate to sort column ascending" style="width: 150px;">Registered By</th>
 
-                    <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Joined : activate to sort column ascending" style="width: 120px;"> Posted On</th>
+                    <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Joined : activate to sort column ascending" style="width: 120px;"> Registered On</th>
                     <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Actions : activate to sort column ascending" style="width: 100px;"> Status </th>
                   </tr>
                 </thead>
@@ -34,8 +34,16 @@
                         <tr class="gradeX odd" role="row">
                             <td class=""> {{ ($loop.index + 1) }} </td>
                             <td class="center"> {{service.service_title}}</td>
-                            <td>{{service.service_category.category_type}}</td>
-                            <td>{{service.user_id.first_name}} {{service.user_id.last_name}}</td>
+                            <td>
+                              <a href="#">
+                                  {{service.service_category.category_type}}
+                              </a>
+                            </td>
+                            <td> 
+                              <a href="/admin/vendor-list/profile/{{service.user_id._id}}">
+                                {{service.user_id.first_name}} {{service.user_id.last_name}}
+                              </a> 
+                            </td>
                             <td>{{service.created_at}}</td>
                             <td>
                                 @if(service.status == 1)
