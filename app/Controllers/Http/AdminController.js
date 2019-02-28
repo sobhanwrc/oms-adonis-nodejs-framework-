@@ -9,6 +9,8 @@ const AssignCouponToUser = use ('App/Models/AssignCouponToUser');
 const Coupon = use ('App/Models/Coupon');
 const Service = use ('App/Models/Service');
 const JobCategory = use('App/Models/JobCategory')
+const ServiceType = use('App/Models/ServiceType');
+const ServiceCategory = use('App/Models/ServiceCategory');
 
 class AdminController {
     login_view({view}) {
@@ -284,6 +286,59 @@ class AdminController {
         }else {
             return response.redirect('/admin')
         }
+    }
+
+    async service_category_add({view}) {
+        var fetch_all_service_type = await ServiceType.find();
+        return view.render('admin.service.category_add', {fetch_all_service_type : fetch_all_service_type})
+    }
+
+    async category_add_submit ({request, response}) {
+        var categoty_name = request.input('categoty_name');
+        var sub_category_id = request.input('sub_category');
+        var category_desc = request.input('category_desc');
+
+        var add = new ServiceCategory({
+            service_category : categoty_name,
+            description : category_desc,
+            service_type : sub_category_id
+        })
+
+        await add.save();
+    }
+
+    async subcategory({view}) {
+        var all_parent_services = await ServiceType.find({},{service_type : 1});
+        return view.render('admin.service.subcategory', {all_parent_services : all_parent_services})
+    }
+
+    async parentService({view}) {
+        return view.render('admin.service.parent_service_add')
+    }
+
+    async parent_service_category_add ({request, response}) {
+        var name = request.input('parent_categoty_name');
+        var add = new ServiceType ({
+            service_type : name
+        })
+
+        if(await add.save()){
+            return response.redirect('/admin/services/parentService')
+        }
+    }
+
+    async sub_service_add ({request, response}) {
+        var parent_service_id = request.input('parent_service_id');
+        var details = await ServiceType.findOne({_id : parent_service_id});
+
+        var info = {
+            name: request.input('sub_categoty_name'),
+            price: request.input('category_price')
+          };
+        
+        details.child_services_type.unshift(info); 
+
+        await details.save();
     }
 
     //first letter capital

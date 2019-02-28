@@ -1,0 +1,44 @@
+@layout('admin.dashboard_layouts')
+
+@section('content')
+
+@layout('admin.dashboard_layouts')
+
+@section('content')
+
+<div class="page-content" style="min-height: 1001px;">
+        <div class="page-bar">
+          <ul class="page-breadcrumb">
+            <li> <a href="/admin/dashboard">Home</a> <i class="fa fa-circle"></i> </li>
+            <li><a href="/admin/service-category-list">Category Lists</a> <i class="fa fa-circle"></i></li>
+            <li><span>Parent Service Category Add</span></li>
+        </ul>
+        </div>
+        <div class="portlet light bordered" style="margin-top:20px;">
+          <!--<div class="portlet-title">
+                <div class="portlet-title">
+                        <a href="/admin/service-category/add"><button class="btn btn-info pull-left"> Add</button></a> 
+                </div>
+            </div>-->
+            <div class="portlet-body form-group row">
+                <div class="chef_list col-md-6">
+                    <form role="form" name="service_category_form" id="service_category_form" action="/admin/service/parent_service_category_add" enctype="multipart/form-data" method="POST">
+                        <div class="box-body">
+                            <div class="form-group">
+                                <label for="parent_categoty_name">Parent Service Name</label>
+                                <input type="text" class="form-control" id="parent_categoty_name" name="parent_categoty_name" placeholder="Category Name" autocomplete="off">
+                            </div>
+                        <!-- /.box-body -->
+            
+                        <div class="box-footer">
+                            <button type="submit" class="btn btn-primary" id="service_category_add">Add</button>
+                        </div>
+                    </form>
+                </div>
+          </div>
+        </div>
+      </div>
+  
+@endsection
+
+@endsection

@@ -1,0 +1,71 @@
+@layout('admin.dashboard_layouts')
+
+@section('content')
+
+@layout('admin.dashboard_layouts')
+
+@section('content')
+
+<div class="page-content" style="min-height: 1001px;">
+        <div class="page-bar">
+          <ul class="page-breadcrumb">
+            <li> <a href="/admin/dashboard">Home</a> <i class="fa fa-circle"></i> </li>
+            <li><a href="/admin/service-category-list">Category Lists</a> <i class="fa fa-circle"></i></li>
+            <li><span>Sub Category Add</span></li>
+        </ul>
+        </div>
+        <div class="portlet light bordered" style="margin-top:20px;">
+          <!--<div class="portlet-title">
+                <div class="portlet-title">
+                        <a href="/admin/service-category/add"><button class="btn btn-info pull-left"> Add</button></a> 
+                </div>
+            </div>-->
+            <div class="portlet-body form-group row">
+                <div class="chef_list col-md-6">
+                    <form role="form" name="service_category_form" id="service_category_form" action="/admin/service/sub-service-add" enctype="multipart/form-data" method="POST">
+                        <div class="box-body">
+                            <div class="form-group">
+                                <label for="categoty_name">Choose parent Service</label>
+                                <select class="form-control" name="parent_service_id">
+                                    <option value="0">None</option>
+                                    @each(parentService in all_parent_services)
+                                        <option value="{{parentService._id}}">{{parentService.service_type}}</option>
+                                    @endeach
+                                    
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="sub_categoty_name">Service Name</label>
+                                <input type="text" class="form-control" id="sub_categoty_name" name="sub_categoty_name" placeholder="Category Name" autocomplete="off">
+                            </div>
+                            <!--<div class="form-group">
+                                <label for="">Category Description</label>
+                                <textarea cols="" rows="" class="form-control" id="category_desc" name="category_desc" placeholder="Category Description"></textarea>
+                            </div>-->
+                            <div class="form-group">
+                                <label for="">Service Price</label>
+                                <div class="input-group">
+                                    <span class="input-group-addon">$</span>
+                                    <input type="number" class="form-control" id="category_price" name="category_price">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                    <input type="checkbox" id="category_image" name="category_image">
+                                <label for="category_image">Enable ask for quote</label>
+                                
+                            </div>
+                        </div>
+                        <!-- /.box-body -->
+            
+                        <div class="box-footer">
+                            <button type="submit" class="btn btn-primary" id="service_category_add">Add</button>
+                        </div>
+                    </form>
+                </div>
+          </div>
+        </div>
+      </div>
+  
+@endsection
+
+@endsection

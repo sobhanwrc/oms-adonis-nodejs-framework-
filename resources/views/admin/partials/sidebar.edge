@@ -18,7 +18,11 @@
 
             <li class="nav-item start {{ (request.match(['/admin/service-list']) ? 'active open' : '') }}"> <a href="/admin/service-list" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title">Registered Services</span> </a> </li>
 
-            <li class="nav-item start {{ (request.match(['/admin/service-category-list']) ? 'active open' : '') }}"> <a href="/admin/service-category-list" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title">Manage Services</span> </a> </li>
+            <li class="nav-item start {{ (request.match(['/admin/service-category-list', '/admin/service-category/add']) ? 'active open' : '') }}"> <a href="/admin/service-category-list" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title">Manage Services Category</span> </a> </li>
+
+            <li class="nav-item start {{ (request.match(['/admin/services/subcategory']) ? 'active open' : '') }}"> <a href="/admin/services/subcategory" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title">Manage Services</span> </a> </li>
+
+            <li class="nav-item start {{ (request.match(['/admin/services/parentService']) ? 'active open' : '') }}"> <a href="/admin/services/parentService" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title">Add parent service </span> </a> </li>
 
             <li class="nav-item start {{ (request.match(['/admin/Location']) ? 'active open' : '') }}"> <a href="/admin/Location" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title">Manage Location</span> </a> </li>
 

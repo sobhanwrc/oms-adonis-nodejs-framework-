@@ -1292,14 +1292,12 @@ class ApiController {
     }
 
     async fetchServiceTypeAndCategories ({response}) {
-      var all_servicecategory = await ServiceCategory.find({},{status: 0, created_at: 0, updated_at: 0, __v:0 });
-      var all_servicetype = await ServiceType.find({},{status: 0, created_at: 0, updated_at: 0, __v:0 });
+      var all_servicecategory = await ServiceCategory.find({},{status: 0, created_at: 0, updated_at: 0, __v:0 }).populate('service_type');
 
       response.json ({
         status : true,
         code : 200,
         all_servicecategory : all_servicecategory,
-        all_servicetype : all_servicetype
       });
     }
 
