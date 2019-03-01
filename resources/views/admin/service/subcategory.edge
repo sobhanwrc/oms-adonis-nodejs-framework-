@@ -29,7 +29,7 @@
                                 <select class="form-control" name="parent_service_id">
                                     <option value="0">None</option>
                                     @each(parentService in all_parent_services)
-                                        <option value="{{parentService._id}}">{{parentService.service_type}}</option>
+                                        <option value="{{parentService._id}}">{{parentService.parent_service}}</option>
                                     @endeach
                                     
                                 </select>
@@ -50,8 +50,8 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                    <input type="checkbox" id="category_image" name="category_image">
-                                <label for="category_image">Enable ask for quote</label>
+                                <input type="checkbox" id="ask_for_quote" name="ask_for_quote" value="1">
+                                <label for="ask_for_quote">Enable ask for quote</label>
                                 
                             </div>
                         </div>

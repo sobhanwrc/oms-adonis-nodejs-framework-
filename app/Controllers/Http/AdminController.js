@@ -281,7 +281,7 @@ class AdminController {
 
     async service_category_view ({auth, response, view}) {
         if(await auth.check()) {
-            var service_category = await JobCategory.find();
+            var service_category = await ServiceCategory.find();
             return view.render('admin.service.service_category_list', {service_category,service_category})
         }else {
             return response.redirect('/admin')
@@ -294,21 +294,52 @@ class AdminController {
     }
 
     async category_add_submit ({request, response}) {
-        var categoty_name = request.input('categoty_name');
-        var sub_category_id = request.input('sub_category');
+        var category_name = request.input('categoty_name');
+        var sub_category_id = request.input('all_added_services');
         var category_desc = request.input('category_desc');
 
-        var add = new ServiceCategory({
-            service_category : categoty_name,
-            description : category_desc,
-            service_type : sub_category_id
+
+        //image
+        var imageFileName = 'category_image_'+Date.now()+'.png';
+
+        const profilePic = request.file('category_image', {
+            types: ['image'],
+            size: '2mb'
         })
 
-        await add.save();
+        await profilePic.move(Helpers.publicPath('categories_image'), {
+            name: imageFileName
+        })
+        
+        if (!profilePic.moved()) {
+            return profilePic.error()
+        }
+        //end
+
+        var add = new ServiceCategory({
+            service_category : category_name,
+            description : category_desc,
+            category_image: 'http://'+request.header('Host') + '/categories_image/' + imageFileName
+        })
+
+        var details = await add.save();
+
+        if(details) {
+            var added_category_details = await ServiceCategory.findOne({_id : details._id})
+            for(var i = 0; i < sub_category_id.length; i++){
+                var info = {
+                    service_type_id : sub_category_id[i]
+                }
+
+                added_category_details.service_type.unshift(info); 
+
+                await added_category_details.save();
+            }
+        }
     }
 
     async subcategory({view}) {
-        var all_parent_services = await ServiceType.find({},{service_type : 1});
+        var all_parent_services = await ServiceType.find({},{parent_service : 1});
         return view.render('admin.service.subcategory', {all_parent_services : all_parent_services})
     }
 
@@ -319,7 +350,7 @@ class AdminController {
     async parent_service_category_add ({request, response}) {
         var name = request.input('parent_categoty_name');
         var add = new ServiceType ({
-            service_type : name
+            parent_service : name
         })
 
         if(await add.save()){
@@ -330,13 +361,20 @@ class AdminController {
     async sub_service_add ({request, response}) {
         var parent_service_id = request.input('parent_service_id');
         var details = await ServiceType.findOne({_id : parent_service_id});
+        var ask_for_quote = request.input('ask_for_quote');
+        if(ask_for_quote == 1) {
+            ask_for_quote = "YES";
+        }else {
+            ask_for_quote = "NO";
+        }
 
         var info = {
             name: request.input('sub_categoty_name'),
-            price: request.input('category_price')
+            price: request.input('category_price'),
+            ask_for_quote : ask_for_quote
           };
         
-        details.child_services_type.unshift(info); 
+        details.child_services.unshift(info); 
 
         await details.save();
     }

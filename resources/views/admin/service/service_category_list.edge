@@ -27,7 +27,6 @@
                     <th class="sorting_asc" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-sort="ascending" aria-label=" Username : activate to sort column descending" style="width: 148px;"> Sr. No </th>
                     <th class="sorting_asc" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-sort="ascending" aria-label=" Username : activate to sort column descending" style="width: 148px;">Category Image </th>
                     <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Email : activate to sort column ascending" style="width: 224px;"> Category Name </th>
-                    <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Status : activate to sort column ascending" style="width: 150px;">Category Price</th>
 
                     <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Joined : activate to sort column ascending" style="width: 120px;"> Created at</th>
                     <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Actions : activate to sort column ascending" style="width: 100px;"> Status </th>
@@ -38,8 +37,7 @@
                         <tr class="gradeX odd" role="row">
                             <td class=""> {{ ($loop.index + 1) }} </td>
                         <td><img src="{{category.category_image}}"  style="width: 50px; height: 50px;"/></td>
-                            <td class="center"> {{category.category_type}}</td>
-                            <td>${{category.price}}</td>
+                            <td class="center"> {{category.service_category}}</td>
                             <td>{{category.created_at}}</td>
                             <td>
                                 <a title="Edit" href="javascript:void(0)" class="btn btn-primary btn-sm location_name_edit" id="" location_id='{{locations._id}}'><i class="fa fa-pencil"></i></a>
