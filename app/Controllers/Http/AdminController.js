@@ -2,6 +2,7 @@
 const User = use('App/Models/User')
 const Hash = use('Hash')
 const Helpers = use('Helpers')
+const _ = use('lodash');
 
 const Job = use ('App/Models/Job')
 const Location = use ('App/Models/Location')
@@ -410,9 +411,46 @@ class AdminController {
 
     async service_category_edit_view ({params, request, response, view}) {
         var fetch_all_service_type = await ServiceType.find();
+        // console.log(fetch_all_service_type);
+
         var details = await ServiceCategory.findOne({_id : params.id})
+
+        if(details.service_type.length > 0) {
+            var service_type = details.service_type;
+            var tmpArray = [];
+            for(var i = 0; i < service_type.length; i++) {
+                tmpArray.push(service_type[i].service_type_id)
+            }
+
+            var finalArray = []; 
+            for(var j = 0; j < fetch_all_service_type.length; j++) {
+                var find_details = await _.some(tmpArray, fetch_all_service_type[j]._id)
+
+                if(find_details == true) {
+                    finalArray.push({
+                        _id : fetch_all_service_type[j]._id,
+                        parent_service : fetch_all_service_type[j].parent_service,
+                        child_services : fetch_all_service_type[j].child_services,
+                        check : true
+                    })
+                }else {
+                    finalArray.push({
+                        _id : fetch_all_service_type[j]._id,
+                        parent_service : fetch_all_service_type[j].parent_service,
+                        child_services : fetch_all_service_type[j].child_services,
+                        check : false
+                    })
+                }
+            }
+
+            // console.log(finalArray,'finalArray');
+        }else {
+            finalArray = fetch_all_service_type
+        }
         
-        return view.render('admin.service.category_edit',{details : details, fetch_all_service_type : fetch_all_service_type})
+        // return false
+        
+        return view.render('admin.service.category_edit',{details : details, fetch_all_service_type : finalArray})
     }
 
     async service_category_delete ({params, session, response}) {
