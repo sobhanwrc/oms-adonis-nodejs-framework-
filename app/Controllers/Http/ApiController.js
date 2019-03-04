@@ -765,8 +765,7 @@ class ApiController {
     }
 
     async fetchJobCategoryAndIndustry ({response}) {
-      var all_jobcategory = await ServiceCategory.find({},{status: 0, created_at: 0, updated_at: 0, __v:0 });
-      // var all_jobindustry = await JobIndustry.find({},{status: 0, created_at: 0, updated_at: 0, __v:0 }, {"sort" : {'industry_name' : 'asc'}});
+      var all_jobcategory = await ServiceCategory.find({service_type : { $gt: [] }},{status: 0, created_at: 0, updated_at: 0, __v:0 }).populate('service_type.service_type_id').sort({_id : -1});
 
       response.json ({
         status : true,

@@ -62,6 +62,9 @@ Route.group(() => {
     Route.post('/admin/service/parent_service_category_add', 'AdminController.parent_service_category_add')
     Route.post('/admin/service/sub-service-add', 'AdminController.sub_service_add')
     Route.post('/admin/service/category-add', 'AdminController.category_add_submit')
+    Route.get('/admin/sub-category-list', 'AdminController.sub_category_list')
+    Route.get('/admin/service-category/edit/:id', 'AdminController.service_category_edit_view')
+    Route.get('/admin/service-category/delete/:id', 'AdminController.service_category_delete')
 }).middleware(['auth:session'])
 //end
 

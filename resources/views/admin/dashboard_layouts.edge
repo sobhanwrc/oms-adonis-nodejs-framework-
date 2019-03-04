@@ -176,6 +176,57 @@
                     }
                 })
 
+                if($('#parent_service_id').val() == 0) {
+                    $('#ask_for_quote_div').hide();
+                    $('#category_price_div').hide();
+                    $('#define').val('1');
+                }
+
+                $('#parent_service_id').on('change', function () {
+                    if($('#parent_service_id').val() == 0) {
+                        $('#ask_for_quote_div').hide();
+                        $('#category_price_div').hide();
+                        $('#define').val('1');
+                    }else{
+                        $('#ask_for_quote_div').show();
+                        $('#category_price_div').show();
+                        $('#define').val('2');
+                    }
+                });
+
+                $('#service_category_add').on('click', function (){
+                    var valid = $('#service_category_form').valid();
+
+                    if(valid){
+                        $('#service_category_form').submit();
+                    }
+                });
+                
+                $('#service_category_form').validate({
+                    rules:{
+                        sub_categoty_name : {
+                            required : true
+                        }
+                    },
+                    messages: {
+                        sub_categoty_name : {
+                            required : "<font color='red'> Please enter service name.</font>"
+                        }
+                    }
+                });
+
+                $('#toplevel_service_category_add').on('click', function () {
+                    var categoty_name = $('#categoty_name').val();
+                    var category_desc = $('#category_desc').val();
+                    var category_image = $('#category_image').val();
+
+                    if(categoty_name == '' || category_desc == '' || category_image == ''){
+                        alert ('Fields can not be left blank.');
+                        return false
+                    }else {
+                        $('#toplevel_service_category_add_form').submit();
+                    }
+                })
             })
         </script>
 

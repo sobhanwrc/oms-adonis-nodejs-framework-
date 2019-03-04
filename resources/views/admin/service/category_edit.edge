@@ -11,7 +11,7 @@
           <ul class="page-breadcrumb">
             <li> <a href="/admin/dashboard">Home</a> <i class="fa fa-circle"></i> </li>
             <li><a href="/admin/service-category-list">Category Lists</a> <i class="fa fa-circle"></i></li>
-            <li><span>Category Add</span></li>
+            <li><span>Category Edit</span></li>
         </ul>
         </div>
         <div class="portlet light bordered" style="margin-top:20px;">
@@ -22,16 +22,15 @@
             </div>-->
             <div class="portlet-body form-group row">
                 <div class="chef_list col-md-6">
-                    <form role="form" name="toplevel_service_category_add_form" id="toplevel_service_category_add_form" action="/admin/service/category-add" enctype="multipart/form-data" method="POST">
-                        {{ csrfField() }}
+                    <form role="form" name="service_category_form" id="service_category_form" action="/admin/service/category-add" enctype="multipart/form-data" method="POST">
                         <div class="box-body">
                             <div class="form-group">
                                 <label for="categoty_name">Categoty Name</label>
-                                <input type="text" class="form-control" id="categoty_name" name="categoty_name" placeholder="Category Name" autocomplete="off">
+                                <input type="text" class="form-control" id="categoty_name" name="categoty_name" placeholder="Category Name" value="{{details.service_category}}" autocomplete="off">
                             </div>
                             <div class="form-group">
                                 <label for="">Category Description</label>
-                                <textarea cols="" rows="" class="form-control" id="category_desc" name="category_desc" placeholder="Category Description"></textarea>
+                                <textarea cols="" rows="" class="form-control" id="category_desc" name="category_desc" placeholder="Category Description">{{details.description}}</textarea>
                             </div>
                             <div class="form-group">
                                 <label for="category_image">Category Image</label>
@@ -39,14 +38,14 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="categoty_name1" class="col-md-12" style="padding-left:0;">Add Services</label>
-                                    
+                                <label for="categoty_name1" class="col-md-12" style="padding-left:0;">Add service</label>
                                     @each(subCategory in fetch_all_service_type)
                                         @if(size(subCategory.child_services) != 0)
                                             <div class="form-check disabled col-md-4" style="padding-left:0;">
+
                                                 <label for="add_services_name">
-                                                        <input type="checkbox" class="form-check-input" name="all_added_services[]" value="{{subCategory._id}}">
-                                                        {{subCategory.parent_service}}
+                                                    <input type="checkbox" class="form-check-input" name="all_added_services[]" value="{{subCategory._id}}">
+                                                    {{subCategory.parent_service}}
                                                 </label>
                                             </div>
                                         @endif
@@ -57,7 +56,7 @@
                         <!-- /.box-body -->
           
                         <div class="box-footer col-md-12" style="margin-top: 10px; padding-left:0; ">
-                            <button type="submit" class="btn btn-primary" id="toplevel_service_category_add">Add</button>
+                            <button type="submit" class="btn btn-primary" id="service_category_add">Add</button>
                         </div>
                     </form>
                 </div>

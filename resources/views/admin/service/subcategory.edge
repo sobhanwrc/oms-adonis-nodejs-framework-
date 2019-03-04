@@ -10,7 +10,6 @@
         <div class="page-bar">
           <ul class="page-breadcrumb">
             <li> <a href="/admin/dashboard">Home</a> <i class="fa fa-circle"></i> </li>
-            <li><a href="/admin/service-category-list">Category Lists</a> <i class="fa fa-circle"></i></li>
             <li><span>Sub Category Add</span></li>
         </ul>
         </div>
@@ -23,10 +22,12 @@
             <div class="portlet-body form-group row">
                 <div class="chef_list col-md-6">
                     <form role="form" name="service_category_form" id="service_category_form" action="/admin/service/sub-service-add" enctype="multipart/form-data" method="POST">
+                        {{ csrfField() }}
+                        <input type="hidden" name="define" id="define">
                         <div class="box-body">
                             <div class="form-group">
                                 <label for="categoty_name">Choose parent Service</label>
-                                <select class="form-control" name="parent_service_id">
+                                <select class="form-control" name="parent_service_id" id="parent_service_id">
                                     <option value="0">None</option>
                                     @each(parentService in all_parent_services)
                                         <option value="{{parentService._id}}">{{parentService.parent_service}}</option>
@@ -36,20 +37,22 @@
                             </div>
                             <div class="form-group">
                                 <label for="sub_categoty_name">Service Name</label>
-                                <input type="text" class="form-control" id="sub_categoty_name" name="sub_categoty_name" placeholder="Category Name" autocomplete="off">
+                                <input type="text" class="form-control" id="sub_categoty_name" name="sub_categoty_name" placeholder="Service Name" autocomplete="off">
                             </div>
                             <!--<div class="form-group">
                                 <label for="">Category Description</label>
                                 <textarea cols="" rows="" class="form-control" id="category_desc" name="category_desc" placeholder="Category Description"></textarea>
                             </div>-->
-                            <div class="form-group">
+                            <div class="form-group" id="category_price_div">
                                 <label for="">Service Price</label>
                                 <div class="input-group">
                                     <span class="input-group-addon">$</span>
                                     <input type="number" class="form-control" id="category_price" name="category_price">
+                                    
+                                    {{--  <label id="category_price-error" class="error" for="category_price"></label>  --}}
                                 </div>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group" id="ask_for_quote_div">
                                 <input type="checkbox" id="ask_for_quote" name="ask_for_quote" value="1">
                                 <label for="ask_for_quote">Enable ask for quote</label>
                                 

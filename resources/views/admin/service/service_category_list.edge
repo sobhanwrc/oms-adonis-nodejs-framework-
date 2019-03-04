@@ -14,6 +14,13 @@
           </ul>
         </div>
         <div class="portlet light bordered" style="margin-top:20px;">
+          @if(flashMessage('category_msg'))
+              <div class="alert alert-success alert-dismissible">
+                  <button type="button" class="close" data-dismiss="alert" aria-hidden="true"><span aria-hidden="true">&times;</span></button></button>
+                  <h4><i class="icon fa fa-check"></i> {{flashMessage('category_msg')}}</h4>
+              </div>
+          @endif
+
           <div class="portlet-title">
                 <div class="portlet-title">
                         <a href="/admin/service-category/add"><button class="btn btn-info pull-left"> Add</button></a> 
@@ -40,9 +47,9 @@
                             <td class="center"> {{category.service_category}}</td>
                             <td>{{category.created_at}}</td>
                             <td>
-                                <a title="Edit" href="javascript:void(0)" class="btn btn-primary btn-sm location_name_edit" id="" location_id='{{locations._id}}'><i class="fa fa-pencil"></i></a>
+                                <a title="Edit" href="/admin/service-category/edit/{{category._id}}" class="btn btn-primary btn-sm"><i class="fa fa-pencil"></i></a>
 
-                                <a title="Delete" href="/admin/location/delete/{{locations._id}}" onclick="return confirm('Do you really want to delete the current record ?');" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
+                                <a title="Delete" href="/admin/service-category/delete/{{category._id}}" onclick="return confirm('Do you really want to delete the current record ?');" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
                             </td>
                         </tr>
                     @endeach
