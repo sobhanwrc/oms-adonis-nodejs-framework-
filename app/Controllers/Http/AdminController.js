@@ -468,6 +468,7 @@ class AdminController {
         var category_edit_desc = request.input("category_edit_desc");
         var service_category_id = request.input('all_added_services');
         var category_edit_image = request.file('category_edit_image');
+        console.log(service_category_id,'service_category_id');
 
         var edit_details = await ServiceCategory.findOne({_id : category_id})
         edit_details.service_category = categoty_edit_name;
@@ -516,14 +517,9 @@ class AdminController {
                         await edit_category_details.save();
                     }
                 }
+                var find_details = await _.some(tempArray, "5c78dd0563f38236efdf35d5")
 
-                if(service_category_id.length < edit_details.service_type.length){
-                    const check_exist_service_type = _.filter(edit_category_details.service_type, category => category.service_type_id != service_category_id[i]);
-                    
-                    
-                    console.log(check_exist_service_type,'else if block');
-                    // return false;
-                }
+                console.log(find_details,'find_details', );
                 return false
 
                 session.flash({ category_msg : 'Record updated successfully.' })
