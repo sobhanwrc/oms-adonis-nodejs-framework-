@@ -468,10 +468,12 @@ class AdminController {
         var category_edit_desc = request.input("category_edit_desc");
         var service_category_id = request.input('all_added_services');
         var category_edit_image = request.file('category_edit_image');
+        console.log(service_category_id,'user_input', service_category_id.length);
 
         var edit_details = await ServiceCategory.findOne({_id : category_id})
         // console.log(edit_details.service_type);
-        // console.log(edit_details.service_type.length);
+        console.log(edit_details.service_type.length,'db store');
+        // return false
 
         edit_details.service_category = categoty_edit_name;
         edit_details.description = category_edit_desc;
@@ -501,12 +503,13 @@ class AdminController {
 
         if(details) {
             var edit_category_details = await ServiceCategory.findOne({_id : details._id})
+            // console.log(edit_category_details);
 
             if (service_category_id != undefined) {
                 for(var i = 0; i < service_category_id.length; i++){
 
                     const check_exist_service_type = _.filter(edit_category_details.service_type, category => category.service_type_id == service_category_id[i]);
-                    console.log(check_exist_service_type,'check_exist_service_type');
+                    // console.log(check_exist_service_type,'check_exist_service_type');
                     // return false;
 
                     if(check_exist_service_type.length == 0) {
@@ -517,30 +520,32 @@ class AdminController {
                         edit_category_details.service_type.unshift(info); 
         
                         await edit_category_details.save();
+                    }else if(service_category_id.length < edit_details.service_type.length){
+                        const unchecked_exist_service_type = _.filter(edit_category_details.service_type, category => category.service_type_id != service_category_id[i]);
+
+                        console.log(unchecked_exist_service_type, 'unchecked_exist_service_type');
+                        // return false;
+
+                        var delete_details = await ServiceCategory.update(
+                            { _id : category_id },
+                            { $pull: { service_type: { service_type_id:  unchecked_exist_service_type[i].service_type_id} } },
+                            { multi: true }
+                        )
+                        console.log(delete_details,'delete_details');
+                        return false
                     }
-                    // else {
-                    //     const unchecked_exist_service_type = _.filter(edit_category_details.service_type, category => category.service_type_id != service_category_id[i]);
-
-                    //     console.log(unchecked_exist_service_type, 'unchecked_exist_service_type');
-                    //     // return false;
-
-                    //     var delete_details = await ServiceCategory.update(
-                    //         { _id : category_id },
-                    //         { $pull: { service_type: { service_type_id:  unchecked_exist_service_type[i].service_type_id} } },
-                    //         { multi: true }
-                    //     )
-                    //     console.log(delete_details,'delete_details');
-                    //     return false
-                    // }
                 }
 
                 session.flash({ category_msg : 'Record updated successfully.' })
                 return response.redirect('/admin/service-category-list')
             }else {
-                const unchecked_exist_service_type = _.filter(edit_category_details.service_type, category => category.service_type_id != service_category_id[i]);
-
-                console.log(unchecked_exist_service_type);
-                return false;
+                for(var j = 0; j < edit_category_details.service_type.length; j++){
+                    var delete_details = await ServiceCategory.update(
+                        { _id : category_id },
+                        { $pull: { service_type: { service_type_id:  edit_category_details.service_type[j].service_type_id} } },
+                        { multi: true }
+                    )
+                }
 
                 session.flash({ category_msg : 'Record updated successfully.' })
                 return response.redirect('/admin/service-category-list')
