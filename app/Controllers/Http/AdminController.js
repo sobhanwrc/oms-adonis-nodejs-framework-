@@ -501,13 +501,45 @@ class AdminController {
             var edit_category_details = await ServiceCategory.findOne({_id : details._id})
 
             if (service_category_id != undefined) {
-                for(var i = 0; i < service_category_id.length; i++){
+                //delete from db
+                
+                console.log(edit_category_details.service_type.length,'length');
+                // return false
 
-                    const check_exist_service_type = _.filter(edit_category_details.service_type, category => category.service_type_id == service_category_id[i]);
-                    console.log(check_exist_service_type,'if block');
+                if(edit_category_details.service_type.length > 0) {
+                    var delete_count = edit_category_details.service_type.length;
+
+                    for(var k = 0; k < edit_category_details.service_type.length; k++){
+                        var delete_details = await ServiceCategory.update(
+                            { _id : category_id },
+                            { $pull: { service_type: { service_type_id:  edit_category_details.service_type[k].service_type_id} } },
+                            { multi: true }
+                        )
+                        if(delete_details){
+                            delete_count = delete_count - 1;
+                        }
+                    }
+                    console.log(delete_count,'delete_count');
+                    console.log(k,'kth value')
                     // return false;
+                    var fetch_category_details_after_delete = await ServiceCategory.findOne({_id : details._id})
+                    console.log(fetch_category_details_after_delete,'fetch_category_details_after_delete');
+                    // return false
 
-                    if(check_exist_service_type.length == 0) {
+                    if(delete_count == fetch_category_details_after_delete.service_type.length){
+                        console.log('hello');
+                        for(var p = 0; p < service_category_id.length; p++){
+                            var info = {
+                                service_type_id : service_category_id[p]
+                            }
+            
+                            edit_category_details.service_type.unshift(info); 
+            
+                            await edit_category_details.save();
+                        }
+                    }
+                }else {
+                    for(var i = 0; i < service_category_id.length; i++){
                         var info = {
                             service_type_id : service_category_id[i]
                         }
@@ -517,10 +549,6 @@ class AdminController {
                         await edit_category_details.save();
                     }
                 }
-                var find_details = await _.some(tempArray, "5c78dd0563f38236efdf35d5")
-
-                console.log(find_details,'find_details', );
-                return false
 
                 session.flash({ category_msg : 'Record updated successfully.' })
                 return response.redirect('/admin/service-category-list')
