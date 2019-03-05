@@ -65,6 +65,7 @@ Route.group(() => {
     Route.get('/admin/sub-category-list', 'AdminController.sub_category_list')
     Route.get('/admin/service-category/edit/:id', 'AdminController.service_category_edit_view')
     Route.get('/admin/service-category/delete/:id', 'AdminController.service_category_delete')
+    Route.post('/admin/service/category-edit/submit', 'AdminController.category_edit')
 }).middleware(['auth:session'])
 //end
 

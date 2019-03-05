@@ -227,6 +227,18 @@
                         $('#toplevel_service_category_add_form').submit();
                     }
                 })
+
+                $('#service_category_edit_submit').on('click', function (){
+                    var categoty_edit_name = $('#categoty_edit_name').val();
+                    var category_edit_desc = $('#category_edit_desc').val();
+
+                    if(categoty_edit_name == '' || category_edit_desc == ''){
+                        alert ('Fields can not be left blank.');
+                        return false
+                    }else {
+                        $('#toplevel_service_category_add_form').submit();
+                    }
+                })
             })
         </script>
 
