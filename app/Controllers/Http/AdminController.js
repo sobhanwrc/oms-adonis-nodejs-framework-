@@ -468,7 +468,6 @@ class AdminController {
         var category_edit_desc = request.input("category_edit_desc");
         var service_category_id = request.input('all_added_services');
         var category_edit_image = request.file('category_edit_image');
-        console.log(service_category_id,'service_category_id');
 
         var edit_details = await ServiceCategory.findOne({_id : category_id})
         edit_details.service_category = categoty_edit_name;
@@ -501,13 +500,8 @@ class AdminController {
             var edit_category_details = await ServiceCategory.findOne({_id : details._id})
 
             if (service_category_id != undefined) {
-                //delete from db
-                
-                console.log(edit_category_details.service_type.length,'length');
-                // return false
 
                 if(edit_category_details.service_type.length > 0) {
-                    var delete_count = edit_category_details.service_type.length;
 
                     for(var k = 0; k < edit_category_details.service_type.length; k++){
                         var delete_details = await ServiceCategory.update(
@@ -515,27 +509,19 @@ class AdminController {
                             { $pull: { service_type: { service_type_id:  edit_category_details.service_type[k].service_type_id} } },
                             { multi: true }
                         )
-                        if(delete_details){
-                            delete_count = delete_count - 1;
-                        }
                     }
-                    console.log(delete_count,'delete_count');
-                    console.log(k,'kth value')
-                    // return false;
-                    var fetch_category_details_after_delete = await ServiceCategory.findOne({_id : details._id})
-                    console.log(fetch_category_details_after_delete,'fetch_category_details_after_delete');
-                    // return false
 
-                    if(delete_count == fetch_category_details_after_delete.service_type.length){
-                        console.log('hello');
+                    var fetch_category_details_after_delete = await ServiceCategory.findOne({_id : details._id})
+
+                    if(fetch_category_details_after_delete.service_type.length == 0){
                         for(var p = 0; p < service_category_id.length; p++){
                             var info = {
                                 service_type_id : service_category_id[p]
                             }
             
-                            edit_category_details.service_type.unshift(info); 
+                            fetch_category_details_after_delete.service_type.unshift(info); 
             
-                            await edit_category_details.save();
+                            await fetch_category_details_after_delete.save();
                         }
                     }
                 }else {

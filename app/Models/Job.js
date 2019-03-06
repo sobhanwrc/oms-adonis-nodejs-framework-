@@ -7,14 +7,19 @@ const schema = new Schema({
   user_id : {type : Schema.Types.ObjectId, ref:"User"},
   job_title : { type: String},
   service_require_at : { type: String},
-  // job_industry : {
-  //   type: Schema.Types.ObjectId,
-  //   ref: "JobIndustry"
-  // },
-  job_category : {
+
+  service_category : {
     type: Schema.Types.ObjectId,
-    ref: "JobCategory"
+    ref: "ServiceCategory"
   },
+
+  
+  added_services_details : [{
+    parent_service_id : { type: Schema.Types.ObjectId, ref: "ServiceType"},
+    child_service_id : { type: String},
+  }],
+
+
   job_date : { type: Date},
   job_endDate : { type: Date},
   job_time : { type: String},

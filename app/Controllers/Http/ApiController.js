@@ -782,7 +782,7 @@ class ApiController {
         var user_id = user._id;
         var job_title = request.input('job_title');
         var service_require_at = request.input('service_require_at');
-        var job_industry = request.input('job_industry');
+        
         var job_category = request.input('job_category');
         
         var job_date = request.input('job_date');
@@ -827,14 +827,24 @@ class ApiController {
 
         var user_present_address_check = request.input('check_address');
 
+        var added_services_details = {
+          parent_service_id : request.input('parent_service_id'),
+          child_service_id : request.input('child_service_id'),
+        }
+
+        // console.log(added_services_details)
+        // return false
+
         var add_job = new Job({
           create_job_id : create_job_id,
           user_id : user_id,
           job_title : job_title,
           service_require_at : service_require_at,
           job_amount : final_job_amount,
-          job_industry : job_industry,
-          job_category : job_category,
+
+          service_category : job_category,
+          added_services_details : added_services_details,
+
           job_date : date,
           job_endDate : job_endDate,
           job_time : job_time,
@@ -1099,7 +1109,8 @@ class ApiController {
     async jobList ({request, response, auth}) {
       var user = await auth.getUser();
       var all_jobs_list = await Job.find({user_id: user._id}).sort({ _id : -1 })
-      .populate('job_category')
+      .populate('service_category')
+      .populate('added_services_details.parent_service_id')
       .populate('vendor_id');
 
       if(all_jobs_list.length > 0) {
