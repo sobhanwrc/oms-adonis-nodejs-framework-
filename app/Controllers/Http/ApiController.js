@@ -810,10 +810,6 @@ class ApiController {
           create_job_id = "JOB-" + 1;
         }
 
-        //job address lat and long
-        // var lat = request.input('lat');
-        // var long = request.input('long');
-        //end
         var final_job_amount = 0;
         var coupon_id = request.input('coupon_id') ? request.input('coupon_id') : '';
         if(coupon_id != '') {
@@ -827,13 +823,9 @@ class ApiController {
 
         var user_present_address_check = request.input('check_address');
 
-        var added_services_details = {
-          parent_service_id : request.input('parent_service_id'),
-          child_service_id : request.input('child_service_id'),
-        }
-
-        // console.log(added_services_details)
-        // return false
+        // array for create job
+        var demo = request.input('service_category_type');
+        //end
 
         var add_job = new Job({
           create_job_id : create_job_id,
@@ -843,7 +835,6 @@ class ApiController {
           job_amount : final_job_amount,
 
           service_category : job_category,
-          added_services_details : added_services_details,
 
           job_date : date,
           job_endDate : job_endDate,
@@ -853,12 +844,22 @@ class ApiController {
           duration : duration,
           status : 1, // 1= active, 2 = inactive, 3 = complete
           job_allocated_to_vendor : job_allocated_to_vendor,
-          // lat : lat,
-          // long : long
         });
         var jod_id = await add_job.save();
 
         if(jod_id != '') {
+          var update_job = await Job.findOne({_id : jod_id._id});
+          for(var i = 0; i < demo.length; i++){
+            var added_services_details = {
+              parent_service_id : demo[i].parent_service_id,
+              child_service_id : demo[i].child_service_id,
+            }
+
+            update_job.added_services_details.unshift(added_services_details);
+
+            await update_job.save();
+          }
+
           if(user_present_address_check == undefined) {
             user.user_address2 = service_require_at
             await user.save();

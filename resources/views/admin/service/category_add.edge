@@ -15,6 +15,14 @@
         </ul>
         </div>
         <div class="portlet light bordered" style="margin-top:20px;">
+            @if(flashMessage('image_error_msg'))
+                <div class="portlet-title">
+                    <div class="alert alert-denger alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true"><span aria-hidden="true">&times;</span></button></button>
+                        <h4><i class="icon fa fa-warning"></i> {{flashMessage('image_error_msg')}}</h4>
+                    </div>
+                </div>
+            @endif
           <!--<div class="portlet-title">
                 <div class="portlet-title">
                         <a href="/admin/service-category/add"><button class="btn btn-info pull-left"> Add</button></a> 
@@ -26,7 +34,7 @@
                         {{ csrfField() }}
                         <div class="box-body">
                             <div class="form-group">
-                                <label for="categoty_name">Categoty Name</label>
+                                <label for="categoty_name">Category Name</label>
                                 <input type="text" class="form-control" id="categoty_name" name="categoty_name" placeholder="Category Name" autocomplete="off">
                             </div>
                             <div class="form-group">
@@ -34,7 +42,7 @@
                                 <textarea cols="" rows="" class="form-control" id="category_desc" name="category_desc" placeholder="Category Description"></textarea>
                             </div>
                             <div class="form-group">
-                                <label for="category_image">Category Image</label>
+                                <label for="category_image_label">Category Image</label>
                                 <input type="file" id="category_image" name="category_image">
                             </div>
 

@@ -25,7 +25,6 @@ class AdminController {
 
         try{
             var result = await auth.attempt(user_email, password)
-            console.log(result);
 
             return response.redirect('/admin/dashboard')
         }catch(e) {
@@ -313,37 +312,38 @@ class AdminController {
         })
         
         if (!profilePic.moved()) {
-            return profilePic.error()
-        }
-        //end
-
-        var add = new ServiceCategory({
-            service_category : category_name,
-            description : category_desc,
-            category_image: 'http://'+request.header('Host') + '/categories_image/' + imageFileName
-        })
-
-        var details = await add.save();
-
-        if(details) {
-            var added_category_details = await ServiceCategory.findOne({_id : details._id})
-
-            if (sub_category_id != undefined) {
-                for(var i = 0; i < sub_category_id.length; i++){
-                    var info = {
-                        service_type_id : sub_category_id[i]
+            var error_details = profilePic.error();
+            session.flash({ image_error_msg : error_details.message })
+            return response.redirect('/admin/service-category/add');
+        }else {
+            var add = new ServiceCategory({
+                service_category : category_name,
+                description : category_desc,
+                category_image: 'http://'+request.header('Host') + '/categories_image/' + imageFileName
+            })
+    
+            var details = await add.save();
+    
+            if(details) {
+                var added_category_details = await ServiceCategory.findOne({_id : details._id})
+    
+                if (sub_category_id != undefined) {
+                    for(var i = 0; i < sub_category_id.length; i++){
+                        var info = {
+                            service_type_id : sub_category_id[i]
+                        }
+        
+                        added_category_details.service_type.unshift(info); 
+        
+                        await added_category_details.save();
                     }
     
-                    added_category_details.service_type.unshift(info); 
-    
-                    await added_category_details.save();
+                    session.flash({ category_msg : 'Record added successfully.' })
+                    return response.redirect('/admin/service-category-list')
+                }else {
+                    session.flash({ category_msg : 'Record added successfully.' })
+                    return response.redirect('/admin/service-category-list')
                 }
-
-                session.flash({ category_msg : 'Record added successfully.' })
-                return response.redirect('/admin/service-category-list')
-            }else {
-                session.flash({ category_msg : 'Record added successfully.' })
-                return response.redirect('/admin/service-category-list')
             }
         }
     }
