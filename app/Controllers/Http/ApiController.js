@@ -826,6 +826,8 @@ class ApiController {
 
         // array for create job
         var demo = request.input('service_category_type');
+        console.log(demo);
+        // return false
         //end
 
         var add_job = new Job({
