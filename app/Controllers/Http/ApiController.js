@@ -825,19 +825,20 @@ class ApiController {
 
         // array for create job
         var demo = request.input('service_category_type');
-        console.log(demo, demo.length);
-        return false
+        // var demo = [
+        //   {parent_service_id: "5c78df0f9ed89a3ea251adc0", child_service_id : "5c78df409ed89a3ea251adc2"},
+        //   {parent_service_id: "5c78dd1763f38236efdf35d6", child_service_id : "5c78dfb79ed89a3ea251adc6"},
+        //   {parent_service_id: "5c78dd0563f38236efdf35d5", child_service_id : "5c78df9c9ed89a3ea251adc4"}
+        // ];
+        // return false
         //end
 
         var add_job = new Job({
           create_job_id : create_job_id,
           user_id : user_id,
-          job_title : job_title,
           service_require_at : service_require_at,
           job_amount : final_job_amount,
-
           service_category : job_category,
-
           job_date : date,
           job_endDate : job_endDate,
           job_time : job_time,
@@ -850,14 +851,27 @@ class ApiController {
         var jod_id = await add_job.save();
 
         if(jod_id != '') {
-          var update_job = await Job.findOne({_id : jod_id._id});
+          var update_job = await Job.findOne({_id : jod_id._id}).populate('service_category');
+          var dynamic_job_title = update_job.service_category.service_category;
           for(var i = 0; i < demo.length; i++){
+            var fetch_parent_service_details = await ServiceType.findOne({_id : demo[i].parent_service_id});
+            
+            dynamic_job_title = dynamic_job_title + "/" + fetch_parent_service_details.parent_service;
+
             var added_services_details = {
               parent_service_id : demo[i].parent_service_id,
               child_service_id : demo[i].child_service_id,
             }
 
             update_job.added_services_details.unshift(added_services_details);
+
+            await update_job.save();
+          }
+
+          if(dynamic_job_title != '') {
+            dynamic_job_title = dynamic_job_title + "#"+ jod_id.create_job_id;
+            
+            update_job.job_title = dynamic_job_title;
 
             await update_job.save();
           }
