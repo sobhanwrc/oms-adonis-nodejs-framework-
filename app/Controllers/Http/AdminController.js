@@ -197,7 +197,6 @@ class AdminController {
 
     async vendor_list ({view}) {
         var all_vendors = await User.find({reg_type : 3}).sort({_id : -1});
-        console.log(all_vendors);
 
         return view.render('admin.vendor.vendor_list', {vendor_lists : all_vendors})
     }
