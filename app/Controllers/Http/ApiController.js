@@ -897,7 +897,7 @@ class ApiController {
           response.json({
             status : true,
             code : 200,
-            // data : jod_id,
+            jod_id : jod_id._id,
             message : "Job added successfully."
           });
         }
