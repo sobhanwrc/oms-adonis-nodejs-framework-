@@ -24,6 +24,8 @@
 
             <li class="nav-item start {{ (request.match(['/admin/Location']) ? 'active open' : '') }}"> <a href="/admin/Location" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title">Manage Locations</span> </a> </li>
 
+            <li class="nav-item start {{ (request.match(['/admin/coupons', '/admin/coupon/add', '/admin/coupon/edit/:id']) ? 'active open' : '') }}"> <a href="/admin/coupons" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title">Manage Coupons</span> </a> </li>
+
             <!--<li class="nav-item start"> <a href="jobsofinterest.html" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title"> Jobs of Interest</span> </a> </li>
 
             <li class="nav-item start"> <a href="#" class="nav-link nav-toggle"> <i class="icon-pie-chart"></i> <span class="title">Transaction History</span> </a> </li>

@@ -66,6 +66,13 @@ Route.group(() => {
     Route.get('/admin/service-category/edit/:id', 'AdminController.service_category_edit_view')
     Route.get('/admin/service-category/delete/:id', 'AdminController.service_category_delete')
     Route.post('/admin/service/category-edit/submit', 'AdminController.category_edit')
+
+    Route.get('/admin/coupons', 'AdminController.coupons_listings')
+    Route.get('/admin/coupon/add', 'AdminController.coupon_add')
+    Route.post('/admin/coupon/coupon_submit', 'AdminController.coupon_submit')
+    Route.get('/admin/coupon/edit/:id', 'AdminController.coupon_edit')
+    Route.post('/admin/coupon/coupon_edit_submit', 'AdminController.coupon_edit_submit')
+    Route.get('/admin/coupon/delete/:id', 'AdminController.coupon_delete')
 }).middleware(['auth:session'])
 //end
 

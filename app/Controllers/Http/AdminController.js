@@ -552,11 +552,89 @@ class AdminController {
         }
     }
 
+    async coupons_listings ({view, request}) {
+        var fetch_data = await Coupon.find().sort({_id : -1});
+        return view.render('admin.coupons.listings', {fetch_data : fetch_data})
+    }
+    
+    coupon_add ({view}) {
+        return view.render('admin.coupons.add')
+    }
+
+    async coupon_submit({session, request, response}) {
+        var add = new Coupon({
+            coupons_title : request.body.coupon_desc,
+            coupons_amount : request.body.coupon_amount,
+            coupons_valid_to : request.body.valid_to,
+            coupons_code : (request.body.coupon_code).toUpperCase(),
+            coupon_type : request.body.coupon_type
+        });
+
+        await add.save();
+
+        session.flash({ coupon_msg: 'Coupon added successfully.' });
+        return response.redirect('/admin/coupons');
+
+    }
+
+    async coupon_edit ({view, session, response, params}) {
+        var coupon_id = params.id;
+        var fetch_coupon_details = await Coupon.findOne({_id : coupon_id});
+
+        if(fetch_coupon_details != null){
+            var valid_to_date = this.convertToYYYYMMDD(fetch_coupon_details.coupons_valid_to);
+            return view.render('admin.coupons.edit', {fetch_coupon_details : fetch_coupon_details, valid_to_date : valid_to_date})
+        }else {
+            session.flash({ coupon_error: 'Coupon id does not match with our records.' });
+            return response.redirect('/admin/coupons');
+        }
+    }
+
+    async coupon_edit_submit({session, request, response}) {
+        var fetch_details = await Coupon.findOne({_id : request.body.coupon_id});
+        fetch_details.coupons_title = request.body.coupon_desc;
+        fetch_details.coupons_amount = request.body.coupon_amount;
+        fetch_details.coupons_valid_to = request.body.valid_to;
+        fetch_details.coupon_type = request.body.coupon_type;
+        fetch_details.coupons_code = request.body.coupon_code;
+
+        await fetch_details.save();
+
+        session.flash({ coupon_msg: 'Coupon updated successfully.' });
+        return response.redirect('/admin/coupons');
+    }
+
+    async coupon_delete({session, params, response}) {
+        var coupon_id = params.id;
+        var remove_data = await Coupon.deleteOne({_id : coupon_id});
+
+        if(remove_data) {
+            session.flash({ coupon_msg: 'Coupon deleted successfully.' });
+            return response.redirect('/admin/coupons');
+        }
+    }
+
     //first letter capital
     capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
-      //end
+    //end
+
+    //date converter
+    convertToYYYYMMDD(d) {
+        var date = new Date(d);
+        var year = date.getFullYear();
+        var month = date.getMonth()+1;
+        var dt = date.getDate();
+    
+        if (dt < 10) {
+            dt = '0' + dt;
+        }
+        if (month < 10) {
+            month = '0' + month;
+        }
+        return (month+'/' +dt + '/'+year);
+    }
 }
 
 module.exports = AdminController

@@ -1,0 +1,77 @@
+@layout('admin.dashboard_layouts')
+
+@section('content')
+
+@layout('admin.dashboard_layouts')
+
+@section('content')
+
+<div class="page-content" style="min-height: 1001px;">
+        <div class="page-bar">
+          <ul class="page-breadcrumb">
+            <li> <a href="/admin/dashboard">Home</a> <i class="fa fa-circle"></i> </li>
+            <li><a href="/admin/coupons">Coupon Lists</a> <i class="fa fa-circle"></i></li>
+            <li><span>Coupon Add</span></li>
+        </ul>
+        </div>
+        <div class="portlet light bordered" style="margin-top:20px;">
+            @if(flashMessage('image_error_msg'))
+                <div class="portlet-title">
+                    <div class="alert alert-denger alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true"><span aria-hidden="true">&times;</span></button></button>
+                        <h4><i class="icon fa fa-warning"></i> {{flashMessage('image_error_msg')}}</h4>
+                    </div>
+                </div>
+            @endif
+          <!--<div class="portlet-title">
+                <div class="portlet-title">
+                        <a href="/admin/service-category/add"><button class="btn btn-info pull-left"> Add</button></a> 
+                </div>
+            </div>-->
+            <div class="portlet-body form-group row">
+                <div class="chef_list col-md-6">
+                    <form role="form" name="coupon_add_form" id="coupon_add_form" action="/admin/coupon/coupon_submit" enctype="multipart/form-data" method="POST">
+                        {{ csrfField() }}
+                        <div class="box-body">
+                            <div class="form-group">
+                                <label for="categoty_name">Coupon Code</label>
+                                <input type="text" class="form-control" id="coupon_code" name="coupon_code" placeholder="Coupon Code" autocomplete="off" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="">Coupon Description</label>
+                                <textarea cols="" rows="" class="form-control" id="coupon_desc" name="coupon_desc" placeholder="Coupon Description" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="category_image_label">Coupon Amount</label>
+                                <input type="number" class="form-control" id="coupon_amount"  name="coupon_amount" placeholder="Counpon Amount" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="category_image_label">Coupon Type</label>
+                                <select class="form-control" id="coupon_type"  name="coupon_type" required>
+                                    <option value="0">Select type</option>
+                                    <option value="1">Flat rate</option>
+                                    <option value="2">Percentage</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="category_image_label">Coupon Valid To</label>
+                                <input type="text" class="form-control" id="valid_to" name="valid_to" required>
+                            </div>
+
+                        </div>
+                        <!-- /.box-body -->
+          
+                        <div class="box-footer col-md-12" style="margin-top: 10px; padding-left:0; ">
+                            <button type="submit" class="btn btn-primary" id="coupon_add_submit">Add</button>
+                        </div>
+                    </form>
+                </div>
+          </div>
+        </div>
+      </div>
+  
+@endsection
+
+@endsection
