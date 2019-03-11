@@ -554,7 +554,7 @@ class AdminController {
     }
 
     async coupons_listings ({view, request}) {
-        var fetch_data = await Coupon.find().sort({_id : -1});
+        var fetch_data = await Coupon.find().sort({created_at : -1});
         var newArray = [];
 
         _.forEach(fetch_data, function(value) {
@@ -624,6 +624,7 @@ class AdminController {
         fetch_details.coupons_valid_to = request.body.valid_to;
         fetch_details.coupon_type = request.body.coupon_type;
         fetch_details.coupons_code = request.body.coupon_code;
+        fetch_details.created_at = Date.now();
 
         await fetch_details.save();
 
