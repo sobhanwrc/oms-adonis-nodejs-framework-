@@ -38,6 +38,8 @@
                     
                     <th class="sorting_asc" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-sort="ascending" aria-label=" Username : activate to sort column descending" style="width: 148px;"> Coupon Amount </th>
 
+                    <th class="sorting_asc" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-sort="ascending" aria-label=" Username : activate to sort column descending" style="width: 148px;"> Coupon Status </th>
+
                     <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Actions : activate to sort column ascending" style="width: 100px;"> Action </th>
                   </tr>
                 </thead>
@@ -47,6 +49,7 @@
                             <td class=""> {{ ($loop.index + 1) }} </td>
                             <td class="center"> {{coupon.coupons_code}}</td>
                             <td class="center"> {{coupon.coupon_type == 1 ? '$' : ''}} {{coupon.coupons_amount}} {{coupon.coupon_type == 2 ? '%' : ''}}</td>
+                            <td>{{coupon.status}}</td>
                             <td>
                                 <a title="Edit" href="/admin/coupon/edit/{{coupon._id}}" class="btn btn-primary btn-sm"><i class="fa fa-pencil"></i></a>
 

@@ -3,6 +3,7 @@ const User = use('App/Models/User')
 const Hash = use('Hash')
 const Helpers = use('Helpers')
 const _ = use('lodash');
+const moment = use('moment');
 
 const Job = use ('App/Models/Job')
 const Location = use ('App/Models/Location')
@@ -554,7 +555,33 @@ class AdminController {
 
     async coupons_listings ({view, request}) {
         var fetch_data = await Coupon.find().sort({_id : -1});
-        return view.render('admin.coupons.listings', {fetch_data : fetch_data})
+        var newArray = [];
+
+        _.forEach(fetch_data, function(value) {
+            var valid_to1 = value.coupons_valid_to;
+
+            var date_diff = moment().diff(valid_to1, 'days');
+
+            if(date_diff <= 0) {
+                newArray.push({
+                    '_id' : value._id,
+                    'coupons_code' : value.coupons_code,
+                    'coupons_amount' : value.coupons_amount,
+                    'coupon_type' : value.coupon_type,
+                    'status' : 'Active'
+                });
+            }else {
+                newArray.push({
+                    '_id' : value._id,
+                    'coupons_code' : value.coupons_code,
+                    'coupons_amount' : value.coupons_amount,
+                    'coupon_type' : value.coupon_type,
+                    'status' : 'Expire'
+                });
+            }
+        });
+
+        return view.render('admin.coupons.listings', {fetch_data : newArray})
     }
     
     coupon_add ({view}) {
