@@ -1335,8 +1335,22 @@ class ApiController {
       try {
         var user = await auth.getUser();
         if(user.reg_type == 3) {
+          var last_service_details = await Service.find({},{ 'create_service_id' : 1, _id : 0 }).sort({_id:-1}).limit(1);
+
+          var create_service_id = '';
+
+          if(last_service_details.length > 0) {
+            var last_job_id = (last_service_details[0].create_service_id);
+            var values = last_job_id.split("-");
+            var last_no = values[1];
+
+            create_service_id = "Service-" + ( Number(last_no) + 1);
+          }else { 
+            create_service_id = "Service-" + 1;
+          }
 
           var already_post_or_not = await Service.find({user_id : user._id, service_category : request.input('service_category')});
+
           if(already_post_or_not.length > 0) {
             response.json({
               status : false,
@@ -1348,28 +1362,38 @@ class ApiController {
             // var demo = ['5c78df0f9ed89a3ea251adc0','5c78dd1763f38236efdf35d6','5c78dd0563f38236efdf35d5']
 
             var add_service = new Service ({
+              create_service_id : create_service_id,
               user_id : user._id,
               service_category : request.input('service_category'),
             });
             var service = await add_service.save();
             if(service) {
-              
-              for(var i = 0; i < demo.length; i ++) {
-                var fetch_service_details = await Service.findOne({_id : service._id});
+              var fetch_service_details = await Service.findOne({_id : service._id}).populate('service_category');
 
+              var dynamic_service_title = fetch_service_details.service_category.service_category+"#"+fetch_service_details.create_service_id;
+
+              for(var i = 0; i < demo.length; i ++) {
+                var update_service_details = await Service.findOne({_id : service._id});
+                
                 var info = {
                   parent_service_id : demo[i]
                 }
-                fetch_service_details.added_services_details.unshift(info);
-                await fetch_service_details.save();
+
+                update_service_details.added_services_details.unshift(info);
+                await update_service_details.save();
               }
             }
-            
-            response.json ({
-                status : true,
-                code : 200,
-                message : "Service added successfully."
-            });
+
+            if(dynamic_service_title != ''){
+              fetch_service_details.service_title = dynamic_service_title;
+              fetch_service_details.save();
+
+              response.json ({
+                  status : true,
+                  code : 200,
+                  message : "Service added successfully."
+              });
+            }
           }
           
         }else { 

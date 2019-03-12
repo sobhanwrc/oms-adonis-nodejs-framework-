@@ -3,6 +3,7 @@ const mongoose = use ('mongoose');
 const Schema = mongoose.Schema;
 
 var service = new Schema ({
+    create_service_id : { type : String, unique: true},
     user_id : {type : Schema.Types.ObjectId, ref: 'User'},
     service_title : { type: String},
     added_services_details : [{
