@@ -643,7 +643,8 @@ class AdminController {
     }
 
     async assign_coupon_listings ({view}) {
-        return view.render('admin.coupons.assign_coupon_listings')
+        var assign_coupons_list = await AssignCouponToUser.find().populate('user_id').populate('coupon_id');
+        return view.render('admin.coupons.assign_coupon_listings', {assign_coupons_list : assign_coupons_list})
     }
     
     async assign_coupon_add_view ({view}) {
@@ -673,6 +674,72 @@ class AdminController {
     async coupon_desc({request}) {
         var details = await Coupon.findOne({_id : request.body.coupon_id});
         return details.coupons_title;
+    }
+
+    async assign_coupon_submit({session, response, request}) {        
+        var users = request.input('assign_to_user');
+        var coupon_id = request.input('select_coupon');
+
+        var already_assign = 0;
+        var newly_assign = 0;
+
+        for(var i = 0; i < users.length; i++) {
+            var isCheck = await AssignCouponToUser.find({coupon_id : coupon_id, user_id : users[i]});
+
+            if(isCheck.length > 0) {
+                already_assign = already_assign + 1;
+            }else {
+                var user_details = await User.findOne({_id : users[i]});
+    
+                var assign = new AssignCouponToUser({
+                    user_id : users[i],
+                    coupon_id : coupon_id
+                })
+    
+                if(await assign.save()) {
+                    newly_assign = newly_assign + 1;
+
+                    // var coupon_details = await Coupon.findOne({_id : coupon_id})
+                    // var sendEmail = Mailjet.post('send');
+                    // var emailData = {
+                    //     'FromEmail': 'sobhan.das@intersoftkk.com',
+                    //     'FromName': 'Oh! My Concierge',
+                    //     'Subject': 'Promocode',
+                    //     'Html-part': "You are allocated.",
+                    //     'Recipients': [{'Email': user_details.email}]
+                    // };
+                    // await sendEmail.request(emailData);
+        
+                    // response.json({
+                    //     status : true,
+                    //     code : 200,
+                    //     message : "Coupon successfully assigned to the user."
+                    // });
+                }
+            }
+        };
+
+        if(already_assign == 0 && newly_assign > 0) {
+            session.flash({ coupon_msg: 'Coupon has assign successfully to the user.' });
+            return response.redirect('/admin/assign/coupons');
+        }
+        else if(already_assign > 0 && newly_assign == 0) {
+            session.flash({ coupon_msg: 'Coupon has already assigned for the user.' });
+            return response.redirect('/admin/assign/coupons');
+        }
+        else if (already_assign > 0 && newly_assign > 0) {
+            session.flash({ coupon_msg: `Coupon has already assigned for ${already_assign} user and coupon has successfully assigned for ${newly_assign} user.` });
+            return response.redirect('/admin/assign/coupons');
+        }
+        
+    }
+
+    async unassigned_coupon ({session, params, response}) {
+        var unassigned = await AssignCouponToUser.deleteOne({_id : params.id});
+        if(unassigned) {
+            session.flash({ coupon_msg: 'Coupon has successfully deleted for the user.' });
+            return response.redirect('/admin/assign/coupons');
+        }
     }
 
     //first letter capital

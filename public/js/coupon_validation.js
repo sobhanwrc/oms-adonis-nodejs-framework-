@@ -113,4 +113,16 @@ $(document).ready( function() {
             $('#coupon_description').val(''); 
         }
     })
+
+    $('#coupon_assign_submit').on('click', function () {
+        var coupon_id = $('#select_coupon').val();
+        var user = $('#assign_to_user').val();
+
+        if(coupon_id == 0 || user == null) {
+            alert ('Field can not be left blank.');
+            return false
+        }else {
+            $('#coupon_assign_form').submit();
+        }
+    })
 })

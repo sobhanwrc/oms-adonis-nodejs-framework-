@@ -1334,24 +1334,7 @@ class ApiController {
     async serviceAdd ({request, response, auth}) {
       try {
         var user = await auth.getUser();
-        // console.log(user,'user');
         if(user.reg_type == 3) {
-          // var start_date = request.input('start_date');
-          // // console.log(start_date,'start_date');
-          // var date_arr = start_date.split('/');
-          // var y = date_arr[2];
-          // var m = date_arr[1];
-          // var d = date_arr[0];
-          // var date = y+'-'+m+'-'+d;
-
-          //end date
-          // var end_date = request.input('end_date');
-          // // console.log(end_date,'end_date');
-          // var date_arr_end_date = end_date.split('/');
-          // var y = date_arr_end_date[2];
-          // var m = date_arr_end_date[1];
-          // var d = date_arr_end_date[0];
-          // var end_date_modified = y+'-'+m+'-'+d;
 
           var already_post_or_not = await Service.find({user_id : user._id, service_category : request.input('service_category')});
           if(already_post_or_not.length > 0) {
@@ -1361,27 +1344,20 @@ class ApiController {
               message : "You have already post a service with this category."
             })
           }else {
+            var demo = request.input('service_type');
+
             var add_service = new Service ({
               user_id : user._id,
-              service_title : request.input('service_title'),
-              // service_type : request.input('service_type'),
               service_category : request.input('service_category'),
-              rate : request.input('rate'),
-              start_date : '',
-              end_date : '',
-              description : request.input('description'),
-              status : request.input('status') // 1 ='active',2='Inactive'
             });
-  
-            // console.log(add_service,'add_service');
-            // return false;
-    
-            if(await add_service.save()) {
-              response.json ({
-                status : true,
-                code : 200,
-                message : "Service added successfully."
-              });
+            var service = await add_service.save();
+            if(service) {
+              console.log(service);
+              // response.json ({
+              //   status : true,
+              //   code : 200,
+              //   message : "Service added successfully."
+              // });
             } 
           }
           
