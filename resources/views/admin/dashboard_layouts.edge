@@ -31,6 +31,7 @@
         {{ style("/css/profile.min.css") }}
         {{ style('https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.4/jquery-confirm.min.css') }}
         {{ style('http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css') }}
+        {{ style('https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css') }}
         <link rel="shortcut icon" href="/favicon.png" /> </head>
 
 
@@ -99,6 +100,7 @@
 
         {{ script('/js/jquery.min.js') }}
         {{ script('http://code.jquery.com/ui/1.10.4/jquery-ui.js') }}
+        {{ script('https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js') }}
         {{ script('/js/jquery.validate.min.js') }}
         {{ script('/js/bootstrap.min.js') }}
         {{ script('/js/jquery.slimscroll.min.js') }}
@@ -122,6 +124,10 @@
 
         <script type="text/javascript">
             $("#sample_1_2").dataTable();
+            $('#assign_to_user').select2({
+                placeholder: "Select User"
+            });
+
             $(document).ready(function () {
                 $(document).on('click','.edt', function(event) {
                     $(this).closest('.tab-pane').find('form input').removeAttr('readonly');
@@ -244,6 +250,12 @@
                 
             })
         </script>
+
+        <style>
+            .select2-search__field::placeholder {
+                color: #555;
+            }
+        </style>
 
 </body>
 

@@ -642,6 +642,39 @@ class AdminController {
         }
     }
 
+    async assign_coupon_listings ({view}) {
+        return view.render('admin.coupons.assign_coupon_listings')
+    }
+    
+    async assign_coupon_add_view ({view}) {
+        var fetch_all_user = await User.find({ reg_type : 2});
+        var all_coupons = await Coupon.find();
+        var all_active_coupons_list = [];
+
+        _.forEach(all_coupons, function(value) {
+            var valid_to = value.coupons_valid_to;
+
+            var date_diff = moment().diff(valid_to, 'days');
+
+            if(date_diff <= 0) {
+                all_active_coupons_list.push({
+                    '_id' : value._id,
+                    'coupons_code' : value.coupons_code,
+                    'coupons_amount' : value.coupons_amount,
+                    'coupons_title' : value.coupons_title,
+                    'coupon_type' : value.coupon_type,
+                    'status' : 'Active'
+                });
+            }
+        });
+        return view.render('admin.coupons.assign_coupon_add_view', {users : fetch_all_user, coupons : all_active_coupons_list})
+    }
+
+    async coupon_desc({request}) {
+        var details = await Coupon.findOne({_id : request.body.coupon_id});
+        return details.coupons_title;
+    }
+
     //first letter capital
     capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);

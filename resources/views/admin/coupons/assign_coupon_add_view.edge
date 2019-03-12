@@ -1,0 +1,79 @@
+@layout('admin.dashboard_layouts')
+
+@section('content')
+
+@layout('admin.dashboard_layouts')
+
+@section('content')
+
+<div class="page-content" style="min-height: 1001px;">
+        <div class="page-bar">
+          <ul class="page-breadcrumb">
+            <li> <a href="/admin/dashboard">Home</a> <i class="fa fa-circle"></i> </li>
+            <li><a href="/admin/assign/coupons">Assign Coupon Lists</a> <i class="fa fa-circle"></i></li>
+            <li><span>Assign Coupon</span></li>
+        </ul>
+        </div>
+        <div class="portlet light bordered" style="margin-top:20px;">
+            @if(flashMessage('image_error_msg'))
+                <div class="portlet-title">
+                    <div class="alert alert-denger alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true"><span aria-hidden="true">&times;</span></button></button>
+                        <h4><i class="icon fa fa-warning"></i> {{flashMessage('image_error_msg')}}</h4>
+                    </div>
+                </div>
+            @endif
+          <!--<div class="portlet-title">
+                <div class="portlet-title">
+                        <a href="/admin/service-category/add"><button class="btn btn-info pull-left"> Add</button></a> 
+                </div>
+            </div>-->
+            <div class="portlet-body form-group row">
+                <div class="chef_list col-md-6">
+                    <form role="form" name="coupon_assign_form" id="coupon_assign_form" action="/admin/assign/coupon/submit" enctype="multipart/form-data" method="POST">
+                        {{ csrfField() }}
+                        <div class="box-body">
+                            <div class="form-group">
+                                <label for="categoty_name">Choose Coupon</label>
+
+                                <select class="form-control" id="select_coupon" name="select_coupon" required>
+                                    <option value="0">Select Coupon</option>
+                                    @each(item in coupons)
+                                        <option value="{{item._id}}">
+                                            {{item.coupons_code}} 
+
+                                            ({{item.coupon_type == 1 ? '$' : ''}} {{item.coupons_amount}} {{item.coupon_type == 2 ? '%' : ''}})
+                                        </option>
+                                    @endeach
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                    <label for="categoty_name">Coupon Description</label>
+                                    <textarea cols="" rows="" class="form-control" placeholder="Coupon Description" name="coupon_description" id="coupon_description" readonly></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="category_image_label">Assign Coupon to User</label>
+                                <select class="form-control" id="assign_to_user"  name="assign_to_user[]" multiple="multiple" required>
+                                    @each(user in users)
+                                        <option value="{{user._id}}">{{ upperFirst(user.first_name) }} {{ upperFirst(user.last_name) }}</option>
+                                    @endeach
+                                </select>
+                            </div>
+
+                        </div>
+                        <!-- /.box-body -->
+          
+                        <div class="box-footer col-md-12" style="margin-top: 10px; padding-left:0; ">
+                            <button type="submit" class="btn btn-primary" id="coupon_assign_submit">Assign</button>
+                        </div>
+                    </form>
+                </div>
+          </div>
+        </div>
+      </div>
+  
+@endsection
+
+@endsection

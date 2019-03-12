@@ -93,4 +93,24 @@ $(document).ready( function() {
             }
         }
     })
+
+    $('#select_coupon').on('change', function () {
+        var coupon_id = $('#select_coupon').val();
+        if(coupon_id != 0 ){
+            $.ajax({
+                type : "POST",
+                url : "/admin/assign/coupon/fetch_coupon_desc",
+                data : {
+                    coupon_id : coupon_id
+                },
+                success : function (result) {
+                    if(result != ''){
+                        $('#coupon_description').val(result);
+                    }
+                }
+            })
+        }else {
+            $('#coupon_description').val(''); 
+        }
+    })
 })
