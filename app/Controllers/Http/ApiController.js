@@ -1345,6 +1345,7 @@ class ApiController {
             })
           }else {
             var demo = request.input('service_type');
+            // var demo = ['5c78df0f9ed89a3ea251adc0','5c78dd1763f38236efdf35d6','5c78dd0563f38236efdf35d5']
 
             var add_service = new Service ({
               user_id : user._id,
@@ -1352,13 +1353,23 @@ class ApiController {
             });
             var service = await add_service.save();
             if(service) {
-              console.log(service);
-              // response.json ({
-              //   status : true,
-              //   code : 200,
-              //   message : "Service added successfully."
-              // });
-            } 
+              
+              for(var i = 0; i < demo.length; i ++) {
+                var fetch_service_details = await Service.findOne({_id : service._id});
+
+                var info = {
+                  parent_service_id : demo[i]
+                }
+                fetch_service_details.added_services_details.unshift(info);
+                await fetch_service_details.save();
+              }
+            }
+            
+            response.json ({
+                status : true,
+                code : 200,
+                message : "Service added successfully."
+            });
           }
           
         }else { 
@@ -1382,7 +1393,9 @@ class ApiController {
       var user = await auth.getUser();
       if(user.reg_type == 3) {
         var all_services = await Service.find({'user_id' : user._id})
-        .populate('service_category').sort({_id : -1});
+        .populate('service_category')
+        .populate('added_services_details.parent_service_id')
+        .sort({_id : -1});
 
         if(all_services.length > 0) {
           response.json({
