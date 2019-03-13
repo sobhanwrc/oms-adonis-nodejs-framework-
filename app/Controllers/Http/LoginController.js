@@ -4,6 +4,8 @@
 const { validate } = use('Validator')
 const Hash = use('Hash')
 const User = use('App/Models/User')
+const Mailjet = use('node-mailjet').connect('ce9c25078a4f1474dc6d3ce5524a711c', 'd9ca8c7b9944f10a34eb42118277e6f5');
+const Mail = use('Mail')
 
 class LoginController {
     index ({view}) {
@@ -32,6 +34,32 @@ class LoginController {
             return view.render('forgot_password', { key : ''});
         }
         
+    }
+
+    async contact_us ({request, response}) {
+        var name = request.input('user_name');
+        var email = request.input('email');
+        var subject = request.input('subject');
+        var message = request.input('message');
+
+        // var sendEmail = Mailjet.post('send');
+        // var emailData = {
+        //     'FromEmail': email,
+        //     'FromName': 'Oh! My Concierge',
+        //     'Subject': subject,
+        //     'Html-part': message,
+        //     'Recipients': [{'Email': 'sobhan.das@intersoftkk.com'}]
+        // };
+        // var sent_email = await sendEmail.request(emailData);
+
+        var sent_email = await Mail.send('emails.welcome', name, (message) => {
+            message
+              .to('sobhan.das@intersoftkk.com')
+              .from(email)
+              .subject('Welcome to OMC')
+        })
+
+        console.log(sent_email);
     }
 
     async login ({request, response, session}) {

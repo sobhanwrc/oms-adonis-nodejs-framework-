@@ -4,6 +4,7 @@ const Hash = use('Hash')
 const Helpers = use('Helpers')
 const _ = use('lodash');
 const moment = use('moment');
+const Mailjet = use('node-mailjet').connect('ce9c25078a4f1474dc6d3ce5524a711c', 'd9ca8c7b9944f10a34eb42118277e6f5');
 
 const Job = use ('App/Models/Job')
 const Location = use ('App/Models/Location')

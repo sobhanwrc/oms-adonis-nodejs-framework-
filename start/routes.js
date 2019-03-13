@@ -18,6 +18,7 @@ const Route = use('Route')
 
 // Route.get('/', 'LoginController.index')
 Route.get('/forgot-password', 'LoginController.forgot_password')
+Route.post('/contact-us', 'LoginController.contact_us')
 // Route.get('/user-login', 'LoginController.user_login')
 // Route.get('/social-login/facebook', 'LoginController.facebook')
 // Route.get('/callback/facebook', 'LoginController.callback_fb')
