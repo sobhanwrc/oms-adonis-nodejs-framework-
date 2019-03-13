@@ -815,6 +815,7 @@ class ApiController {
 
         // array for create job
         var demo = request.input('service_category_type');
+        console.log(demo);
         // var demo = [
         //   {
         //     parent_service_id : '5c78dd0563f38236efdf35d5',
@@ -826,7 +827,7 @@ class ApiController {
         var add_job = new Job({
           create_job_id : create_job_id,
           user_id : user_id,
-          service_require_at : service_require_at,
+          // service_require_at : service_require_at,
           // job_amount : final_job_amount,
           service_category : job_category,
           // job_date : date,
