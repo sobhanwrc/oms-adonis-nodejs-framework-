@@ -932,31 +932,32 @@ class ApiController {
           _.forEach(id, function(value) {
             Service.find({user_id : value, service_category : job.service_category._id})
             .then(function (matching_vendor_with_service) {
-              console.log(matching_vendor_with_service);
+              
+              console.log(matching_vendor_with_service,'matching_vendor_with_service');
 
-              if(matching_vendor_with_service.length > 0) {
+              // if(matching_vendor_with_service.length > 0) {
                  
-                if (total_assign_value <= 4) {
+              //   if (total_assign_value <= 4) {
 
-                  _.forEach(matching_vendor_with_service, function(value) {
-                    var add = new VendorAllocation ({
-                      user_id : value.user_id,
-                      job_id : job._id,
-                      status : 0 // 0 = not allocated, 1 = allocated
-                    });
+              //     _.forEach(matching_vendor_with_service, function(value) {
+              //       var add = new VendorAllocation ({
+              //         user_id : value.user_id,
+              //         job_id : job._id,
+              //         status : 0 // 0 = not allocated, 1 = allocated
+              //       });
                     
-                    if(add.save()) {
-                      total_assign_value = total_assign_value + 1;
-                    }
+              //       if(add.save()) {
+              //         total_assign_value = total_assign_value + 1;
+              //       }
   
-                  });
+              //     });
 
-                }else { 
-                  return false;
-                }
-              }else {
-                return "No vendor found."
-              }
+              //   }else { 
+              //     return false;
+              //   }
+              // }else {
+              //   return "No vendor found."
+              // }
             });
           });
         });
@@ -1362,7 +1363,7 @@ class ApiController {
             })
           }else {
             // var demo = request.input('service_type');
-            var demo = ['5c78dd0563f38236efdf35d5']
+            var demo = ['5c78df0f9ed89a3ea251adc0', '5c78dd1763f38236efdf35d6']
 
             var add_service = new Service ({
               create_service_id : create_service_id,
