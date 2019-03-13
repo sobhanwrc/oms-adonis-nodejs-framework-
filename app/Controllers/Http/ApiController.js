@@ -781,19 +781,8 @@ class ApiController {
 
       if(user.reg_type == 2) {
         var user_id = user._id;
-        var job_title = request.input('job_title');
         var service_require_at = request.input('service_require_at');
-        
         var job_category = request.input('job_category');
-        
-        var job_date = request.input('job_date');
-        // dd/mm/yyyy
-        // var date_arr = job_date.split('/');
-        // var y = date_arr[2];
-        // var m = date_arr[1];
-        // var d = date_arr[0];
-        // var date = y+'-'+m+'-'+d;
-
         var job_endDate = request.input('job_endDate');
         var job_amount = request.input('job_amount');
         var job_time = request.input('job_time');
@@ -825,7 +814,13 @@ class ApiController {
         var user_present_address_check = request.input('check_address');
 
         // array for create job
-        var demo = request.input('service_category_type');
+        // var demo = request.input('service_category_type');
+        var demo = [
+          {
+            parent_service_id : '5c78dd0563f38236efdf35d5',
+            child_service_id : '5c78df9c9ed89a3ea251adc4'
+          }
+        ]
         //end
 
         var add_job = new Job({
@@ -880,19 +875,19 @@ class ApiController {
             await add_data_to_audit_table.save();
           }
 
-          if(user_present_address_check == undefined) {
-            user.user_address2 = service_require_at
-            await user.save();
-          }
+          // if(user_present_address_check == undefined) {
+          //   user.user_address2 = service_require_at
+          //   await user.save();
+          // }
           
-          await this.fetchNearestVendor(user,jod_id);
+          await this.fetchNearestVendor(user,update_job);
 
-          if(coupon_id != '') {
-            var update = await AssignCouponToUser.findOne({user_id : user._id, coupon_id : coupon_id});
-            update.status = "Redeemed";
+          // if(coupon_id != '') {
+          //   var update = await AssignCouponToUser.findOne({user_id : user._id, coupon_id : coupon_id});
+          //   update.status = "Redeemed";
 
-            await update.save();
-          }
+          //   await update.save();
+          // }
 
           response.json({
             status : true,
@@ -912,6 +907,8 @@ class ApiController {
 
     async fetchNearestVendor (user, job) {
       user.reg_type = 2;
+      console.log(job,'job details');
+      // return false
 
       if(user.reg_type == 2) {
 
@@ -929,10 +926,14 @@ class ApiController {
           }
         }
 
+        console.log(withOutAllocatedVendors,'withOutAllocatedVendors');
+
         await _.chunk(withOutAllocatedVendors,4).map(id => {
           _.forEach(id, function(value) {
-            Service.find({user_id : value, service_category : job.job_category})
+            Service.find({user_id : value, service_category : job.service_category._id})
             .then(function (matching_vendor_with_service) {
+              console.log(matching_vendor_with_service);
+
               if(matching_vendor_with_service.length > 0) {
                  
                 if (total_assign_value <= 4) {
@@ -959,6 +960,8 @@ class ApiController {
             });
           });
         });
+
+        return false
       }
     }
 
@@ -1358,8 +1361,8 @@ class ApiController {
               message : "You have already post a service with this category."
             })
           }else {
-            var demo = request.input('service_type');
-            // var demo = ['5c78df0f9ed89a3ea251adc0','5c78dd1763f38236efdf35d6','5c78dd0563f38236efdf35d5']
+            // var demo = request.input('service_type');
+            var demo = ['5c78dd0563f38236efdf35d5']
 
             var add_service = new Service ({
               create_service_id : create_service_id,
@@ -2734,7 +2737,7 @@ class ApiController {
                         </tr>
                         <tr>
                             <td width="100%" align="center" valign="middle" style="line-height:1px;">
-                                <a href="#" target="_blank" style="display:inline-block;"><img src='http://18.179.118.55:5000/logo.png' alt="logo_chef_final" border="0" /></a>
+                                <a href="http://ohmyconcierge.s3-website-ap-northeast-1.amazonaws.com" target="_blank" style="display:inline-block;"><img src='http://18.179.118.55:5000/logo.png' alt="logo_chef_final" border="0" /></a>
                             </td>
                         </tr>
                         <tr>
