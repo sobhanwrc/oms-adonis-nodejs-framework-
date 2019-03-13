@@ -800,41 +800,41 @@ class ApiController {
           create_job_id = "JOB-" + 1;
         }
 
-        var final_job_amount = 0;
-        var coupon_id = request.input('coupon_id') ? request.input('coupon_id') : '';
-        if(coupon_id != '') {
-          var coupon_details = await Coupon.findOne({_id : coupon_id});
-          var coupon_discount_amount = coupon_details.coupons_amount;
-          var discount_amount = parseFloat((job_amount *  coupon_discount_amount) / 100).toFixed(2) ;
-          final_job_amount = parseFloat(job_amount - discount_amount);
-        }else {
-          final_job_amount = job_amount;
-        }
+        // var final_job_amount = 0;
+        // var coupon_id = request.input('coupon_id') ? request.input('coupon_id') : '';
+        // if(coupon_id != '') {
+        //   var coupon_details = await Coupon.findOne({_id : coupon_id});
+        //   var coupon_discount_amount = coupon_details.coupons_amount;
+        //   var discount_amount = parseFloat((job_amount *  coupon_discount_amount) / 100).toFixed(2) ;
+        //   final_job_amount = parseFloat(job_amount - discount_amount);
+        // }else {
+        //   final_job_amount = job_amount;
+        // }
 
         var user_present_address_check = request.input('check_address');
 
         // array for create job
-        // var demo = request.input('service_category_type');
-        var demo = [
-          {
-            parent_service_id : '5c78dd0563f38236efdf35d5',
-            child_service_id : '5c78df9c9ed89a3ea251adc4'
-          }
-        ]
+        var demo = request.input('service_category_type');
+        // var demo = [
+        //   {
+        //     parent_service_id : '5c78dd0563f38236efdf35d5',
+        //     child_service_id : '5c78df9c9ed89a3ea251adc4'
+        //   }
+        // ]
         //end
 
         var add_job = new Job({
           create_job_id : create_job_id,
           user_id : user_id,
           service_require_at : service_require_at,
-          job_amount : final_job_amount,
+          // job_amount : final_job_amount,
           service_category : job_category,
           // job_date : date,
-          job_endDate : job_endDate,
-          job_time : job_time,
-          job_end_time : job_end_time,
-          description : description,
-          duration : duration,
+          // job_endDate : job_endDate,
+          // job_time : job_time,
+          // job_end_time : job_end_time,
+          // description : description,
+          // duration : duration,
           status : 1, // 1= active, 2 = inactive, 3 = complete
           job_allocated_to_vendor : job_allocated_to_vendor,
         });
@@ -932,32 +932,32 @@ class ApiController {
           _.forEach(id, function(value) {
             Service.find({user_id : value, service_category : job.service_category._id})
             .then(function (matching_vendor_with_service) {
-              
+
               console.log(matching_vendor_with_service,'matching_vendor_with_service');
 
-              // if(matching_vendor_with_service.length > 0) {
+              if(matching_vendor_with_service.length > 0) {
                  
-              //   if (total_assign_value <= 4) {
+                if (total_assign_value <= 4) {
 
-              //     _.forEach(matching_vendor_with_service, function(value) {
-              //       var add = new VendorAllocation ({
-              //         user_id : value.user_id,
-              //         job_id : job._id,
-              //         status : 0 // 0 = not allocated, 1 = allocated
-              //       });
+                  _.forEach(matching_vendor_with_service, function(value) {
+                    var add = new VendorAllocation ({
+                      user_id : value.user_id,
+                      job_id : job._id,
+                      status : 0 // 0 = not allocated, 1 = allocated
+                    });
                     
-              //       if(add.save()) {
-              //         total_assign_value = total_assign_value + 1;
-              //       }
+                    if(add.save()) {
+                      total_assign_value = total_assign_value + 1;
+                    }
   
-              //     });
+                  });
 
-              //   }else { 
-              //     return false;
-              //   }
-              // }else {
-              //   return "No vendor found."
-              // }
+                }else { 
+                  return false;
+                }
+              }else {
+                return "No vendor found."
+              }
             });
           });
         });
@@ -1362,8 +1362,8 @@ class ApiController {
               message : "You have already post a service with this category."
             })
           }else {
-            // var demo = request.input('service_type');
-            var demo = ['5c78df0f9ed89a3ea251adc0', '5c78dd1763f38236efdf35d6']
+            var demo = request.input('service_type');
+            // var demo = ['5c78df0f9ed89a3ea251adc0', '5c78dd1763f38236efdf35d6']
 
             var add_service = new Service ({
               create_service_id : create_service_id,

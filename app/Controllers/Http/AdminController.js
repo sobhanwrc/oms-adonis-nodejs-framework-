@@ -699,22 +699,16 @@ class AdminController {
                 if(await assign.save()) {
                     newly_assign = newly_assign + 1;
 
-                    // var coupon_details = await Coupon.findOne({_id : coupon_id})
-                    // var sendEmail = Mailjet.post('send');
-                    // var emailData = {
-                    //     'FromEmail': 'sobhan.das@intersoftkk.com',
-                    //     'FromName': 'Oh! My Concierge',
-                    //     'Subject': 'Promocode',
-                    //     'Html-part': "You are allocated.",
-                    //     'Recipients': [{'Email': user_details.email}]
-                    // };
-                    // await sendEmail.request(emailData);
-        
-                    // response.json({
-                    //     status : true,
-                    //     code : 200,
-                    //     message : "Coupon successfully assigned to the user."
-                    // });
+                    var coupon_details = await Coupon.findOne({_id : coupon_id})
+                    var sendEmail = Mailjet.post('send');
+                    var emailData = {
+                        'FromEmail': 'sobhan.das@intersoftkk.com',
+                        'FromName': 'Oh! My Concierge',
+                        'Subject': 'Promocode',
+                        'Html-part': "One promo code has assign to you.",
+                        'Recipients': [{'Email': user_details.email}]
+                    };
+                    await sendEmail.request(emailData);
                 }
             }
         };
