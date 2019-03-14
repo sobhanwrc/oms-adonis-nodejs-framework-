@@ -744,7 +744,6 @@ class AdminController {
         .populate('added_services_details.parent_service_id')
         .populate('vendor_id');
 
-        console.log(fetch_all_jobs);
         return view.render('admin.jobs.listings', { fetch_all_jobs : fetch_all_jobs});
     }
 
@@ -755,8 +754,13 @@ class AdminController {
         .populate('added_services_details.parent_service_id')
         .populate('vendor_id');
 
-        if(fetch_job_details != null) {
+        var job_post_date = this.convertToYYYYMMDD(fetch_job_details.created_at);
 
+
+        var added_services = fetch_job_details.added_services_details;
+
+        if(fetch_job_details != null) {
+            return view.render('admin.jobs.details', { fetch_job_details : fetch_job_details, job_post_date : job_post_date, added_services : added_services})
         }else {
             session.flash({ job_error_msg: 'Something went wrong.' })
             return response.redirect('/admin/jobs')
