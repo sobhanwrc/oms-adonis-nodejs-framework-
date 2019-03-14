@@ -82,6 +82,7 @@ Route.group(() => {
     Route.get('/admin/assign/coupon/delete/:id', 'AdminController.unassigned_coupon')
 
     Route.get('/admin/jobs', 'AdminController.jobs_listings')
+    Route.get('/admin/jobs/details/:id', 'AdminController.job_details')
 }).middleware(['auth:session'])
 //end
 

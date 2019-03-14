@@ -748,6 +748,21 @@ class AdminController {
         return view.render('admin.jobs.listings', { fetch_all_jobs : fetch_all_jobs});
     }
 
+    async job_details ({view, session, params, response}) {
+        var fetch_job_details = await Job.findOne({_id : params.id}).sort({ _id : -1 })
+        .populate('user_id')
+        .populate('service_category')
+        .populate('added_services_details.parent_service_id')
+        .populate('vendor_id');
+
+        if(fetch_job_details != null) {
+
+        }else {
+            session.flash({ job_error_msg: 'Something went wrong.' })
+            return response.redirect('/admin/jobs')
+        }
+    }
+
     //first letter capital
     capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);

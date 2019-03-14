@@ -10,6 +10,14 @@
           <li> <span>Jobs of interest</span> </li>
         </ul>
       </div>
+
+    @if(flashMessage('job_error_msg'))
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true"><span aria-hidden="true">&times;</span></button></button>
+                <h4><i class="icon fa fa-warning"></i> {{flashMessage('job_error_msg')}}</h4>
+            </div>
+    @endif
+
       <div class="portlet light bordered" style="margin-top:20px;">
         <div class="portlet-body">
           <div class="chef_list">
@@ -43,7 +51,7 @@
                             </td>
                             <td class="center">
                                 @if(job.job_allocated_to_vendor == 1)
-                                <a class="" href="/admin/vendor-list/profile/{{job.vendor_id._id}}" > 
+                                    <a class="" href="/admin/vendor-list/profile/{{job.vendor_id._id}}" > 
                                         {{ upperFirst(job.vendor_id.first_name) }} {{ upperFirst(job.vendor_id.last_name) }}
                                     </a>
                                 @else
