@@ -645,6 +645,7 @@ class AdminController {
 
     async assign_coupon_listings ({view}) {
         var assign_coupons_list = await AssignCouponToUser.find().populate('user_id').populate('coupon_id');
+        
         return view.render('admin.coupons.assign_coupon_listings', {assign_coupons_list : assign_coupons_list})
     }
     

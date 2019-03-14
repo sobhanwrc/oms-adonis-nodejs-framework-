@@ -40,6 +40,8 @@
 
                     <th class="sorting_asc" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-sort="ascending" aria-label=" Username : activate to sort column descending" style="width: 148px;"> Assigned Users </th>
 
+                    <th class="sorting_asc" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-sort="ascending" aria-label=" Username : activate to sort column descending" style="width: 148px;"> Coupon Status </th>
+
                     <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Actions : activate to sort column ascending" style="width: 100px;"> Action </th>
                   </tr>
                 </thead>
@@ -50,6 +52,15 @@
                             <td class="center"> {{coupon.coupon_id.coupons_code}}</td>
                             <td class="center"> {{coupon.coupon_id.coupon_type == 1 ? '$' : ''}} {{coupon.coupon_id.coupons_amount}} {{coupon.coupon_id.coupon_type == 2 ? '%' : ''}}</td>
                             <td>{{ upperFirst(coupon.user_id.first_name) }} {{ upperFirst(coupon.user_id.last_name) }} </td>
+                            <td>
+                                @if(coupon.status == 'Expire')
+                                    Expire
+                                @elseif(coupon.status == 'Redeemed')
+                                    Redeemed
+                                @else
+                                    Avtive
+                                @endif
+                            </td>
                             <td>
                                 <!--<a title="Edit" href="/admin/assign/coupon/edit/{{coupon._id}}" class="btn btn-primary btn-sm"><i class="fa fa-pencil"></i></a>-->
 
