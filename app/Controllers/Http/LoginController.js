@@ -57,7 +57,7 @@ class LoginController {
               .to('sobhan.das@intersoftkk.com')
               .from(email)
               .subject('Welcome to OMC')
-        })
+        });
 
         console.log(sent_email);
     }

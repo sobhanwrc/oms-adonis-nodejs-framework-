@@ -555,7 +555,7 @@ class AdminController {
     }
 
     async coupons_listings ({view, request}) {
-        var fetch_data = await Coupon.find().sort({created_at : -1});
+        var fetch_data = await Coupon.find().sort({_id : -1});
         var newArray = [];
 
         _.forEach(fetch_data, function(value) {
@@ -715,7 +715,7 @@ class AdminController {
         };
 
         if(already_assign == 0 && newly_assign > 0) {
-            session.flash({ coupon_msg: 'Coupon has assign successfully to the user.' });
+            session.flash({ coupon_msg: 'Coupon has assigned successfully to the user.' });
             return response.redirect('/admin/assign/coupons');
         }
         else if(already_assign > 0 && newly_assign == 0) {
@@ -735,6 +735,17 @@ class AdminController {
             session.flash({ coupon_msg: 'Coupon has successfully deleted for the user.' });
             return response.redirect('/admin/assign/coupons');
         }
+    }
+
+    async jobs_listings({view}) {
+        var fetch_all_jobs = await Job.find({}).sort({ _id : -1 })
+        .populate('user_id')
+        .populate('service_category')
+        .populate('added_services_details.parent_service_id')
+        .populate('vendor_id');
+
+        console.log(fetch_all_jobs);
+        return view.render('admin.jobs.listings', { fetch_all_jobs : fetch_all_jobs});
     }
 
     //first letter capital

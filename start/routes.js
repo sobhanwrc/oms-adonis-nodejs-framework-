@@ -80,6 +80,8 @@ Route.group(() => {
     Route.post('/admin/assign/coupon/fetch_coupon_desc', 'AdminController.coupon_desc')
     Route.post('/admin/assign/coupon/submit', 'AdminController.assign_coupon_submit')
     Route.get('/admin/assign/coupon/delete/:id', 'AdminController.unassigned_coupon')
+
+    Route.get('/admin/jobs', 'AdminController.jobs_listings')
 }).middleware(['auth:session'])
 //end
 
