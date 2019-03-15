@@ -14,7 +14,7 @@
 
             <li class="nav-item start {{ (request.match(['/admin/services/subcategory']) ? 'active open' : '') }}"> <a href="/admin/services/subcategory" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title">Manage Services</span> </a> </li>
 
-            <li class="nav-item start {{ (request.match(['/admin/service-category-list', '/admin/service-category/add']) ? 'active open' : '') }}"> <a href="/admin/service-category-list" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title">Manage Service Categories</span> </a> </li>
+            <li class="nav-item start {{ (request.match(['/admin/service-category-list', '/admin/service-category/add', '/admin/service-category/edit/:id']) ? 'active open' : '') }}"> <a href="/admin/service-category-list" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title">Manage Service Categories</span> </a> </li>
 
             <li class="nav-item start {{ (request.match(['/admin/vendor-list', '/admin/vendor-list/profile/:id']) ? 'active open' : '') }}"> <a href="/admin/vendor-list" class="nav-link nav-toggle"> <i class="icon-user"></i> <span class="title">Manage Vendors</span> </a> </li>
 
