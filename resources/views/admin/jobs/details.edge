@@ -80,6 +80,12 @@
                                     <input type="text" placeholder="04/11/2018" class="form-control" value="{{job_post_date}}" readonly>
                                 </div>
                             </div>
+                            <div class="row">
+                              <div class="form-group col-sm-6 col-xs-12">
+                                <label class="control-label">Job Amount</label>
+                                <input type="text" class="form-control" value="${{fetch_job_details.job_amount}}" readonly>
+                              </div>
+                            </div>
                            
                             </form>
                           </div>
@@ -109,6 +115,24 @@
                                         @endeach
                                         
                                     </select>
+                                    <div>
+
+                                      @each(sub_category in item.parent_service_id.child_services)
+                                        @if(sub_category._id == $parent.item.child_service_id)
+                                          @if(sub_category.ask_for_quote == '1' || sub_category.ask_for_quote == 'YES')
+                                            
+                                            *Ask for quote : Yes
+
+                                          @elseif(sub_category.ask_for_quote == '0' || sub_category.ask_for_quote == 'NO')
+                                            *Ask for quote : No
+                                          @else
+                                            
+                                          @endif
+                                          
+                                        @endif
+                                      @endeach
+                                      
+                                    </div>
                                    
                                 </div>
                                 
