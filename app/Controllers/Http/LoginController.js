@@ -55,7 +55,7 @@ class LoginController {
         var sent_email = await Mail.send('emails.welcome', name, (message) => {
             message
               .to('sobhan.das@intersoftkk.com')
-              .from(email)
+              .from('sobhan.das@intersoftkk.com')
               .subject('Welcome to OMC')
         });
 

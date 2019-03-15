@@ -828,7 +828,7 @@ class ApiController {
           create_job_id : create_job_id,
           user_id : user_id,
           // service_require_at : service_require_at,
-          // job_amount : final_job_amount,
+          job_amount : job_amount,
           service_category : job_category,
           // job_date : date,
           // job_endDate : job_endDate,
@@ -838,8 +838,10 @@ class ApiController {
           // duration : duration,
           status : 1, // 1= active, 2 = inactive, 3 = complete
           job_allocated_to_vendor : job_allocated_to_vendor,
+          ask_quote : request.input('ask_quote')
         });
         var jod_id = await add_job.save();
+        console.log(jod_id,'jod_id');
 
         if(jod_id != '') {
           var update_job = await Job.findOne({_id : jod_id._id}).populate('service_category');
@@ -1022,28 +1024,31 @@ class ApiController {
 
         if(await allocation_details_update.save()) {
           var fetch_new_allocated_vendor = await VendorAllocation.find({job_id : job_id, status : 0}).limit(1).populate('user_id').populate('job_id');
-          console.log(fetch_new_allocated_vendor, 'fetch_new_allocated_vendor');
+          console.log(fetch_new_allocated_vendor, 'fetch_new_allocated_vendor_from_decline');
+          // return false;
 
-          fetch_new_allocated_vendor[0].status = 3 ; // 3 = invitation sent.
-          await fetch_new_allocated_vendor[0].save();
+          if(fetch_new_allocated_vendor.length > 0){
+            fetch_new_allocated_vendor[0].status = 3 ; // 3 = invitation sent.
+            await fetch_new_allocated_vendor[0].save();
 
 
-          var sendEmail = Mailjet.post('send');
-          var emailData = {
-              'FromEmail': 'sobhan.das@intersoftkk.com',
-              'FromName': 'Oh! My Concierge',
-              'Subject': 'Invitation for Job Request',
-              'Html-part': "You are invited for a job. Please see your job requests section.",
-              'Recipients': [{'Email': fetch_new_allocated_vendor[0].user_id.email}]
-          };
-          
-          if (sendEmail.request(emailData)) {
-            response.json({
-              status : true,
-              code : 200,
-              message : "You have successfully decline the job allocation request."
-            })
+            var sendEmail = Mailjet.post('send');
+            var emailData = {
+                'FromEmail': 'sobhan.das@intersoftkk.com',
+                'FromName': 'Oh! My Concierge',
+                'Subject': 'Invitation for Job Request',
+                'Html-part': "You are invited for a job. Please see your job requests section.",
+                'Recipients': [{'Email': fetch_new_allocated_vendor[0].user_id.email}]
+            };
+
+            await sendEmail.request(emailData);
           }
+          
+          response.json({
+            status : true,
+            code : 200,
+            message : "You have successfully decline the job allocation request."
+          });
         }
       }else {
         response.json({

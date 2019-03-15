@@ -19,14 +19,14 @@ const schema = new Schema({
     child_service_id : { type: String},
   }],
 
-
+  ask_quote : {type: String},
   job_date : { type: Date},
   job_endDate : { type: Date},
   job_time : { type: String},
   job_end_time : {type: String},
   description : { type: String},
   duration : {type : String},
-  job_amount : {type : Number, default : 0},
+  job_amount : {type : String, default : 0.0},
   job_allocated_to_vendor : {type : Number},
   vendor_id : { type : Schema.Types.ObjectId, ref:"User"},
   transaction_id : {type : String, default :''},
