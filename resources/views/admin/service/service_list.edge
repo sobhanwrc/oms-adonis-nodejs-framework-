@@ -35,8 +35,8 @@
                             <td class=""> {{ ($loop.index + 1) }} </td>
                             <td class="center"> {{service.service_title}}</td>
                             <td>
-                              <a href="#">
-                                  {{service.service_category.category_type}}
+                              <a href="/admin/service-category/edit/{{service.service_category._id}}">
+                                  {{service.service_category.service_category}}
                               </a>
                             </td>
                             <td> 
