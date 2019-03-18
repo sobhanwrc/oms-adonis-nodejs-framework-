@@ -245,7 +245,7 @@ class ApiController {
         
               if(already_login_with_social_app.save()){
                 const user = await User.findOne({email : email});
-                var generate_token = await auth.generate(user);
+                var generate_token = await auth.authenticator('jwt').generate(user);
 
                 return response.json({
                     status : true, 
@@ -276,7 +276,7 @@ class ApiController {
           
               if(await newUser.save()){
                 const user = await User.findOne({email : email});
-                var generate_token = await auth.generate(user);
+                var generate_token = await auth.authenticator('jwt').generate(user);
                 var send_registration_email_from_social_login = this.registrationEmailData(user);
 
                 if(send_registration_email_from_social_login == true) {
@@ -291,7 +291,7 @@ class ApiController {
               }
             }
           }catch(e){
-            res.json({
+            response.json({
               status : false,
               code : 300,
               message : "Email already exist."
@@ -314,7 +314,7 @@ class ApiController {
         
               if(already_login_with_social_app_google.save()){
                 const user = await User.findOne({email : email});
-                var generate_token = await auth.generate(user);
+                var generate_token = await auth.authenticator('jwt').generate(user);
 
                 return response.json({
                     status : true, 
@@ -344,7 +344,7 @@ class ApiController {
           
               if(await newUser.save()){
                 const user = await User.findOne({email : email});
-                var generate_token = await auth.generate(user);
+                var generate_token = await auth.authenticator('jwt').generate(user);
                 var send_registration_email_from_social_login = this.registrationEmailData(user);
 
                 if(send_registration_email_from_social_login == true) {

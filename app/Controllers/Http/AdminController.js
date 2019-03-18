@@ -179,8 +179,13 @@ class AdminController {
     async user_profile ({view,params}) {
         var user_id = params.id;
         var user = await User.findOne({_id : user_id});
-        var user_location_id = await Location.findOne({_id : user.location_id});
-        var location_name = user_location_id.name;
+        if(user.location_id != '') {
+            var user_location_id = await Location.findOne({_id : user.location_id});
+            var location_name = user_location_id.name;
+        }else {
+            var location_name = '';
+        }
+        
 
         var user_all_coupon_list = await AssignCouponToUser.find({user_id : user_id, status : {
             $nin : ['Expire']
