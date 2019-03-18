@@ -986,6 +986,7 @@ class ApiController {
         find_allocated_vendor[0].status = 3 ; // 3 = invitation sent.
         await find_allocated_vendor[0].save();
 
+        console.log(find_allocated_vendor,'after invitation sent');
 
         var sendEmail = Mailjet.post('send');
         var emailData = {

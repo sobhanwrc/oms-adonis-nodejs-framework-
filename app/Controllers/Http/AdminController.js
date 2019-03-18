@@ -14,6 +14,7 @@ const Service = use ('App/Models/Service');
 const JobCategory = use('App/Models/JobCategory')
 const ServiceType = use('App/Models/ServiceType');
 const ServiceCategory = use('App/Models/ServiceCategory');
+const VendorAllocation = use('App/Models/VendorAllocation');
 
 class AdminController {
     login_view({view}) {
@@ -208,6 +209,41 @@ class AdminController {
         var vendor_details = await User.findOne({_id : vendor_id});
         var vendor_location_id = await Location.findOne({_id : vendor_details.location_id});
         var location_name = vendor_location_id.name;
+
+
+        var fetch_vendors_all_jobs_of_interest = await VendorAllocation.find
+        ({user_id : vendor_id, status : { $ne: 0 } })
+        .populate('job_id')
+        .sort({_id : -1});
+        console.log(fetch_vendors_all_jobs_of_interest,'fetch_vendors_all_jobs_of_interest');
+
+        if(fetch_vendors_all_jobs_of_interest.length > 0) {
+            var newArray = [];
+            _.forEach(fetch_vendors_all_jobs_of_interest, jobsOfInterest => {
+                var vendor_jobs_status = '';
+                switch(jobsOfInterest.status) {
+                    case 1:
+                        vendor_jobs_status = 'Accepted';
+                    break;
+                    case 2:
+                        vendor_jobs_status = 'Decline';
+                    break;
+                    case 3:
+                        vendor_jobs_status = 'Job Request Sent';
+                    break;
+                    default:
+                        vendor_jobs_status = 'N/A'
+                }
+
+                newArray.push({
+                    'vendor_jobs_status' : vendor_jobs_status,
+                    'job_id' : jobsOfInterest.job_id.create_job_id,
+                    'title' : jobsOfInterest.job_id.job_title
+                });
+            })
+
+            console.log(newArray,'newArray');
+        }
 
         return view.render('admin.vendor.vendor_profile', {vendor_details : vendor_details, location_name : location_name})
     }

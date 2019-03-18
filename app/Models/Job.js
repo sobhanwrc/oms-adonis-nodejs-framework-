@@ -19,7 +19,7 @@ const schema = new Schema({
     child_service_id : { type: String},
   }],
 
-  ask_quote : {type: String},
+  ask_quote : {type: String, default : 0},
   job_date : { type: Date},
   job_endDate : { type: Date},
   job_time : { type: String},
