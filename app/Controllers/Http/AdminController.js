@@ -182,20 +182,19 @@ class AdminController {
         var user_location_id = await Location.findOne({_id : user.location_id});
         var location_name = user_location_id.name;
 
-        //coupons
         var user_all_coupon_list = await AssignCouponToUser.find({user_id : user_id, status : {
             $nin : ['Expire']
         }}).sort({_id : -1}).populate('coupon_id');
-        // console.log(user_all_coupon_list, 'user_all_coupon_list');
-        // return false
 
         if (user_all_coupon_list.length > 0) {
             var coupon_list_total = user_all_coupon_list.length;
         }else { 
             var coupon_list_total = 0;
         }
-        // console.log(coupon_list_total,'coupon_list_total');
-        return view.render('admin.user.user_profile', {user_details : user, location  : location_name, coupon_list : user_all_coupon_list, coupon_list_total : coupon_list_total});
+
+        var jobs_post_details = await Job.find({user_id : user_id}).sort({_id : -1}).populate('vendor_id');
+
+        return view.render('admin.user.user_profile', {user_details : user, location  : location_name, coupon_list : user_all_coupon_list, coupon_list_total : coupon_list_total, jobs_post_details : jobs_post_details});
     }
 
     async vendor_list ({view}) {
@@ -215,10 +214,9 @@ class AdminController {
         ({user_id : vendor_id, status : { $ne: 0 } })
         .populate('job_id')
         .sort({_id : -1});
-        console.log(fetch_vendors_all_jobs_of_interest,'fetch_vendors_all_jobs_of_interest');
 
+        var newArray = [];
         if(fetch_vendors_all_jobs_of_interest.length > 0) {
-            var newArray = [];
             _.forEach(fetch_vendors_all_jobs_of_interest, jobsOfInterest => {
                 var vendor_jobs_status = '';
                 switch(jobsOfInterest.status) {
@@ -236,16 +234,15 @@ class AdminController {
                 }
 
                 newArray.push({
+                    '_id' : jobsOfInterest.job_id._id,
                     'vendor_jobs_status' : vendor_jobs_status,
                     'job_id' : jobsOfInterest.job_id.create_job_id,
                     'title' : jobsOfInterest.job_id.job_title
                 });
             })
-
-            console.log(newArray,'newArray');
         }
 
-        return view.render('admin.vendor.vendor_profile', {vendor_details : vendor_details, location_name : location_name})
+        return view.render('admin.vendor.vendor_profile', {vendor_details : vendor_details, location_name : location_name, jobs_interest : newArray})
     }
 
     async service_list ({auth,view, response}) {
