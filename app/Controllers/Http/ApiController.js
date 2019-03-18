@@ -1166,8 +1166,9 @@ class ApiController {
       var job_id = request.input('job_id');
 
       var job_details = await Job.find({_id : job_id, user_id : user._id})
-      // .populate('job_industry')
-      .populate('job_category');
+      .populate('service_category')
+      .populate('added_services_details.parent_service_id')
+      .populate('vendor_id');
 
       if(job_details.length > 0) {
         response.json({
