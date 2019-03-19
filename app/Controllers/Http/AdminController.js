@@ -467,8 +467,73 @@ class AdminController {
     }
 
     async sub_category_list ({view, auth, request, response}) {
-        var service_type = await ServiceType.find();
+        var service_type = await ServiceType.find().sort({_id : -1});
         return view.render('admin.service.sub_category_list', { service_type : service_type});
+    }
+
+    async sub_category_edit ({view, response, request, params}) {
+        var details = await ServiceType.findOne({_id : params.parent_service_id});
+        var fetch_child_details = _.filter(details.child_services, child_service => child_service._id == params.child_service_id);
+
+        return view.render('admin.service.sub_service_edit', { parent_details : details, fetch_child_details : fetch_child_details[0]})
+    }
+
+    async sub_service_update ({session, request, response}) {
+        var parent_service_id = request.body.parent_service_id;
+        var child_service_id = request.body.child_service_id;
+        var parent_service_name = request.body.parent_service_name;
+        var sub_categoty_name = request.body.sub_categoty_name;
+        var category_price = request.body.category_price;
+        var quote = request.body.ask_for_quote
+        var parent_service_image = '';
+
+        if(request.body.exist_parent_service_image == undefined) {
+            var imageFileName = 'parent_service_image'+Date.now()+'.jpg';
+
+            const profilePic = request.file('parent_service_image', {
+                types: ['image'],
+                size: '2mb'
+            })
+
+            await profilePic.move(Helpers.publicPath('categories_image'), {
+                name: imageFileName
+            })
+            
+            if (!profilePic.moved()) {
+                return profilePic.error()
+            }else {
+                parent_service_image = 'http://'+request.header('Host') + '/categories_image/' + imageFileName;
+            }
+        }else{
+            parent_service_image =  request.body.exist_parent_service_image;
+        }
+
+        var parent_service_update = await ServiceType.updateOne({_id : parent_service_id},{
+            $set : {
+                parent_service : parent_service_name,
+                parent_service_image : parent_service_image
+            }
+        })
+
+        var child_service_update = await ServiceType.updateOne({_id : parent_service_id, "child_services._id" : child_service_id}, {
+            $set : {
+                "child_services.$.name" : sub_categoty_name,
+                "child_services.$.price" : category_price,
+                "child_services.$.ask_for_quote" : quote
+            }
+        })
+
+        session.flash({ sub_service_msg : 'Record has been updated successfully.' })
+        return response.redirect('/admin/sub-category-list')
+
+    }
+
+    async sub_service_delete ({params, session, response}) {
+        var delete_sub_service = await ServiceType.deleteOne({_id : params.id});
+        if(delete_sub_service) {
+            session.flash({ sub_service_msg : 'Service deleted successfully.' })
+            return response.redirect('/admin/sub-category-list');
+        }
     }
 
     async service_category_edit_view ({params, request, response, view}) {

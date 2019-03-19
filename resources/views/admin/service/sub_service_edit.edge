@@ -1,0 +1,76 @@
+@layout('admin.dashboard_layouts')
+
+@section('content')
+
+<div class="page-content" style="min-height: 1001px;">
+        <div class="page-bar">
+          <ul class="page-breadcrumb">
+            <li> <a href="/admin/dashboard">Home</a> <i class="fa fa-circle"></i> </li>
+            <li><a href="/admin/sub-category-list"><span>Sub Category Lists</span></a> <i class="fa fa-circle"></i></li>
+            <li><span>Sub Category Edit</span></li>
+        </ul>
+        </div>
+        <div class="portlet light bordered" style="margin-top:20px;">
+          <!--<div class="portlet-title">
+                <div class="portlet-title">
+                        <a href="/admin/service-category/add"><button class="btn btn-info pull-left"> Add</button></a> 
+                </div>
+            </div>-->
+            <div class="portlet-body form-group row">
+                <div class="chef_list col-md-6">
+                    <form role="form" name="service_category_edit_form" id="service_category_edit_form" action="/admin/service/sub-service-edit-submit" enctype="multipart/form-data" method="POST">
+                        {{ csrfField() }}
+                        <input type="hidden" name="parent_service_id" id="parent_service_id" value="{{parent_details._id}}">
+                        <input type="hidden" name="child_service_id" id="child_service_id" value="{{fetch_child_details._id}}">
+
+                        <div class="box-body">
+                            <div class="form-group">
+                                <label for="categoty_name">Parent Service Name</label>
+                                <input type="text" class="form-control" name="parent_service_name" id="parent_service_name" value="{{parent_details.parent_service}}">
+                            </div>
+
+                            <div class="form-group" id="showing_parent_image">
+                                <label for="categoty_name">Parent Service Image</label>
+                                @if(parent_details.parent_service_image != null)
+                                    <img src="{{parent_details.parent_service_image}}" style="width: 75px; height: 75px;" class="parent_service_existing_image form-control">
+                                    
+                                    <input type="hidden" class="form-control" name="exist_parent_service_image" id="exist_parent_service_image"
+                                    value="{{parent_details.parent_service_image}}">
+
+                                    <br>
+                                    <input type="file" class="form-control" name="parent_service_image" id="parent_service_image">
+                                @else
+                                    <input type="file" class="form-control" name="parent_service_image" id="parent_service_image">
+                                @endif
+                                
+                            </div>
+
+                            <div class="form-group">
+                                <label for="sub_categoty_name">Service Name</label>
+                                <input type="text" class="form-control" id="sub_categoty_name" name="sub_categoty_name" placeholder="Service Name" value="{{fetch_child_details.name}}" autocomplete="off">
+                            </div>
+                            <div class="form-group" id="category_price_div">
+                                <label for="">Service Price</label>
+                                <div class="input-group">
+                                    <span class="input-group-addon">$</span>
+                                    <input type="number" class="form-control" id="category_price" name="category_price" value="{{fetch_child_details.price}}">
+                                </div>
+                            </div>
+                            <div class="form-group" id="ask_for_quote_div">
+                                <input type="checkbox" id="ask_for_quote" name="ask_for_quote" value="1" {{fetch_child_details.ask_for_quote == 'YES' || fetch_child_details.ask_for_quote == '1' ? 'checked' : ''}}>
+                                <label for="ask_for_quote">Enable Ask for Quote</label>
+                                
+                            </div>
+                        </div>
+                        <!-- /.box-body -->
+            
+                        <div class="box-footer">
+                            <button type="submit" class="btn btn-primary" id="service_category_edit">Add</button>
+                        </div>
+                    </form>
+                </div>
+          </div>
+        </div>
+      </div>
+  
+@endsection
