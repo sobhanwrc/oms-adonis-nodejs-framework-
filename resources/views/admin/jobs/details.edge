@@ -102,11 +102,11 @@
                         @each(item in added_services)
                             <div class="form-group col-xs-6">
                                 <label for="categoty_name" style="margin-bottom: 15px">{{item.parent_service_id.parent_service}}</label>
-                                    <select class="form-control">
+                                    <select class="form-control" disabled>
 
                                         @each(sub_category in item.parent_service_id.child_services)
 
-                                            <option value="{{sub_category._id}}" {{sub_category._id == $parent.item.child_service_id ? 'selected' : ''}} disabled>
+                                            <option value="{{sub_category._id}}" {{sub_category._id == $parent.item.child_service_id ? 'selected' : ''}}>
 
                                                 {{sub_category.name}} (${{sub_category.price}})
 

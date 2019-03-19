@@ -187,6 +187,8 @@
                 if($('#parent_service_id').val() == 0) {
                     $('#ask_for_quote_div').hide();
                     $('#category_price_div').hide();
+                    $('#showing_parent_image').hide();
+                    $('#parent_service_image_div').show();
                     $('#define').val('1');
                 }
 
@@ -194,11 +196,31 @@
                     if($('#parent_service_id').val() == 0) {
                         $('#ask_for_quote_div').hide();
                         $('#category_price_div').hide();
+                        $('#showing_parent_image').hide();
+                        $('#parent_service_image_div').show();
                         $('#define').val('1');
                     }else{
                         $('#ask_for_quote_div').show();
                         $('#category_price_div').show();
+                        $('#showing_parent_image').show();
+                        $('#parent_service_image_div').hide();
                         $('#define').val('2');
+
+                        $.ajax({
+                            type : "POST",
+                            url : "/admin/fetch_parent_service_image",
+                            data : {
+                                parent_service_id : $('#parent_service_id').val()
+                            },
+                            success : function (result) {
+                                if(result != undefined) {
+                                    $(".parent_service_existing_image").attr("src",result);
+                                }else {
+                                    $(".parent_service_existing_image").attr("src",'');
+                                }
+                                
+                            }
+                        })
                     }
                 });
 

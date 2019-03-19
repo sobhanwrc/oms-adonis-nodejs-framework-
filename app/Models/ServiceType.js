@@ -4,6 +4,7 @@ var Schema = mongoose.Schema;
 
 var ServiceType = new Schema({
     parent_service : { type: String},
+    parent_service_image : { type : String },
     child_services : [{
         name : {type: String},
         price : {type : String},

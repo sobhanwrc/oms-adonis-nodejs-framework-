@@ -388,7 +388,7 @@ class AdminController {
     }
 
     async subcategory({view}) {
-        var all_parent_services = await ServiceType.find({},{parent_service : 1});
+        var all_parent_services = await ServiceType.find({});
         return view.render('admin.service.subcategory', {all_parent_services : all_parent_services})
     }
 
@@ -407,16 +407,39 @@ class AdminController {
         }
     }
 
+    async fetch_parent_service_image ({request}) {
+        var all_parent_services = await ServiceType.findOne({_id : request.body.parent_service_id});
+        return all_parent_services.parent_service_image;
+    }
+
     async sub_service_add ({request, response}) {
         var define_value = request.input('define');
         if(define_value == 1) {
-            var add = new ServiceType ({
-                parent_service : request.input('sub_categoty_name')
+            var imageFileName = 'parent_service_image'+Date.now()+'.jpg';
+
+            const profilePic = request.file('parent_service_image', {
+                types: ['image'],
+                size: '2mb'
             })
-    
-            if(await add.save()){
-                return response.redirect('/admin/services/subcategory')
+
+            await profilePic.move(Helpers.publicPath('categories_image'), {
+                name: imageFileName
+            })
+            
+            if (!profilePic.moved()) {
+                return profilePic.error()
+            }else {
+                var add = new ServiceType ({
+                    parent_service : request.input('sub_categoty_name'),
+                    parent_service_image : 'http://'+request.header('Host') + '/categories_image/' + imageFileName
+                })
+        
+                if(await add.save()){
+                    return response.redirect('/admin/services/subcategory')
+                }
             }
+
+            
         }else if (define_value == 2){
             var parent_service_id = request.input('parent_service_id');
             var details = await ServiceType.findOne({_id : parent_service_id});
