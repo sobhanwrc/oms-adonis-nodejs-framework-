@@ -484,10 +484,10 @@ class AdminController {
         var parent_service_name = request.body.parent_service_name;
         var sub_categoty_name = request.body.sub_categoty_name;
         var category_price = request.body.category_price;
-        var quote = request.body.ask_for_quote
+        var quote = (request.body.ask_for_quote == "1" ? 1 : 0)
         var parent_service_image = '';
 
-        if(request.body.exist_parent_service_image == undefined) {
+        if(request.file('parent_service_image') != null) {
             var imageFileName = 'parent_service_image'+Date.now()+'.jpg';
 
             const profilePic = request.file('parent_service_image', {
