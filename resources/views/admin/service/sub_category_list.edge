@@ -57,7 +57,7 @@
                             <td>
                               <a title="Edit" href="/admin/sub-service-category/edit/{{$parent.service._id}}/{{item.id}}" class="btn btn-primary btn-sm"><i class="fa fa-pencil"></i></a>
 
-                              <a title="Delete" href="/admin/sub-service-category/delete/{{$parent.service._id}}/{{item.id}}" onclick="return confirm('Do you really want to delete the current record ?');" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
+                              <a title="Delete" href="/admin/sub-child_service-category/delete/{{$parent.service._id}}/{{item.id}}" onclick="return confirm('Do you really want to delete the current record ?');" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
                             </td>
                           </tr>
                         @endeach
@@ -69,9 +69,9 @@
                           <td>-</td>
                           <td>-</td>
                           <td>
-                              <a title="Edit" href="/admin/sub-service-category/edit/{{service._id}}" class="btn btn-primary btn-sm"><i class="fa fa-pencil"></i></a>
+                              <a title="Edit" href="/admin/sub-parent_service-category/edit/{{service._id}}" class="btn btn-primary btn-sm"><i class="fa fa-pencil"></i></a>
 
-                              <a title="Delete" href="/admin/sub-service-category/delete/{{service._id}}" onclick="return confirm('Do you really want to delete the current record ?');" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
+                              <a title="Delete" href="/admin/sub-parent_service-category/delete/{{service._id}}" onclick="return confirm('Do you really want to delete the current record ?');" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
                           </td>
                         </tr>
                       @endif

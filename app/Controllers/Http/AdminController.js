@@ -412,7 +412,8 @@ class AdminController {
         return all_parent_services.parent_service_image;
     }
 
-    async sub_service_add ({request, response}) {
+    async sub_service_add ({request, response, session}) {
+        console.log(request.body);
         var define_value = request.input('define');
         if(define_value == 1) {
             var imageFileName = 'parent_service_image'+Date.now()+'.jpg';
@@ -435,7 +436,8 @@ class AdminController {
                 })
         
                 if(await add.save()){
-                    return response.redirect('/admin/services/subcategory')
+                    session.flash({ sub_service_msg : 'Parent service added successfully.' })
+                    return response.redirect('/admin/sub-category-list')
                 }
             }
 
@@ -443,24 +445,20 @@ class AdminController {
         }else if (define_value == 2){
             var parent_service_id = request.input('parent_service_id');
             var details = await ServiceType.findOne({_id : parent_service_id});
-            var ask_for_quote = request.input('ask_for_quote');
-            if(ask_for_quote == 1) {
-                ask_for_quote = 1; //yes
-            }else {
-                ask_for_quote = 0; //no
-            }
+            var quote = (request.input('ask_for_quote') == 1 ? 1 : 0);
 
             var info = {
                 name: request.input('sub_categoty_name'),
                 price: request.input('category_price'),
-                ask_for_quote : ask_for_quote
+                ask_for_quote : quote
             };
             
             details.child_services.unshift(info); 
 
             await details.save();
 
-            return response.redirect('/admin/services/subcategory')
+            session.flash({ sub_service_msg : 'Child service added successfully.' })
+            return response.redirect('/admin/sub-category-list')
         }
         
         
@@ -471,11 +469,19 @@ class AdminController {
         return view.render('admin.service.sub_category_list', { service_type : service_type});
     }
 
-    async sub_category_edit ({view, response, request, params}) {
+    async sub_category_edit ({view, params}) {
         var details = await ServiceType.findOne({_id : params.parent_service_id});
         var fetch_child_details = _.filter(details.child_services, child_service => child_service._id == params.child_service_id);
 
         return view.render('admin.service.sub_service_edit', { parent_details : details, fetch_child_details : fetch_child_details[0]})
+    }
+
+    async sub_parent_category_edit ({view, params}) {
+        var details = await ServiceType.findOne({_id : params.parent_service_id});
+        var fetch_child_details = details.child_services;
+        console.log(fetch_child_details);
+
+        return view.render('admin.service.sub_service_edit', { parent_details : details, fetch_child_details : fetch_child_details})
     }
 
     async sub_service_update ({session, request, response}) {
@@ -515,23 +521,53 @@ class AdminController {
             }
         })
 
-        var child_service_update = await ServiceType.updateOne({_id : parent_service_id, "child_services._id" : child_service_id}, {
-            $set : {
-                "child_services.$.name" : sub_categoty_name,
-                "child_services.$.price" : category_price,
-                "child_services.$.ask_for_quote" : quote
+        if(child_service_id == '') {
+            var add_child_service = await ServiceType.findOne({_id : parent_service_id});
+            var info = {
+                "name" : sub_categoty_name,
+                "price" : category_price,
+                "ask_for_quote" : quote
             }
-        })
+
+            add_child_service.child_services.unshift(info);
+            await add_child_service.save();
+        }else {
+            var child_service_update = await ServiceType.updateOne({_id : parent_service_id, "child_services._id" : child_service_id}, {
+                $set : {
+                    "child_services.$.name" : sub_categoty_name,
+                    "child_services.$.price" : category_price,
+                    "child_services.$.ask_for_quote" : quote
+                }
+            })
+        }
+        
 
         session.flash({ sub_service_msg : 'Record has been updated successfully.' })
         return response.redirect('/admin/sub-category-list')
 
     }
 
-    async sub_service_delete ({params, session, response}) {
-        var delete_sub_service = await ServiceType.deleteOne({_id : params.id});
+    async parent_service_delete ({params, session, response}) {
+        //delete whole document
+        var delete_sub_service = await ServiceType.deleteOne({_id : params.parent_id});
         if(delete_sub_service) {
             session.flash({ sub_service_msg : 'Service deleted successfully.' })
+            return response.redirect('/admin/sub-category-list');
+        }
+    }
+
+    async child_service_delete ({params, session, response}) {
+        //delete document from nested array object
+        var child_service_delete = await ServiceType.update({_id : params.parent_service_id}, {
+            $pull : {
+                "child_services" : {
+                    _id : params.child_service_id
+                }
+            }
+        }) ;
+
+        if(child_service_delete) {
+            session.flash({ sub_service_msg : 'Child Service deleted successfully.' })
             return response.redirect('/admin/sub-category-list');
         }
     }

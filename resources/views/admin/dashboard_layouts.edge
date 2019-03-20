@@ -185,9 +185,6 @@
                 })
 
                 if($('#parent_service_id').val() == 0) {
-                    $('#ask_for_quote_div').hide();
-                    $('#category_price_div').hide();
-                    $('#showing_parent_image').hide();
                     $('#parent_service_image_div').show();
                     $('#define').val('1');
                 }
@@ -226,9 +223,21 @@
 
                 $('#service_category_add').on('click', function (){
                     var valid = $('#service_category_form').valid();
-
+                    
                     if(valid){
-                        $('#service_category_form').submit();
+                        var parent_service_id = $('#parent_service_id').val();
+                        if(parent_service_id != 0) {
+                            var price = $('#category_price').val();
+                            if(price == '') {
+                                alert('Please enater service price amount.')
+                                return false
+                            }else {
+                                $('#service_category_form').submit();
+                            }
+                        }else {
+                            $('#service_category_form').submit();
+                        }
+                        
                     }
                 });
                 

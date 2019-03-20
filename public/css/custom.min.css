@@ -22,3 +22,7 @@
 ::-ms-input-placeholder { /* Microsoft Edge */
    color: red;
 }
+
+.hide_class {
+    display: none
+}
