@@ -1,0 +1,74 @@
+@layout('admin.dashboard_layouts')
+
+@section('content')
+
+@layout('admin.dashboard_layouts')
+
+@section('content')
+
+<div class="page-content" style="min-height: 1001px;">
+        <div class="page-bar">
+          <ul class="page-breadcrumb">
+            <li> <a href="/admin/dashboard">Home</a> <i class="fa fa-circle"></i> </li>
+            <li><a href="/admin/service-category-list">Category Lists</a> <i class="fa fa-circle"></i></li>
+            <li><span>Category Details</span></li>
+        </ul>
+        </div>
+        <div class="portlet light bordered" style="margin-top:20px;">
+          <!--<div class="portlet-title">
+                <div class="portlet-title">
+                        <a href="/admin/service-category/add"><button class="btn btn-info pull-left"> Add</button></a> 
+                </div>
+            </div>-->
+            <div class="portlet-body form-group row">
+                <div class="chef_list col-md-6">
+                    <form role="form" name="service_category_edit_form" id="service_category_edit_form" action="/admin/service/category-edit/submit" enctype="multipart/form-data" method="POST">
+                        
+                        {{ csrfField() }}
+                        <input type="hidden" name="category_id" id="category_id" value="{{details._id}}">
+
+                        <div class="box-body">
+                            <div class="form-group">
+                                <label for="categoty_edit_name">Category Name</label>
+                                <input type="text" class="form-control" id="categoty_edit_name" name="categoty_edit_name" placeholder="Category Name" value="{{details.service_category}}" autocomplete="off" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label for="">Category Description</label>
+                                <textarea cols="" rows="" class="form-control" id="category_edit_desc" disabled name="category_edit_desc" placeholder="Category Description">{{details.description}}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="category_image">Category Image</label>
+                                <div>
+                                    <img src="{{details.category_image}}" style="width: 50px; height: 50px; margin: 10px;" />
+                                    <input type="hidden" name="exist_category_image" id="exist_category_image" value="{{details.category_image}}">
+                                </div>
+                                
+                                
+                            </div>
+
+                            <div class="form-group">
+                                <label for="categoty_name1" class="col-md-12" style="padding-left:0;">Add service</label>
+                                    @each(subCategory in fetch_all_service_type)
+                                        @if(size(subCategory.child_services) != 0)
+                                            <div class="form-check disabled col-md-4" style="padding-left:0;">
+
+                                                <label for="add_services_name">
+                                                    <input disabled type="checkbox" class="form-check-input" name="all_added_services[]" value="{{subCategory._id}}" {{ subCategory.check == true ? 'checked' : ''}}>
+                                                    {{subCategory.parent_service}}
+                                                </label>
+                                            </div>
+                                        @endif
+                                    
+                                    @endeach
+                            </div>
+                        </div>
+                        <!-- /.box-body -->
+                    </form>
+                </div>
+          </div>
+        </div>
+      </div>
+  
+@endsection
+
+@endsection

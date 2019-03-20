@@ -12,9 +12,9 @@
             
             <li class="nav-item start {{ (request.match(['/admin/dashboard']) ? 'active open' : '') }}"> <a href="/admin/dashboard" class="nav-link nav-toggle"> <i class="icon-home"></i> <span class="title">Dashboard</span> </a> </li>
 
-            <li class="nav-item start {{ (request.match(['/admin/sub-category-list', '/admin/services/subcategory']) ? 'active open' : '') }}"> <a href="/admin/sub-category-list" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title">Manage Services</span> </a> </li>
+            <li class="nav-item start {{ (request.match(['/admin/sub-category-list', '/admin/services/subcategory', '/admin/sub-service-category/edit/:id/:list']) ? 'active open' : '') }}"> <a href="/admin/sub-category-list" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title">Manage Services</span> </a> </li>
 
-            <li class="nav-item start {{ (request.match(['/admin/service-category-list', '/admin/service-category/add', '/admin/service-category/edit/:id']) ? 'active open' : '') }}"> <a href="/admin/service-category-list" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title">Manage Service Categories</span> </a> </li>
+            <li class="nav-item start {{ (request.match(['/admin/service-category-list', '/admin/service-category/add', '/admin/service-category/edit/:id', '/admin/service/view_details/:id']) ? 'active open' : '') }}"> <a href="/admin/service-category-list" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title">Manage Service Categories</span> </a> </li>
 
             <li class="nav-item start {{ (request.match(['/admin/vendor-list', '/admin/vendor-list/profile/:id']) ? 'active open' : '') }}"> <a href="/admin/vendor-list" class="nav-link nav-toggle"> <i class="icon-user"></i> <span class="title">Manage Vendors</span> </a> </li>
 
@@ -24,7 +24,7 @@
 
             <li class="nav-item start {{ (request.match(['/admin/Location']) ? 'active open' : '') }}"> <a href="/admin/Location" class="nav-link nav-toggle"> <i class="icon-briefcase"></i> <span class="title">Manage Locations</span> </a> </li>
 
-            <li class="nav-item start {{ (request.match(['/admin/coupons', '/admin/coupon/add', '/admin/coupon/edit/:id']) ? 'active open' : '') }}"> <a href="/admin/coupons" class="nav-link nav-toggle"> <i class="icon-tag"></i> <span class="title">Manage Coupons</span> </a> </li>
+            <li class="nav-item start {{ (request.match(['/admin/coupons', '/admin/coupon/add', '/admin/coupon/edit/:id', '/admin/coupon/view_details/:id']) ? 'active open' : '') }}"> <a href="/admin/coupons" class="nav-link nav-toggle"> <i class="icon-tag"></i> <span class="title">Manage Coupons</span> </a> </li>
 
             <li class="nav-item start {{ (request.match(['/admin/assign/coupons']) ? 'active open' : '') }}"> <a href="/admin/assign/coupons" class="nav-link nav-toggle"> <i class="icon-tag"></i> <span class="title">Assign Coupons</span> </a> </li>
 
