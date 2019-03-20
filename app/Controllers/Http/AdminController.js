@@ -479,7 +479,6 @@ class AdminController {
     async sub_parent_category_edit ({view, params}) {
         var details = await ServiceType.findOne({_id : params.parent_service_id});
         var fetch_child_details = details.child_services;
-        console.log(fetch_child_details);
 
         return view.render('admin.service.sub_service_edit', { parent_details : details, fetch_child_details : fetch_child_details})
     }
