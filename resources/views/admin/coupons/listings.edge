@@ -51,6 +51,8 @@
                             <td class="center"> {{coupon.coupon_type == 1 ? '$' : ''}} {{coupon.coupons_amount}} {{coupon.coupon_type == 2 ? '%' : ''}}</td>
                             <td>{{coupon.status}}</td>
                             <td>
+                                <a title="View" href="/admin/coupon/view_details/{{coupon._id}}" class="btn btn-success btn-sm"><i class="fa fa-eye" aria-hidden="true"></i></a>
+
                                 <a title="Edit" href="/admin/coupon/edit/{{coupon._id}}" class="btn btn-primary btn-sm"><i class="fa fa-pencil"></i></a>
 
                                 <a title="Delete" href="/admin/coupon/delete/{{coupon._id}}" onclick="return confirm('Do you really want to delete the current record ?');" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>

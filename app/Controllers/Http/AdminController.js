@@ -766,6 +766,19 @@ class AdminController {
 
     }
 
+    async view_coupon_details({view, params, response}) {
+        var coupon_id = params.id;
+        var fetch_coupon_details = await Coupon.findOne({_id : coupon_id});
+
+        if(fetch_coupon_details != null){
+            var valid_to_date = this.convertToYYYYMMDD(fetch_coupon_details.coupons_valid_to);
+            return view.render('admin.coupons.view', {fetch_coupon_details : fetch_coupon_details, valid_to_date : valid_to_date})
+        }else {
+            session.flash({ coupon_error: 'Coupon id does not match with our records.' });
+            return response.redirect('/admin/coupons');
+        } 
+    }
+
     async coupon_edit ({view, session, response, params}) {
         var coupon_id = params.id;
         var fetch_coupon_details = await Coupon.findOne({_id : coupon_id});

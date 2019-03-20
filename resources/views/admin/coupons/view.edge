@@ -1,0 +1,63 @@
+@layout('admin.dashboard_layouts')
+
+@section('content')
+
+@layout('admin.dashboard_layouts')
+
+@section('content')
+
+<div class="page-content" style="min-height: 1001px;">
+        <div class="page-bar">
+          <ul class="page-breadcrumb">
+            <li> <a href="/admin/dashboard">Home</a> <i class="fa fa-circle"></i> </li>
+            <li><a href="/admin/coupons">Coupon Lists</a> <i class="fa fa-circle"></i></li>
+            <li><span>Coupon Details</span></li>
+        </ul>
+        </div>
+        <div class="portlet light bordered" style="margin-top:20px;">
+            <div class="portlet-body form-group row">
+                <div class="chef_list col-md-6">
+                    <form role="form" name="coupon_edit_form" id="coupon_edit_form" action="/admin/coupon/coupon_edit_submit" enctype="multipart/form-data" method="POST">
+                        {{ csrfField() }}
+                        
+                        <input type="hidden" name="coupon_id" value="{{fetch_coupon_details._id}}" id="coupon_id">
+
+                        <div class="box-body">
+                            <div class="form-group">
+                                <label for="categoty_name">Coupon Code</label>
+                                <input type="text" class="form-control" id="coupon_code" name="coupon_code" placeholder="Coupon Code" autocomplete="off" value="{{fetch_coupon_details.coupons_code}}" disabled required>
+                            </div>
+                            <div class="form-group">
+                                <label for="">Coupon Description</label>
+                                <textarea cols="" rows="" class="form-control" id="coupon_desc" name="coupon_desc" placeholder="Coupon Description" disabled required>{{fetch_coupon_details.coupons_title}}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="category_image_label">Coupon Amount</label>
+                                <input type="number" class="form-control" id="coupon_amount"  name="coupon_amount" value="{{fetch_coupon_details.coupons_amount}}" placeholder="Counpon Amount" disabled required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="category_image_label">Coupon Type</label>
+                                <select class="form-control" id="coupon_type"  name="coupon_type" disabled required>
+                                    <option value="0">Select type</option>
+                                    <option value="1" {{fetch_coupon_details.coupon_type == 1 ? 'selected' : ''}}>Flat rate</option>
+                                    <option value="2" {{fetch_coupon_details.coupon_type == 2 ? 'selected' : ''}}>Percentage</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="category_image_label">Coupon Valid Till</label>
+                                <input type="text" disabled class="form-control" id="valid_to" name="valid_to" value="{{valid_to_date}}" required>
+                            </div>
+
+                        </div>
+                        <!-- /.box-body -->
+                    </form>
+                </div>
+          </div>
+        </div>
+      </div>
+  
+@endsection
+
+@endsection

@@ -80,6 +80,7 @@ Route.group(() => {
     Route.get('/admin/coupon/edit/:id', 'AdminController.coupon_edit')
     Route.post('/admin/coupon/coupon_edit_submit', 'AdminController.coupon_edit_submit')
     Route.get('/admin/coupon/delete/:id', 'AdminController.coupon_delete')
+    Route.get('/admin/coupon/view_details/:id', 'AdminController.view_coupon_details')
 
     Route.get('/admin/assign/coupons', 'AdminController.assign_coupon_listings')
     Route.get('/admin/assign/coupon/add', 'AdminController.assign_coupon_add_view')
