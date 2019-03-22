@@ -24,6 +24,7 @@ const Coupon = use ('App/Models/Coupon');
 const AssignCouponToUser = use ('App/Models/AssignCouponToUser');
 const stripe = use('stripe')('sk_test_1lfdJgJawDb3EFLvNDyi1p7v');
 const AuditLog = use('App/Models/AuditLog');
+const Notification = use('App/Models/Notification');
 // ('sk_test_1lfdJgJawDb3EFLvNDyi1p7v'); //secret key for test account
 
 const _ = use('lodash');
@@ -159,12 +160,15 @@ class ApiController {
                     var send_registration_email = this.registrationEmailData(user);
 
                     if(send_registration_email == true) {
-                        return response.json({
-                            status: true, 
-                            code: 200, 
-                            token: 'Bearer ' + generate_token.token,
-                            message: 'Registration completed successfully.'
-                        });
+                      var add_notification = this.add_notification(user);
+                      console.log(add_notification);
+
+                      return response.json({
+                          status: true, 
+                          code: 200, 
+                          token: 'Bearer ' + generate_token.token,
+                          message: 'Registration completed successfully.'
+                      });
                     }
                 }
 
@@ -3115,6 +3119,24 @@ class ApiController {
       }).then(function(error, result){
         console.log(result,'result');
       })
+    }
+
+    async add_notification(user_details) {
+      var desc = '';
+      if(user_details != ''){
+        if(user_details.reg_type == 2){
+          desc = `${user_details.first_name} ${user_details.last_name} just registered with us as a Customer.`
+        }else {
+          desc = `${user_details.first_name} ${user_details.last_name} just registered with us as a Vendor.`
+        }
+      }
+
+      var add = await Notification({
+        description : desc,
+        created_at : Date.now()
+      })
+
+      return await add.save();
     }
 
 
