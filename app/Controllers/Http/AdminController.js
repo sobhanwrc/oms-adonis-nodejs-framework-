@@ -5,7 +5,6 @@ const Helpers = use('Helpers')
 const _ = use('lodash');
 const moment = use('moment');
 const Mailjet = use('node-mailjet').connect('ce9c25078a4f1474dc6d3ce5524a711c', 'd9ca8c7b9944f10a34eb42118277e6f5');
-const edge = use('edge.js')
 
 const Job = use ('App/Models/Job')
 const Location = use ('App/Models/Location')
@@ -30,10 +29,6 @@ class AdminController {
 
         try{
             var result = await auth.attempt(user_email, password)
-
-            var notification = await Notification.find().sort({_id : -1});
-
-            edge.global('notification', notification)
 
             return response.redirect('/admin/dashboard')
         }catch(e) {
@@ -990,6 +985,12 @@ class AdminController {
             session.flash({ job_error_msg: 'Something went wrong.' })
             return response.redirect('/admin/jobs')
         }
+    }
+
+    async notification ({view, response}) {
+        var fetch_all_details = await Notification.find().sort({_id : -1});
+
+        return view.render('admin.notification', { fetch_all_details : fetch_all_details});
     }
 
     //first letter capital

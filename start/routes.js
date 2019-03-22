@@ -91,6 +91,8 @@ Route.group(() => {
 
     Route.get('/admin/jobs', 'AdminController.jobs_listings')
     Route.get('/admin/jobs/details/:id', 'AdminController.job_details')
+
+    Route.get('/admin/notification', 'AdminController.notification')
 }).middleware(['auth:session'])
 //end
 
