@@ -1,13 +1,15 @@
 const {hooks} = require('@adonisjs/ignitor')
 const Notification = use('App/Models/Notification');
 
-hooks.before.providersBooted(async () => {
+hooks.before.providersBooted( () => {
     const View = use('View')
     const _ = use('lodash')
 
-    var fetch_all_details = await  Notification.find().sort({_id : -1});
-
-    View.global('notifications', function () {
-        return fetch_all_details;
+    Notification.find().sort({_id : -1}).then(function(result) {
+        View.global('notifications', function () {
+            return result;
+        })
     })
+
+    
 }) 
