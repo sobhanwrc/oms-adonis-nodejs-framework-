@@ -161,7 +161,6 @@ class ApiController {
 
                     if(send_registration_email == true) {
                       var add_notification = this.add_notification(user);
-                      console.log(add_notification);
 
                       return response.json({
                           status: true, 
@@ -818,7 +817,7 @@ class ApiController {
         var user_present_address_check = request.input('check_address');
 
         // array for create job
-        var demo = request.input('service_category_type');
+        // var demo = request.input('service_category_type');
         console.log(demo);
         // var demo = [
         //   {
@@ -845,7 +844,6 @@ class ApiController {
           ask_quote : request.input('ask_quote')
         });
         var jod_id = await add_job.save();
-        console.log(jod_id,'jod_id');
 
         if(jod_id != '') {
           var update_job = await Job.findOne({_id : jod_id._id}).populate('service_category');
@@ -873,6 +871,8 @@ class ApiController {
             update_job.job_title = dynamic_job_title;
 
             await update_job.save();
+
+            var job_add_notification = this.add_notification(user,update_job);
 
             var add_data_to_audit_table = new AuditLog({
               job_id : jod_id._id,
@@ -1028,6 +1028,8 @@ class ApiController {
         allocation_details_update.status = 2; // invitation decline by vendor
 
         if(await allocation_details_update.save()) {
+          await this.add_notification(user,'',allocation_details_update);
+
           var fetch_new_allocated_vendor = await VendorAllocation.find({job_id : job_id, status : 0}).limit(1).populate('user_id').populate('job_id');
           console.log(fetch_new_allocated_vendor, 'fetch_new_allocated_vendor_from_decline');
           // return false;
@@ -1078,6 +1080,8 @@ class ApiController {
         fetch_allocated_details.status = 1 ; // 1 = invitation accept by vendor.
         
         if(await fetch_allocated_details.save()) {
+          await this.add_notification(user,'','', fetch_allocated_details);
+
           var update_job = await Job.findOne({_id : fetch_allocated_details.job_id._id})
           update_job.vendor_id = fetch_allocated_details.user_id._id;
           update_job.job_allocated_to_vendor = 1;
@@ -3121,7 +3125,7 @@ class ApiController {
       })
     }
 
-    async add_notification(user_details) {
+    async add_notification(user_details = '', added_job_details = '', decline ='', accept = '') {
       var desc = '';
       if(user_details != ''){
         if(user_details.reg_type == 2){
@@ -3129,6 +3133,18 @@ class ApiController {
         }else {
           desc = `${user_details.first_name} ${user_details.last_name} just registered with us as a Vendor.`
         }
+      }
+
+      if(added_job_details != ''){
+        desc = `${user_details.first_name} ${user_details.last_name} has create a new job.`
+      }
+
+      if(decline != ''){
+        desc = `${user_details.first_name} ${user_details.last_name} has decline a job request.`
+      }
+
+      if(accept != '') {
+        desc = `${user_details.first_name} ${user_details.last_name} has accept a job request.`
       }
 
       var add = await Notification({
