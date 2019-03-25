@@ -817,7 +817,7 @@ class ApiController {
         var user_present_address_check = request.input('check_address');
 
         // array for create job
-        // var demo = request.input('service_category_type');
+        var demo = request.input('service_category_type');
         console.log(demo);
         // var demo = [
         //   {

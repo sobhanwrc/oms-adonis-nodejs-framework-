@@ -29,9 +29,9 @@
               <table class="table table-striped table-bordered table-hover table-checkable order-column dataTable" id="sample_1_2" role="grid" aria-describedby="sample_1_2_info">
                 <thead>
                   <tr role="row">
-                    <th class="sorting_asc" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-sort="ascending" aria-label=" Username : activate to sort column descending" style="width: 148px;"> Sr. No </th>
-                    <th class="sorting_asc" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-sort="ascending" aria-label=" Username : activate to sort column descending" style="width: 148px;"> Parent Service Name </th>
-                    <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Email : activate to sort column ascending" style="width: 224px;"> Child Service Name </th>
+                    <th class="sorting_asc" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-sort="ascending" aria-label=" Username : activate to sort column descending" style="width: 148px;"> Parent Service <br> Image  </th>
+                    <th class="sorting_asc" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-sort="ascending" aria-label=" Username : activate to sort column descending" style="width: 148px;"> Parent Service <br> Name </th>
+                    <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Email : activate to sort column ascending" style="width: 224px;"> Child Service <br> Name </th>
                     <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Status : activate to sort column ascending" style="width: 150px;">Price</th>
 
                     <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Joined : activate to sort column ascending" style="width: 120px;"> Ask for quote</th>
@@ -43,7 +43,7 @@
                       @if(size(service.child_services)> 0)
                         @each(item in service.child_services)
                           <tr class="gradeX odd" role="row">
-                            <td class=""> {{ ($parent.$loop.index + 1) }} </td>
+                            <td class=""> <img src="{{ $parent.service.parent_service_image }}" alt="No Image" style=" width: 50px; height: 50px;"> </td>
                             <td class="center"> {{$parent.service.parent_service}}</td>
                             <td>{{item.name}}  </td>
                             <td>${{item.price}}  </td>
@@ -63,7 +63,7 @@
                         @endeach
                       @else
                         <tr class="gradeX odd" role="row">
-                          <td class=""> {{ ($loop.index + 1) }} </td>
+                          <td class=""> <img src="{{ service.parent_service_image }}" alt="No Image" style=" width: 50px; height: 50px;"> </td>
                           <td class="center"> {{service.parent_service}}</td>
                           <td>-</td>
                           <td>-</td>

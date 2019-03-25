@@ -467,6 +467,7 @@ class AdminController {
 
     async sub_category_list ({view, auth, request, response}) {
         var service_type = await ServiceType.find().sort({_id : -1});
+        console.log(service_type);
         return view.render('admin.service.sub_category_list', { service_type : service_type});
     }
 
