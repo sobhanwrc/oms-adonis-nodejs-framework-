@@ -26,3 +26,10 @@
 .hide_class {
     display: none
 }
+.parent-cat-image {position:absolute; margin-left: 115%; top: 10px;}
+
+
+.p-img{ width: 256px; height:256px;}
+@media screen and (max-width: 1920px) {}
+@media screen and (max-width: 768px) {.parent-category-image2{display: block;position:relative; margin-left:0; top: 10px;}}
+@media screen and (max-width: 480px) { .parent-category-image2{display: block;position:relative; margin-left:0; top: 10px;}.p-img{width: 266px;}}

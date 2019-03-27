@@ -3155,6 +3155,30 @@ class ApiController {
       return await add.save();
     }
 
+    email_domain_check(email){
+      var user_email = email;
+      var email_api_key = Env.get('MAILBOX_LAYER_API_KEY');
+      console.log(email_api_key,'email_api_key');
+      // return false
+
+      try {
+        axios('http://apilayer.net/api/check', {
+          access_key: '40b8a61171b1442ae2d243337d414a4b',
+          email: user_email
+        }).then ( function (result){
+          console.log(result,'result');
+          return false
+        }).catch (function (error){
+          console.log("then catch");
+          throw error;
+        });
+
+      }catch (error) {
+        console.log("try catch");
+        throw error;
+      }
+    }
+
 
 }
 

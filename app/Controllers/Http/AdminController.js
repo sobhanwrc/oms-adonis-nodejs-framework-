@@ -478,11 +478,25 @@ class AdminController {
         return view.render('admin.service.sub_service_edit', { parent_details : details, fetch_child_details : fetch_child_details[0]})
     }
 
+    async sub_category_view ({view, params}) {
+        var details = await ServiceType.findOne({_id : params.parent_service_id});
+        var fetch_child_details = _.filter(details.child_services, child_service => child_service._id == params.child_service_id);
+
+        return view.render('admin.service.sub_service_view', { parent_details : details, fetch_child_details : fetch_child_details[0]})
+    }
+
     async sub_parent_category_edit ({view, params}) {
         var details = await ServiceType.findOne({_id : params.parent_service_id});
         var fetch_child_details = details.child_services;
 
         return view.render('admin.service.sub_service_edit', { parent_details : details, fetch_child_details : fetch_child_details})
+    }
+
+    async sub_parent_category_view ({view, params}) {
+        var details = await ServiceType.findOne({_id : params.parent_service_id});
+        var fetch_child_details = details.child_services;
+
+        return view.render('admin.service.sub_parent_service_view', { parent_details : details, fetch_child_details : fetch_child_details})
     }
 
     async sub_service_update ({session, request, response}) {

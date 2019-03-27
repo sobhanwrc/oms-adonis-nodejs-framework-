@@ -74,6 +74,8 @@ Route.group(() => {
     Route.post('/admin/service/sub-service-edit-submit', 'AdminController.sub_service_update')
     Route.get('/admin/sub-parent_service-category/edit/:parent_service_id', 'AdminController.sub_parent_category_edit')
     Route.get('/admin/service/view_details/:id', 'AdminController.view_service_category')
+    Route.get('/admin/sub-service-category/view/:parent_service_id/:child_service_id', 'AdminController.sub_category_view')
+    Route.get('/admin/sub-parent_service-category/view/:parent_service_id', 'AdminController.sub_parent_category_view')
 
     Route.get('/admin/coupons', 'AdminController.coupons_listings')
     Route.get('/admin/coupon/add', 'AdminController.coupon_add')
