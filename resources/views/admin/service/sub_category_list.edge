@@ -40,47 +40,60 @@
                 </thead>
                 <tbody>
                     @each(service in service_type)
-                      @if(size(service.child_services)> 0)
-                        @each(item in service.child_services)
+
+                      @if(service.isDelete == 0)
+
+                        @if(size(service.child_services)> 0)
+                          @each(item in service.child_services)
+
+                            @if(item.delete == 0)
+
+                                <tr class="gradeX odd" role="row">
+                                  <td class=""> <img src="{{ $parent.service.parent_service_image }}" alt="No Image" style=" width: 50px; height: 50px;"> </td>
+                                  <td class="center"> {{$parent.service.parent_service}}</td>
+                                  <td>{{item.name}}  </td>
+                                  <td>${{item.price}}  </td>
+                                  <td>
+                                    @if(item.ask_for_quote == 0 || item.ask_for_quote == 'NO')
+                                      No
+                                    @else
+                                      Yes
+                                    @endif
+                                  </td>
+                                  <td>
+                                    <a title="View" href="/admin/sub-service-category/view/{{$parent.service._id}}/{{item.id}}" class="btn btn-success btn-sm" style="margin-right:-2px"><i class="fa fa-eye" aria-hidden="true"></i></a>
+
+                                    <a title="Edit" href="/admin/sub-service-category/edit/{{$parent.service._id}}/{{item.id}}" class="btn btn-primary btn-sm" style="margin-right:-2px"><i class="fa fa-pencil"></i></a>
+
+                                    <a title="Delete" href="/admin/sub-child_service-category/delete/{{$parent.service._id}}/{{item.id}}" onclick="return confirm('Do you really want to delete the current record ?');" class="btn btn-danger btn-sm" style="margin-right:-2px"><i class="fa fa-trash"></i></a>
+                                  </td>
+                                </tr>
+                            
+                            
+
+                            @endif
+
+                          @endeach
+                        @else
                           <tr class="gradeX odd" role="row">
-                            <td class=""> <img src="{{ $parent.service.parent_service_image }}" alt="No Image" style=" width: 50px; height: 50px;"> </td>
-                            <td class="center"> {{$parent.service.parent_service}}</td>
-                            <td>{{item.name}}  </td>
-                            <td>${{item.price}}  </td>
+                            <td class=""> <img src="{{ service.parent_service_image }}" alt="No Image" style=" width: 50px; height: 50px;"> </td>
+                            <td class="center"> {{service.parent_service}}</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
                             <td>
-                              @if(item.ask_for_quote == 0 || item.ask_for_quote == 'NO')
-                                No
-                              @else
-                                Yes
-                              @endif
-                            </td>
-                            <td>
-                              <a title="View" href="/admin/sub-service-category/view/{{$parent.service._id}}/{{item.id}}" class="btn btn-success btn-sm" style="margin-right:-2px"><i class="fa fa-eye" aria-hidden="true"></i></a>
+                                <a title="View" href="/admin/sub-parent_service-category/view/{{service._id}}" class="btn btn-success btn-sm" style="margin-right:-2px;"><i class="fa fa-eye" aria-hidden="true"></i></a>
 
-                              <a title="Edit" href="/admin/sub-service-category/edit/{{$parent.service._id}}/{{item.id}}" class="btn btn-primary btn-sm" style="margin-right:-2px"><i class="fa fa-pencil"></i></a>
+                                <a title="Edit" href="/admin/sub-parent_service-category/edit/{{service._id}}" class="btn btn-primary btn-sm" style="margin-right:-2px;"><i class="fa fa-pencil"></i></a>
 
-                              <a title="Delete" href="/admin/sub-child_service-category/delete/{{$parent.service._id}}/{{item.id}}" onclick="return confirm('Do you really want to delete the current record ?');" class="btn btn-danger btn-sm" style="margin-right:-2px"><i class="fa fa-trash"></i></a>
+                                <a title="Delete" href="/admin/sub-parent_service-category/delete/{{service._id}}" onclick="return confirm('Do you really want to delete the current record ?');" class="btn btn-danger btn-sm" style="margin-right:-2px;"><i class="fa fa-trash"></i></a>
                             </td>
                           </tr>
-                        @endeach
-                      @else
-                        <tr class="gradeX odd" role="row">
-                          <td class=""> <img src="{{ service.parent_service_image }}" alt="No Image" style=" width: 50px; height: 50px;"> </td>
-                          <td class="center"> {{service.parent_service}}</td>
-                          <td>-</td>
-                          <td>-</td>
-                          <td>-</td>
-                          <td>
-                              <a title="View" href="/admin/sub-parent_service-category/view/{{service._id}}" class="btn btn-success btn-sm" style="margin-right:-2px;"><i class="fa fa-eye" aria-hidden="true"></i></a>
-
-                              <a title="Edit" href="/admin/sub-parent_service-category/edit/{{service._id}}" class="btn btn-primary btn-sm" style="margin-right:-2px;"><i class="fa fa-pencil"></i></a>
-
-                              <a title="Delete" href="/admin/sub-parent_service-category/delete/{{service._id}}" onclick="return confirm('Do you really want to delete the current record ?');" class="btn btn-danger btn-sm" style="margin-right:-2px;"><i class="fa fa-trash"></i></a>
-                          </td>
-                        </tr>
-                      @endif
-                      
+                        @endif
                         
+                      @endif
+
+                    
                     @endeach
                   
                 </tbody>
