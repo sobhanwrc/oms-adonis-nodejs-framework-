@@ -229,7 +229,7 @@
                         if(parent_service_id != 0) {
                             var price = $('#category_price').val();
                             if(price == '') {
-                                alert('Please enater service price amount.')
+                                alert('Please enter service price amount.')
                                 return false
                             }else {
                                 $('#service_category_form').submit();
@@ -278,6 +278,17 @@
                         $('#toplevel_service_category_add_form').submit();
                     }
                 })
+
+                $('#service_sub_category_edit').on('click', function () {
+                    var parent_service_name = $('#parent_service_name').val();
+                    var sub_categoty_name = $('#sub_categoty_name').val();
+                    var category_price = $('#category_price').val();
+
+                    if(parent_service_name == '' || sub_categoty_name == '' || category_price == '') {
+                        alert ("Fields are can't be left blank.");
+                        return false
+                    }
+                });
                 
             })
         </script>

@@ -18,7 +18,7 @@
             </div>-->
             <div class="portlet-body form-group row">
                 <div class="chef_list col-md-6">
-                    <form role="form" name="service_category_edit_form" id="service_category_edit_form" action="/admin/service/sub-service-edit-submit" enctype="multipart/form-data" method="POST">
+                    <form role="form" name="service_sub_category_edit_form" id="service_sub_category_edit_form" action="/admin/service/sub-service-edit-submit" enctype="multipart/form-data" method="POST">
                         {{ csrfField() }}
                         <input type="hidden" name="parent_service_id" id="parent_service_id" value="{{parent_details._id}}">
 
@@ -76,7 +76,7 @@
                         <!-- /.box-body -->
             
                         <div class="box-footer">
-                            <button type="submit" class="btn btn-primary" id="service_category_edit">Update</button>
+                            <button type="submit" class="btn btn-primary" id="service_sub_category_edit">Update</button>
                         </div>
                     </form>
                 </div>
