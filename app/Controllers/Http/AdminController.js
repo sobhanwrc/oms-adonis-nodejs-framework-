@@ -589,6 +589,28 @@ class AdminController {
     }
 
     async child_service_delete ({params, session, response}) {
+        var find_all_associated_data = await ServiceCategory.find({"service_type.service_type_id" : params.parent_service_id});
+
+        if(find_all_associated_data.length > 0) {
+            session.flash({ sub_service_msg : "You can't delete this record because it's associated with top level category." })
+            return response.redirect('/admin/sub-category-list');
+        }else {
+
+        //delete document from nested array object
+            var child_service_delete = await ServiceType.update({_id : params.parent_service_id}, {
+                $pull : {
+                    "child_services" : {
+                        _id : params.child_service_id
+                    }
+                }
+            }) ;
+
+            if(child_service_delete) {
+                session.flash({ sub_service_msg : 'Child Service deleted successfully.' })
+                return response.redirect('/admin/sub-category-list');
+            }
+        }
+
         //nested document update 
         // var child_service_update = await ServiceType.updateOne({_id : params.parent_service_id, "child_services._id" : params.child_service_id}, {
         //     $set : {
@@ -596,20 +618,6 @@ class AdminController {
         //     }
         // })
         //end
-
-        //delete document from nested array object
-        var child_service_delete = await ServiceType.update({_id : params.parent_service_id}, {
-            $pull : {
-                "child_services" : {
-                    _id : params.child_service_id
-                }
-            }
-        }) ;
-
-        if(child_service_delete) {
-            session.flash({ sub_service_msg : 'Child Service deleted successfully.' })
-            return response.redirect('/admin/sub-category-list');
-        }
     }
 
     async service_category_edit_view ({params, request, response, view}) {
