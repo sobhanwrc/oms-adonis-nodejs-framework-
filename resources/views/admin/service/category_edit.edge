@@ -55,8 +55,21 @@
                                             <div class="form-check disabled col-md-4" style="padding-left:0;">
 
                                                 <label for="add_services_name">
-                                                    <input type="checkbox" class="form-check-input" name="all_added_services[]" value="{{subCategory._id}}" {{ subCategory.check == true ? 'checked' : ''}}>
-                                                    {{subCategory.parent_service}}
+                                                    @if(associated_data == 0)
+                                                        <input type="checkbox" class="form-check-input" name="all_added_services[]" value="{{subCategory._id}}" {{ subCategory.check == true ? 'checked' : ''}}>
+                                                        {{subCategory.parent_service}}
+
+                                                    @else
+                                                        
+                                                        @if(subCategory.check == true)
+                                                            <input type="hidden" name="all_added_services[]" value="{{subCategory._id}}">
+                                                        @endif
+
+                                                        <input disabled="disabled" type="checkbox" class="form-check-input" name="all_added_services[]" value="{{subCategory._id}}" {{ subCategory.check == true ? 'checked' : ''}}>
+                                                        {{subCategory.parent_service}}
+                                                      
+                                                    @endif
+                                                
                                                 </label>
                                             </div>
                                         @endif

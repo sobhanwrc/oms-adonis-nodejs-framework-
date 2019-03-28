@@ -621,8 +621,15 @@ class AdminController {
     }
 
     async service_category_edit_view ({params, request, response, view}) {
+        var isServiceCategoryAssociatedWithJobs = await Job.find({service_category : params.id});
+        var associated_data = '';
+        if(isServiceCategoryAssociatedWithJobs.length > 0) {
+            associated_data = 1;
+        }else {
+            associated_data = 0;
+        }
+
         var fetch_all_service_type = await ServiceType.find();
-        // console.log(fetch_all_service_type);
 
         var details = await ServiceCategory.findOne({_id : params.id})
 
@@ -659,9 +666,7 @@ class AdminController {
             finalArray = fetch_all_service_type
         }
         
-        // return false
-        
-        return view.render('admin.service.category_edit',{details : details, fetch_all_service_type : finalArray})
+        return view.render('admin.service.category_edit',{details : details, fetch_all_service_type : finalArray, associated_data : associated_data})
     }
 
     async view_service_category ({params, view}) {
