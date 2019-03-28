@@ -701,12 +701,20 @@ class AdminController {
     }
 
     async service_category_delete ({params, session, response}) {
-        var delete_service_category = await ServiceCategory.deleteOne({_id : params.id});
+        var isServiceCategoryAssociatedWithJobs = await Job.find({service_category : params.id});
 
-        if(delete_service_category) {
-            session.flash({ category_msg : 'Record deleted successfully.' })
+        if(isServiceCategoryAssociatedWithJobs.length > 0) {
+            session.flash({ category_msg : "You can't delete this record because it's associated with Jobs." })
             return response.redirect('/admin/service-category-list')
+        }else {
+            var delete_service_category = await ServiceCategory.deleteOne({_id : params.id});
+
+            if(delete_service_category) {
+                session.flash({ category_msg : 'Record deleted successfully.' })
+                return response.redirect('/admin/service-category-list')
+            }
         }
+        
     }
 
     async category_edit ({auth, session, request, response}) {
