@@ -1382,8 +1382,8 @@ class ApiController {
               message : "You have already post a service with this category."
             })
           }else {
-            var demo = request.input('service_type');
-            // var demo = ['5c78df0f9ed89a3ea251adc0', '5c78dd1763f38236efdf35d6']
+            // var demo = request.input('service_type');
+            var demo = ['5c78df0f9ed89a3ea251adc0', '5c78dd1763f38236efdf35d6']
 
             var add_service = new Service ({
               create_service_id : create_service_id,
@@ -1392,7 +1392,7 @@ class ApiController {
             });
             var service = await add_service.save();
             if(service) {
-              var fetch_service_details = await Service.findOne({_id : service._id}).populate('service_category');
+              var fetch_service_details = await Service.findOne({_id : service._id}).populate('service_category').populate('user_id');
 
               var dynamic_service_title = fetch_service_details.service_category.service_category+"#"+fetch_service_details.create_service_id;
 
@@ -1410,7 +1410,9 @@ class ApiController {
 
             if(dynamic_service_title != ''){
               fetch_service_details.service_title = dynamic_service_title;
-              fetch_service_details.save();
+              await fetch_service_details.save();
+
+              var add_notification = this.add_notification('','','','',fetch_service_details);
 
               response.json ({
                   status : true,
@@ -3129,7 +3131,7 @@ class ApiController {
       })
     }
 
-    async add_notification(user_details = '', added_job_details = '', decline ='', accept = '') {
+    async add_notification(user_details = '', added_job_details = '', decline ='', accept = '', service = '') {
       var desc = '';
       if(user_details != ''){
         if(user_details.reg_type == 2){
@@ -3149,6 +3151,10 @@ class ApiController {
 
       if(accept != '') {
         desc = `${user_details.first_name} ${user_details.last_name} has accept a job request.`
+      }
+
+      if(service != '') {
+        desc = `${service.service_title} has registered by ${service.user_id.first_name} ${service.user_id.last_name}.`
       }
 
       var add = await Notification({

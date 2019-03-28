@@ -38,7 +38,7 @@
 
                   <i class="icon-bell"></i>
 
-              <span class="badge badge-default"> {{ size(notifications()) }}</span>
+              <span class="badge badge-default"> {{ size(notifications) }}</span>
 
               </a>
 
@@ -48,7 +48,7 @@
 
                       <h3>
 
-                          <span class="bold">{{ size(notifications()) }} pending</span> notifications</h3>
+                          <span class="bold">{{ size(notifications) }} pending</span> notifications</h3>
 
                       <a href="/admin/notification">view all</a>
 
@@ -57,7 +57,7 @@
                   <li>
 
                       <ul class="dropdown-menu-list scroller" style="height: 250px;" data-handle-color="#637283">
-                        @each(item in notifications())
+                        @each(item in notifications)
                             <li>
 
                                 <a href="javascript:;">
