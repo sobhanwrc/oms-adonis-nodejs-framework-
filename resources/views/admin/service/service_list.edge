@@ -35,12 +35,12 @@
                             <td class=""> {{ ($loop.index + 1) }} </td>
                             <td class="center"> {{service.service_title}}</td>
                             <td>
-                              <a href="/admin/service-category/edit/{{service.service_category._id}}">
+                              <a href="/admin/service/view_details/{{service.service_category._id}}" target="_blank">
                                   {{service.service_category.service_category}}
                               </a>
                             </td>
                             <td> 
-                              <a href="/admin/vendor-list/profile/{{service.user_id._id}}">
+                              <a href="/admin/vendor-list/profile/{{service.user_id._id}}" target="_blank">
                                 {{service.user_id.first_name}} {{service.user_id.last_name}}
                               </a> 
                             </td>

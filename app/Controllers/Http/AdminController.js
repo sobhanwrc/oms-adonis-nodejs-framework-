@@ -212,8 +212,16 @@ class AdminController {
     async vendor_profile ({view,params}) {
         var vendor_id = params.id;
         var vendor_details = await User.findOne({_id : vendor_id});
-        var vendor_location_id = await Location.findOne({_id : vendor_details.location_id});
-        var location_name = vendor_location_id.name;
+
+        if(vendor_details.location_id != ''){
+            var vendor_location_id = await Location.findOne({_id : vendor_details.location_id});
+            if(vendor_location_id != null){
+                var location_name = vendor_location_id.name;
+            }else {
+                var location_name = "N/A"
+            }
+            
+        }
 
 
         var fetch_vendors_all_jobs_of_interest = await VendorAllocation.find
@@ -467,7 +475,7 @@ class AdminController {
 
     async sub_category_list ({view, auth, request, response}) {
         var service_type = await ServiceType.find().sort({_id : -1});
-        console.log(service_type);
+        // console.log(service_type);
         return view.render('admin.service.sub_category_list', { service_type : service_type});
     }
 
