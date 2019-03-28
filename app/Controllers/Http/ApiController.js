@@ -1107,7 +1107,7 @@ class ApiController {
     async vendorsAllJobRequest ({response, auth}) {
       var user = await auth.getUser();
 
-      var job_request_list = await VendorAllocation.find({user_id : user._id, status :3}).populate('job_id').sort({_id : -1});
+      var job_request_list = await VendorAllocation.find({user_id : user._id, status :3}).populate({path: 'job_id', populate: {path: 'service_category'}}).sort({_id : -1});
 
       if(job_request_list.length > 0) {
         response.json({
@@ -1132,7 +1132,7 @@ class ApiController {
         $in : [1,2]
       }})
       .sort({_id : -1})
-      .populate({path: 'job_id', populate: {path: 'service_category'}, populate: {path: 'added_services_details.parent_service_id'}})
+      .populate({path: 'job_id', populate: {path: 'added_services_details.parent_service_id'}})
       .populate({path: 'job_id', populate: {path: 'service_category'}})
 
       if(job_request_list_of_accept_decline.length > 0) {

@@ -397,7 +397,9 @@ class AdminController {
     }
 
     async subcategory({view}) {
-        var all_parent_services = await ServiceType.find({});
+        var all_parent_services = await ServiceType.find({isDelete : {
+            $nin : [1]
+        }}).sort({_id : -1});
         return view.render('admin.service.subcategory', {all_parent_services : all_parent_services})
     }
 
@@ -474,7 +476,9 @@ class AdminController {
     }
 
     async sub_category_list ({view, auth, request, response}) {
-        var service_type = await ServiceType.find().sort({_id : -1});
+        var service_type = await ServiceType.find({isDelete : {
+            $nin : [1]
+        }}).sort({_id : -1});
         // console.log(service_type);
         return view.render('admin.service.sub_category_list', { service_type : service_type});
     }
@@ -572,7 +576,12 @@ class AdminController {
 
     async parent_service_delete ({params, session, response}) {
         //delete whole document
-        var delete_sub_service = await ServiceType.deleteOne({_id : params.parent_id});
+        // var delete_sub_service = await ServiceType.deleteOne({_id : params.parent_id});
+        var delete_sub_service = await ServiceType.updateOne({_id : params.parent_id},{
+            $set : {
+                "isDelete" : 1
+            }
+        })
         if(delete_sub_service) {
             session.flash({ sub_service_msg : 'Service deleted successfully.' })
             return response.redirect('/admin/sub-category-list');
@@ -581,23 +590,23 @@ class AdminController {
 
     async child_service_delete ({params, session, response}) {
         //nested document update 
-        var child_service_update = await ServiceType.updateOne({_id : params.parent_service_id, "child_services._id" : params.child_service_id}, {
-            $set : {
-                "child_services.$.delete" : 1
-            }
-        })
+        // var child_service_update = await ServiceType.updateOne({_id : params.parent_service_id, "child_services._id" : params.child_service_id}, {
+        //     $set : {
+        //         "child_services.$.delete" : 1
+        //     }
+        // })
         //end
 
         //delete document from nested array object
-        // var child_service_delete = await ServiceType.update({_id : params.parent_service_id}, {
-        //     $pull : {
-        //         "child_services" : {
-        //             _id : params.child_service_id
-        //         }
-        //     }
-        // }) ;
+        var child_service_delete = await ServiceType.update({_id : params.parent_service_id}, {
+            $pull : {
+                "child_services" : {
+                    _id : params.child_service_id
+                }
+            }
+        }) ;
 
-        if(child_service_update) {
+        if(child_service_delete) {
             session.flash({ sub_service_msg : 'Child Service deleted successfully.' })
             return response.redirect('/admin/sub-category-list');
         }
