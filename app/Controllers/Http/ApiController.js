@@ -914,7 +914,6 @@ class ApiController {
 
     async fetchNearestVendor (user, job) {
       user.reg_type = 2;
-      console.log(job,'job details');
       // return false
 
       if(user.reg_type == 2) {
@@ -991,6 +990,8 @@ class ApiController {
         await find_allocated_vendor[0].save();
 
         console.log(find_allocated_vendor,'after invitation sent');
+        
+        var add_notification = this.add_notification('','','','','',find_allocated_vendor);
 
         var sendEmail = Mailjet.post('send');
         var emailData = {
@@ -1002,7 +1003,7 @@ class ApiController {
         };
         
         if (sendEmail.request(emailData)) {
-          var add_notification = this.add_notification('','','','','',find_allocated_vendor);
+          
           response.json({
             status : true,
             code : 200,
@@ -1038,7 +1039,8 @@ class ApiController {
           if(fetch_new_allocated_vendor.length > 0){
             fetch_new_allocated_vendor[0].status = 3 ; // 3 = invitation sent.
             await fetch_new_allocated_vendor[0].save();
-
+             
+            var add_notification = this.add_notification('','','','','',fetch_new_allocated_vendor);
 
             var sendEmail = Mailjet.post('send');
             var emailData = {
@@ -3135,7 +3137,7 @@ class ApiController {
     }
 
     async add_notification(user_details = '', added_job_details = '', decline ='', accept = '', service = '', find_allocated_vendor = '') {
-      
+      console.log(added_job_details,'added_job_details');
       var desc = '';
       if(user_details != ''){
         if(user_details.reg_type == 2){
@@ -3146,7 +3148,7 @@ class ApiController {
       }
 
       if(added_job_details != ''){
-        desc = `${user_details.first_name} ${user_details.last_name} has create a new job.`
+        desc = `${added_job_details.job_title} is created by ${user_details.first_name} ${user_details.last_name}.`
       }
 
       if(decline != ''){
@@ -3162,7 +3164,7 @@ class ApiController {
       }
 
       if(find_allocated_vendor != ''){
-        desc = `Job request sent to the vendor ${find_allocated_vendor.user_id.first_name} ${find_allocated_vendor.user_id.last_name} for ${find_allocated_vendor.job_id.service_title}`;
+        desc = `Job request sent to the vendor ${find_allocated_vendor[0].user_id.first_name} ${find_allocated_vendor[0].user_id.last_name} for ${find_allocated_vendor[0].job_id.job_title}`;
       }
 
       var add = await Notification({
