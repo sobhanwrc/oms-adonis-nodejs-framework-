@@ -45,7 +45,7 @@
                 @each(item in fetch_all_details)
                     <tr class="gradeX odd" role="row">
                         <td>{{$loop.index +1 }}</td>
-                        <td>{{item.description}}</td>
+                        <td style="text-align: left">{{item.description}}</td>
                         <td>{{item.created_at}}</td>
                         <!--<td>
                             <div class="profile-userbuttons">

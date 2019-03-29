@@ -1002,6 +1002,7 @@ class ApiController {
         };
         
         if (sendEmail.request(emailData)) {
+          var add_notification = this.add_notification('','','','','',find_allocated_vendor);
           response.json({
             status : true,
             code : 200,
@@ -3133,7 +3134,8 @@ class ApiController {
       })
     }
 
-    async add_notification(user_details = '', added_job_details = '', decline ='', accept = '', service = '') {
+    async add_notification(user_details = '', added_job_details = '', decline ='', accept = '', service = '', find_allocated_vendor = '') {
+      
       var desc = '';
       if(user_details != ''){
         if(user_details.reg_type == 2){
@@ -3157,6 +3159,10 @@ class ApiController {
 
       if(service != '') {
         desc = `${service.service_title} has registered by ${service.user_id.first_name} ${service.user_id.last_name}.`
+      }
+
+      if(find_allocated_vendor != ''){
+        desc = `Job request sent to the vendor ${find_allocated_vendor.user_id.first_name} ${find_allocated_vendor.user_id.last_name} for ${find_allocated_vendor.job_id.service_title}`;
       }
 
       var add = await Notification({
