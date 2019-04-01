@@ -32,19 +32,10 @@ const Rating = use ('App/Models/Rating');
 const {rate,average} = use('average-rating');
 const StripeTransaction = use ('App/Models/StripeTransaction');
 const axios = use('axios');
-//for fetch geo location
-// var NodeGeocoder = use('node-geocoder');
-// var options = {
-//   provider: 'google',
- 
-//   // Optional depending on the providers
-//   httpAdapter: 'https', // Default
-//   apiKey: '37231128145-3lbk67f5nc1ag8fonehohppt3hqgd7j0.apps.googleusercontent.com', // for Mapquest, OpenCage, Google Premier
-//   formatter: null         // 'gpx', 'string', ...
-// };
- 
-// var geocoder = NodeGeocoder(options);
-//end
+
+var FCM = use('fcm-node');
+var serverKey = Env.get("FCM_SERVER_KEY"); //put your server key here
+var fcm = new FCM(serverKey);
 
 class ApiController {
 
@@ -79,6 +70,8 @@ class ApiController {
         var company_address = request.input('company_address');
         var uen_no = request.input('uen_no');
         var reg_type = 0;
+        var device_id = request.input('device_id');
+        console.log(device_id,'device_id_reg');
         var business = {
             company_name : company_name,
             company_address : company_address
@@ -150,6 +143,7 @@ class ApiController {
                 reg_type : reg_type,
                 login_type : "N",
                 password: password,
+                device_id : device_id,
                 geoLocation : geoLocation
             });
 
@@ -161,6 +155,8 @@ class ApiController {
 
                     if(send_registration_email == true) {
                       var add_notification = this.add_notification(user);
+
+                      this.sentPushNotification(user);
 
                       return response.json({
                           status: true, 
@@ -2209,6 +2205,8 @@ class ApiController {
                     var delete_card = await stripe.customers.deleteCard(customer_id,addCard.id);
                   }
 
+                  var add_notification = this.add_notification(user,'','','','','',user_job);
+
                   var send_payment_invoice = this.paymentInvoiceEmail(user, charge, save_job);
                   if(send_payment_invoice == true) {
                     response.json({
@@ -3139,7 +3137,6 @@ class ApiController {
     }
 
     async add_notification(user_details = '', added_job_details = '', decline ='', accept = '', service = '', find_allocated_vendor = '', user_payment = '') {
-
       var desc = '';
       if(user_details != ''){
         if(user_details.reg_type == 2){
@@ -3170,7 +3167,7 @@ class ApiController {
       }
 
       if(user_payment != '') {
-        desc = `${user_details.first_name} ${user_details.last_name} has paid $ ${user_payment.job_amount} for ${user_payment.job_title}`;
+        desc = `${user_details.first_name} ${user_details.last_name} has paid $${user_payment.job_amount} for ${user_payment.job_title}`;
       }
 
       var add = await Notification({
@@ -3179,6 +3176,32 @@ class ApiController {
       })
 
       return await add.save();
+    }
+
+    async sentPushNotification (user = ''){
+      console.log(user,'user-push-notification');
+      var message = { //this may vary according to the message type (single recipient, multicast, topic, et cetera)
+          to: user.device_id, 
+          // collapse_key: 'your_collapse_key',
+          
+          notification: {
+              title: 'Title of your push notification', 
+              body: 'Body of your push notification' 
+          },
+          
+          // data: {  //you can send only notification or only data(or include both)
+          //     my_key: 'my value',
+          //     my_another_key: 'my another value'
+          // }
+      };
+      
+      fcm.send(message, function(err, response){
+          if (err) {
+              console.log("Something has gone wrong!");
+          } else {
+              console.log("Successfully sent with response: ", response);
+          }
+      });
     }
 
     email_domain_check(email){

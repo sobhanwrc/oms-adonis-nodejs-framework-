@@ -71,6 +71,7 @@ class User extends BaseModel {
       social_id: { type: String,  default: ''  },
       forgot_pw_key : { type: String, default: ''},
       forgot_pw_email_sent_date : { type: Date, default: ''},
+      device_id : { type :  String},
       created_at : { type: Date, default : Date.now()}
     }
   }

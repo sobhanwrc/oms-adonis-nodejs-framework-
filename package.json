@@ -34,6 +34,7 @@
     "average-rating": "^1.1.8",
     "axios": "^0.18.0",
     "base64-to-image": "^1.0.2",
+    "fcm-node": "^1.4.0",
     "gravatar": "^1.6.0",
     "lodash": "^4.17.11",
     "lucid-mongo": "^3.1.4",
