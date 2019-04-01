@@ -2265,7 +2265,7 @@ class ApiController {
               });
               if(await add_charges_details.save()) {
                 var user_job = await Job.findOne({_id : request.input('job_id')});
-                user_job.job_amount = request.input('job_amount');
+                // user_job.job_amount = request.input('job_amount');
                 user_job.status = 1;
                 user_job.transaction_id = charge.id;
 
@@ -2277,6 +2277,8 @@ class ApiController {
                     var delete_card = await stripe.customers.deleteCard(customer_id,charge.source.id);
                   }
                   
+                  var add_notification = this.add_notification(user,'','','','','',user_job);
+
                   var send_payment_invoice = this.paymentInvoiceEmail(user, charge, save_job);
                   if(send_payment_invoice == true) {
                     response.json({
@@ -3136,8 +3138,8 @@ class ApiController {
       })
     }
 
-    async add_notification(user_details = '', added_job_details = '', decline ='', accept = '', service = '', find_allocated_vendor = '') {
-      console.log(added_job_details,'added_job_details');
+    async add_notification(user_details = '', added_job_details = '', decline ='', accept = '', service = '', find_allocated_vendor = '', user_payment = '') {
+
       var desc = '';
       if(user_details != ''){
         if(user_details.reg_type == 2){
@@ -3165,6 +3167,10 @@ class ApiController {
 
       if(find_allocated_vendor != ''){
         desc = `Job request sent to the vendor ${find_allocated_vendor[0].user_id.first_name} ${find_allocated_vendor[0].user_id.last_name} for ${find_allocated_vendor[0].job_id.job_title}`;
+      }
+
+      if(user_payment != '') {
+        desc = `${user_details.first_name} ${user_details.last_name} has paid $ ${user_payment.job_amount} for ${user_payment.job_title}`;
       }
 
       var add = await Notification({

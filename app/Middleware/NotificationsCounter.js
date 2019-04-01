@@ -4,6 +4,8 @@
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
 const Notification = use('App/Models/Notification');
+const moment = use('moment');
+const _ = use('lodash');
 
 class NotificationsCounter {
   /**
@@ -13,8 +15,18 @@ class NotificationsCounter {
    */
   async handle ({ view }, next) {
     const result = await Notification.find().sort({ _id: -1 })
+    var notificationArray = [];
+    
+    _.forEach(result, data => {
+      var data_come = moment(data.created_at).fromNow();
+      notificationArray.push({
+        description : data.description,
+        time : data_come
+      })
+    })
+
     view.share({
-      notifications: result
+      notifications: notificationArray
     })
 
     await next()

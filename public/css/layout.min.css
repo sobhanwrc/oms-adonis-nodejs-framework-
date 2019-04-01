@@ -310,13 +310,13 @@ body {
 }
 .page-header.navbar .top-menu .navbar-nav>li.dropdown-extended .dropdown-menu .dropdown-menu-list>li>a {
 	display: block;
-	clear: both;
-	font-weight: 300;
-	line-height: 20px;
-	white-space: normal;
-	font-size: 13px;
-	padding: 16px 15px 18px;
-	text-shadow: none
+    clear: both;
+    font-weight: 300;
+    /* line-height: 20px; */
+    /* white-space: normal; */
+    font-size: 13px;
+    padding: 16px 15px 18px;
+    text-shadow: none;
 }
 .page-header.navbar .top-menu .navbar-nav>li.dropdown-extended .dropdown-menu .dropdown-menu-list>li>a:hover {
 	opacity: 1;
@@ -345,15 +345,18 @@ body {
 	right: 15px
 }
 .page-header.navbar .top-menu .navbar-nav>li.dropdown-notification .dropdown-menu .dropdown-menu-list>li a .time {
-	float: right;
-	max-width: 75px;
-	font-size: 11px;
-	font-weight: 400;
-	opacity: .7;
-	filter: alpha(opacity=70);
-	text-align: right;
-	padding: 1px 5px
+	    /* height: 28px; */
+    /* float: right; */
+    /* max-width: 75px; */
+    font-size: 11px;
+    font-weight: 400;
+    opacity: .7;
+    filter: alpha(opacity=70);
+    text-align: right;
+	/* padding: 1px 5px; */
+	background: #ffff !important; 
 }
+
 .page-header.navbar .top-menu .navbar-nav>li.dropdown-inbox>.dropdown-menu .dropdown-menu-list>li .photo {
 	float: left;
 	margin: 0 6px 6px 0
@@ -2682,4 +2685,9 @@ body, html {
 .page-on-load .page-container, .page-on-load .page-footer, .page-on-load .page-header, .page-on-load>.clearfix {
 	display: none;
 	transition: all 2s
+}
+
+.time {
+	color: #080808;
+    font-weight: bold !important ;
 }
