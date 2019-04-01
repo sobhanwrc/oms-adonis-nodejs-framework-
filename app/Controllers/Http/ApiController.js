@@ -3180,19 +3180,29 @@ class ApiController {
 
     async sentPushNotification (user = ''){
       console.log(user,'user-push-notification');
-      var message = { //this may vary according to the message type (single recipient, multicast, topic, et cetera)
-          to: user.device_id, 
-          // collapse_key: 'your_collapse_key',
+      // var message = { //this may vary according to the message type (single recipient, multicast, topic, et cetera)
+      //     to: user.device_id, 
+      //     // collapse_key: 'your_collapse_key',
           
-          notification: {
-              title: 'Title of your push notification', 
-              body: 'Body of your push notification' 
-          },
+      //     notification: {
+      //         title: 'Title of your push notification', 
+      //         body: 'Body of your push notification' 
+      //     },
           
-          // data: {  //you can send only notification or only data(or include both)
-          //     my_key: 'my value',
-          //     my_another_key: 'my another value'
-          // }
+      //     // data: {  //you can send only notification or only data(or include both)
+      //     //     my_key: 'my value',
+      //     //     my_another_key: 'my another value'
+      //     // }
+      // };
+
+      var message = { 
+        to: user.device_id, 
+        notification: {
+            title: "title", //title of notification 
+            body: "message", //content of the notification
+            sound: "default",
+            icon: "ic_launcher" //default notification icon
+        }
       };
       
       fcm.send(message, function(err, response){
