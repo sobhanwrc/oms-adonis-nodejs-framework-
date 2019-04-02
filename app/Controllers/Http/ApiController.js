@@ -198,6 +198,7 @@ class ApiController {
           const isSame = await Hash.verify(request.input('password'), user.password);
 
           if(user != null && isSame && user.status === 1) {
+            
             if(user.device_id != ''){ 
               user.device_id = device_token;
 
@@ -207,7 +208,7 @@ class ApiController {
 
               await user.save();
             }
-            
+
             var generate_token = await auth.authenticator('jwt').generate(user);
 
               return response.json({
@@ -524,6 +525,12 @@ class ApiController {
             var location_place_name = location_details.name;
           }
           
+          //push notification to app
+          msg_body = "Your profile has successfully updated.";
+          click_action = "Profile";
+          await this.sentPushNotification(user.device_id, msg_body, click_action);
+          //end
+
           response.json ({
               status : true,
               code : 200,
@@ -590,12 +597,18 @@ class ApiController {
             user.profile_image_type = "N";
 
             if(await user.save()){
-                response.json({
-                  status: true,
-                  code:200,
-                  image_link : full_image_path,
-                  message: "Profile image uploaded successfully."
-                });
+              //push notification to app
+              msg_body = "Your profile picture has successfully updated.";
+              click_action = "Profile";
+              await this.sentPushNotification(user.device_id, msg_body, click_action);
+              //end
+
+              response.json({
+                status: true,
+                code:200,
+                image_link : full_image_path,
+                message: "Profile image uploaded successfully."
+              });
             }
         }catch (error) {
             throw error;
