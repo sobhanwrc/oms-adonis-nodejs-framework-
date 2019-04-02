@@ -25,6 +25,7 @@ const AssignCouponToUser = use ('App/Models/AssignCouponToUser');
 const stripe = use('stripe')('sk_test_1lfdJgJawDb3EFLvNDyi1p7v');
 const AuditLog = use('App/Models/AuditLog');
 const Notification = use('App/Models/Notification');
+const AppNotification = use('App/Models/AppNotification');
 // ('sk_test_1lfdJgJawDb3EFLvNDyi1p7v'); //secret key for test account
 
 const _ = use('lodash');
@@ -36,6 +37,9 @@ const axios = use('axios');
 var FCM = use('fcm-node');
 var serverKey = Env.get("FCM_SERVER_KEY"); //put your server key here
 var fcm = new FCM(serverKey);
+
+var msg_body = '';
+var click_action = '';
 
 class ApiController {
 
@@ -71,7 +75,6 @@ class ApiController {
         var uen_no = request.input('uen_no');
         var reg_type = 0;
         var device_id = request.input('device_id');
-        console.log(device_id,'device_id_reg');
         var business = {
             company_name : company_name,
             company_address : company_address
@@ -156,7 +159,11 @@ class ApiController {
                     if(send_registration_email == true) {
                       var add_notification = this.add_notification(user);
 
-                      this.sentPushNotification(user);
+                      //push notification to app
+                      msg_body = `Hi, ${user.first_name} ${user.last_name} welcome to OMC`;
+                      click_action = 'Registration';
+                      this.sentPushNotification(user.device_id, msg_body, user, click_action);
+                      //end
 
                       return response.json({
                           status: true, 
@@ -176,7 +183,10 @@ class ApiController {
 
     async submitLogin ({ request, response, auth}){
       var reg_type = request.input('reg_type'); //2 ='user', 3='vendor'
+      var device_token = request.input('device_id');
+
       const user = await User.findOne({email : request.input('email'), reg_type : reg_type});
+      
       if(user === null) {
         response.json ({
             status: false,
@@ -188,6 +198,16 @@ class ApiController {
           const isSame = await Hash.verify(request.input('password'), user.password);
 
           if(user != null && isSame && user.status === 1) {
+            if(user.device_id != ''){ 
+              user.device_id = device_token;
+
+              await user.save();
+            }else {
+              user.device_id = device_token;
+
+              await user.save();
+            }
+            
             var generate_token = await auth.authenticator('jwt').generate(user);
 
               return response.json({
@@ -595,11 +615,17 @@ class ApiController {
             user.password = new_password;
 
             if(await user.save()) {
-                response.json ({
-                    status : true,
-                    code : 200,
-                    message : "Password updated successfully."
-                });
+              //push notification to app
+              msg_body = "Your password has successfully changed.";
+              click_action = "Change Password";
+              await this.sentPushNotification(user.device_id, msg_body, click_action);
+              //end
+
+              response.json ({
+                  status : true,
+                  code : 200,
+                  message : "Password updated successfully."
+              });
             }
         }else{ 
             response.json ({
@@ -3178,31 +3204,23 @@ class ApiController {
       return await add.save();
     }
 
-    async sentPushNotification (user = ''){
-      console.log(user,'user-push-notification');
-      // var message = { //this may vary according to the message type (single recipient, multicast, topic, et cetera)
-      //     to: user.device_id, 
-      //     // collapse_key: 'your_collapse_key',
-          
-      //     notification: {
-      //         title: 'Title of your push notification', 
-      //         body: 'Body of your push notification' 
-      //     },
-          
-      //     // data: {  //you can send only notification or only data(or include both)
-      //     //     my_key: 'my value',
-      //     //     my_another_key: 'my another value'
-      //     // }
-      // };
+    async sentPushNotification (device_id, msg_body, user_details = '', click_action = ''){
 
-      var message = { 
-        to: user.device_id, 
-        notification: {
-            title: "title", //title of notification 
-            body: "message", //content of the notification
+      var message = {
+          to: device_id,
+          // collapse_key: 'test message',
+          notification: {
+            title: 'Oh! My Concierge', 
+            body: msg_body,
             sound: "default",
-            icon: "ic_launcher" //default notification icon
-        }
+            icon: "ic_launcher"
+          },
+          
+          data: {  //you can send only notification or only data(or include both)
+            'title' : 'Oh! My Concierge',
+            'body' : msg_body,
+            'click_action' : click_action
+          }
       };
       
       fcm.send(message, function(err, response){
@@ -3210,6 +3228,12 @@ class ApiController {
               console.log("Something has gone wrong!");
           } else {
               console.log("Successfully sent with response: ", response);
+              var add = new AppNotification({
+                user_id : user_details._id,
+                message : msg_body
+              })
+
+              add.save();
           }
       });
     }
