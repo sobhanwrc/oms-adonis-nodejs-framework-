@@ -63,13 +63,9 @@
                                 <td class="center"> {{user.phone_number}} </td>
                                 <td>
                                     @if(user.status == 1)
-                                        <div class="profile-userbuttons"> 
-                                            <a class="btn green-meadow" href="#" > Active </a> 
-                                        </div>
-                                    @else 
-                                        <div class="profile-userbuttons">
-                                            <a class="btn yellow-crusta" href="#" > Inactive </a> 
-                                        </div>
+                                        Active 
+                                    @else
+                                        Inactive
                                     @endif
                                 </td>
                                 <td>

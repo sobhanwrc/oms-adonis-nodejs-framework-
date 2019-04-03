@@ -1,11 +1,13 @@
 'use strict'
-const User = use('App/Models/User')
+
+const Env = use('Env')
 const Hash = use('Hash')
 const Helpers = use('Helpers')
 const _ = use('lodash');
 const moment = use('moment');
 const Mailjet = use('node-mailjet').connect('ce9c25078a4f1474dc6d3ce5524a711c', 'd9ca8c7b9944f10a34eb42118277e6f5');
 
+const User = use('App/Models/User')
 const Job = use ('App/Models/Job')
 const Location = use ('App/Models/Location')
 const AssignCouponToUser = use ('App/Models/AssignCouponToUser');
@@ -16,6 +18,14 @@ const ServiceType = use('App/Models/ServiceType');
 const ServiceCategory = use('App/Models/ServiceCategory');
 const VendorAllocation = use('App/Models/VendorAllocation');
 const Notification = use('App/Models/Notification');
+const AppNotification = use('App/Models/AppNotification');
+
+var FCM = use('fcm-node');
+var serverKey = Env.get("FCM_SERVER_KEY"); //put your server key here
+var fcm = new FCM(serverKey);
+
+var msg_body = '';
+var click_action = '';
 
 class AdminController {
     login_view({view}) {
@@ -980,6 +990,12 @@ class AdminController {
     
                 if(await assign.save()) {
                     newly_assign = newly_assign + 1;
+
+                    //push notification to app
+                    msg_body = "Your have received one promo code.";
+                    click_action = "Coupon";
+                    this.sentPushNotification(user_details.device_id, msg_body, user_details, click_action);
+                    //end
 
                     var coupon_details = await Coupon.findOne({_id : coupon_id})
                     var sendEmail = Mailjet.post('send');

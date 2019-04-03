@@ -528,7 +528,7 @@ class ApiController {
           //push notification to app
           msg_body = "Your profile has successfully updated.";
           click_action = "Profile";
-          await this.sentPushNotification(user.device_id, msg_body, click_action);
+          await this.sentPushNotification(user.device_id, msg_body, user, click_action);
           //end
 
           response.json ({
@@ -600,7 +600,7 @@ class ApiController {
               //push notification to app
               msg_body = "Your profile picture has successfully updated.";
               click_action = "Profile";
-              await this.sentPushNotification(user.device_id, msg_body, click_action);
+              await this.sentPushNotification(user.device_id, msg_body, user, click_action);
               //end
 
               response.json({
@@ -631,7 +631,7 @@ class ApiController {
               //push notification to app
               msg_body = "Your password has successfully changed.";
               click_action = "Change Password";
-              await this.sentPushNotification(user.device_id, msg_body, click_action);
+              await this.sentPushNotification(user.device_id, msg_body, user, click_action);
               //end
 
               response.json ({
@@ -3221,21 +3221,23 @@ class ApiController {
 
       var message = {
           to: device_id,
-          // collapse_key: 'test message',
+          // collapse_key: 'text message',
           notification: {
             title: 'Oh! My Concierge', 
             body: msg_body,
             sound: "default",
-            icon: "ic_launcher"
+            icon: "ic_launcher",
+            tag : Date.now()
           },
           
           data: {  //you can send only notification or only data(or include both)
             'title' : 'Oh! My Concierge',
             'body' : msg_body,
-            'click_action' : click_action
+            'click_action' : click_action,
+            'tag' : Date.now()
           }
       };
-      
+      console.log(message, "mess");
       fcm.send(message, function(err, response){
           if (err) {
               console.log("Something has gone wrong!");
