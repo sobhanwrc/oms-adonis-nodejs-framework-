@@ -934,7 +934,7 @@ class AdminController {
     }
 
     async assign_coupon_listings ({view}) {
-        var assign_coupons_list = await AssignCouponToUser.find().populate('user_id').populate('coupon_id');
+        var assign_coupons_list = await AssignCouponToUser.find().populate('user_id').populate('coupon_id').sort({_id : -1});
         
         return view.render('admin.coupons.assign_coupon_listings', {assign_coupons_list : assign_coupons_list})
     }
@@ -991,13 +991,20 @@ class AdminController {
                 if(await assign.save()) {
                     newly_assign = newly_assign + 1;
 
+                    var coupon_details = await Coupon.findOne({_id : coupon_id})
+                    var valid_till = this.convertToYYYYMMDD(coupon_details.coupons_valid_to);
+                    if(coupon_details.coupons_amount == 2){
+                        msg_body = `${coupon_details.coupons_amount}% off just for you. Use ${coupon_details.coupons_code} code within ${valid_till}.`;
+                    }else {
+                        msg_body = `$${coupon_details.coupons_amount} off just for you. Use ${coupon_details.coupons_code} code within ${valid_till}.`;
+                    }
+
                     //push notification to app
-                    msg_body = "Your have received one promo code.";
+                    var title = coupon_details.coupons_title;
                     click_action = "Coupon";
-                    this.sentPushNotification(user_details.device_id, msg_body, user_details, click_action);
+                    this.sentPushNotification(title, user_details.device_id, msg_body, user_details, click_action);
                     //end
 
-                    var coupon_details = await Coupon.findOne({_id : coupon_id})
                     var sendEmail = Mailjet.post('send');
                     var emailData = {
                         'FromEmail': 'sobhan.das@intersoftkk.com',
@@ -1090,6 +1097,42 @@ class AdminController {
             month = '0' + month;
         }
         return (month+'/' +dt + '/'+year);
+    }
+
+    async sentPushNotification (title, device_id, msg_body, user_details = '', click_action = ''){
+
+        var message = {
+            to: device_id,
+            // collapse_key: 'text message',
+            notification: {
+                title: title, 
+                body: msg_body,
+                sound: "default",
+                icon: "ic_launcher",
+                tag : Date.now()
+            },
+            
+            data: {  //you can send only notification or only data(or include both)
+                'title' : title,
+                'body' : msg_body,
+                'click_action' : click_action,
+                'tag' : Date.now()
+            }
+        };
+        console.log(message, "mess");
+        fcm.send(message, function(err, response){
+            if (err) {
+                console.log("Something has gone wrong!");
+            } else {
+                console.log("Successfully sent with response: ", response);
+                var add = new AppNotification({
+                    user_id : user_details._id,
+                    message : msg_body
+                })
+
+                add.save();
+            }
+        });
     }
 }
 
