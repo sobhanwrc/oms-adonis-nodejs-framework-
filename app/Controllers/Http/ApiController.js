@@ -1014,7 +1014,7 @@ class ApiController {
       // return false
 
       var find_allocated_vendor = await VendorAllocation.find({job_id : job_id, status : 0}).limit(1).populate('user_id').populate({path: 'job_id', populate: {path: 'user_id'}});
-      console.log(find_allocated_vendor, 'find_allocated_vendor_details');
+      console.log(find_allocated_vendor[0].job_id.user_id, 'find_allocated_vendor_details');
       // return false;
 
       if(find_allocated_vendor.length > 0) {
@@ -1047,7 +1047,7 @@ class ApiController {
         if (sendEmail.request(emailData)) {
           //push notification sent to user with vendor details
           var title = `${find_allocated_vendor[0].job_id.job_title}`;
-          msg_body = `Job request is received by ${find_allocated_vendor[0].job_id.user_id.first_name} ${find_allocated_vendor[0].job_id.user_id.last_name}`;
+          msg_body = `Job request is received by ${find_allocated_vendor[0].user_id.first_name} ${find_allocated_vendor[0].user_id.last_name}`;
           click_action = "Invitation";
           await this.sentPushNotification(find_allocated_vendor[0].job_id.user_id.device_id, msg_body, find_allocated_vendor[0].job_id.user_id, click_action, title);
           //end
