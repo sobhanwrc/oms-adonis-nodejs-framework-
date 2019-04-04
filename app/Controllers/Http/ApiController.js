@@ -1013,7 +1013,7 @@ class ApiController {
       // console.log(job_id,'job_id');
       // return false
 
-      var find_allocated_vendor = await VendorAllocation.find({job_id : job_id, status : 0}).limit(1).populate('user_id').populate('job_id');
+      var find_allocated_vendor = await VendorAllocation.find({job_id : job_id, status : 0}).limit(1).populate('user_id').populate({path: 'job_id', populate: {path: 'user_id'}});
       console.log(find_allocated_vendor, 'find_allocated_vendor_details');
       // return false;
 
@@ -1028,6 +1028,13 @@ class ApiController {
         
         var add_notification = this.add_notification('','','','','',find_allocated_vendor);
 
+        //push notification sent to vendor with job request
+        var title = `${find_allocated_vendor[0].job_id.job_title}`;
+        msg_body = `You have one job request from ${find_allocated_vendor[0].job_id.user_id.first_name} ${find_allocated_vendor[0].job_id.user_id.last_name}`;
+        click_action = "Invitation";
+        await this.sentPushNotification(find_allocated_vendor[0].user_id.device_id, msg_body, find_allocated_vendor[0].user_id, click_action, title);
+        //end
+
         var sendEmail = Mailjet.post('send');
         var emailData = {
             'FromEmail': 'sobhan.das@intersoftkk.com',
@@ -1038,7 +1045,13 @@ class ApiController {
         };
         
         if (sendEmail.request(emailData)) {
-          
+          //push notification sent to user with vendor details
+          var title = `${find_allocated_vendor[0].job_id.job_title}`;
+          msg_body = `Job request is received by ${find_allocated_vendor[0].job_id.user_id.first_name} ${find_allocated_vendor[0].job_id.user_id.last_name}`;
+          click_action = "Invitation";
+          await this.sentPushNotification(find_allocated_vendor[0].job_id.user_id.device_id, msg_body, find_allocated_vendor[0].job_id.user_id, click_action, title);
+          //end
+
           response.json({
             status : true,
             code : 200,
@@ -3217,13 +3230,18 @@ class ApiController {
       return await add.save();
     }
 
-    async sentPushNotification (device_id, msg_body, user_details = '', click_action = ''){
+    async sentPushNotification (device_id, msg_body, user_details = '', click_action = '', title = ''){
+      if(title != ''){
+        title = title;
+      }else {
+        title = "Oh! My Concierge"
+      }
 
       var message = {
           to: device_id,
           // collapse_key: 'text message',
           notification: {
-            title: 'Oh! My Concierge', 
+            title: title, 
             body: msg_body,
             sound: "default",
             icon: "ic_launcher",
@@ -3231,13 +3249,13 @@ class ApiController {
           },
           
           data: {  //you can send only notification or only data(or include both)
-            'title' : 'Oh! My Concierge',
+            'title' : title,
             'body' : msg_body,
             'click_action' : click_action,
             'tag' : Date.now()
           }
       };
-      
+
       fcm.send(message, function(err, response){
           if (err) {
               console.log("Something has gone wrong!");
