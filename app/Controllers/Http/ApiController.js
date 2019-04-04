@@ -3237,7 +3237,7 @@ class ApiController {
             'tag' : Date.now()
           }
       };
-      console.log(message, "mess");
+      
       fcm.send(message, function(err, response){
           if (err) {
               console.log("Something has gone wrong!");

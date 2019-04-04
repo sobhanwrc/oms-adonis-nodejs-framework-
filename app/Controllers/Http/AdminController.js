@@ -1011,6 +1011,10 @@ class AdminController {
                     this.sentPushNotification(title, user_details.device_id, msg_body, user_details, click_action);
                     //end
 
+                    //admin notifications
+                    this.add_notification(user_details,coupon_details);
+                    //end
+
                     var sendEmail = Mailjet.post('send');
                     var emailData = {
                         'FromEmail': 'sobhan.das@intersoftkk.com',
@@ -1079,8 +1083,15 @@ class AdminController {
 
     async notification ({view, response}) {
         var fetch_all_details = await Notification.find().sort({_id : -1});
+        var freshArray = [];
+        _.forEach(fetch_all_details, data => {
+            freshArray.push({
+                "description" : data.description,
+                "created_at" : this.convertToYYYYMMDD(data.created_at)
+            })
+        })
 
-        return view.render('admin.notification', { fetch_all_details : fetch_all_details});
+        return view.render('admin.notification', { fetch_all_details : freshArray});
     }
 
     //first letter capital
@@ -1103,6 +1114,7 @@ class AdminController {
             month = '0' + month;
         }
         return (month+'/' +dt + '/'+year);
+        // return (dt + '/'+ month+'/' + year);
     }
 
     async sentPushNotification (title, device_id, msg_body, user_details = '', click_action = ''){
@@ -1125,7 +1137,7 @@ class AdminController {
                 'tag' : Date.now()
             }
         };
-        console.log(message, "mess");
+
         fcm.send(message, function(err, response){
             if (err) {
                 console.log("Something has gone wrong!");
@@ -1140,6 +1152,28 @@ class AdminController {
             }
         });
     }
+
+    async add_notification(user_details = '', coupon_details = '') {
+        var desc = '';
+        if(user_details != ''){
+          if(user_details.reg_type == 2){
+            desc = `${user_details.first_name} ${user_details.last_name} just registered with us as a Customer.`
+          }else {
+            desc = `${user_details.first_name} ${user_details.last_name} just registered with us as a Vendor.`
+          }
+        }
+  
+        if(coupon_details != ''){
+          desc = `${coupon_details.coupons_code} coupon assigned to ${user_details.first_name} ${user_details.last_name}.`
+        }
+        
+        var add = await Notification({
+            description : desc,
+            created_at : Date.now()
+        })
+
+        return await add.save();
+      }
 }
 
 module.exports = AdminController
