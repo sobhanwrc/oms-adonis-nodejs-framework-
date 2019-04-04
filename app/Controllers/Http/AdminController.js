@@ -963,6 +963,12 @@ class AdminController {
         return view.render('admin.coupons.assign_coupon_add_view', {users : fetch_all_user, coupons : all_active_coupons_list})
     }
 
+    async assign_coupon_view_details ({view, params}) {
+        var coupon_details = await AssignCouponToUser.findOne({_id : params.id}).populate('user_id').populate('coupon_id');
+
+        return view.render('admin.coupons.assign_coupon_view', {coupon_details : coupon_details})
+    }
+
     async coupon_desc({request}) {
         var details = await Coupon.findOne({_id : request.body.coupon_id});
         return details.coupons_title;

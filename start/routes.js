@@ -90,6 +90,7 @@ Route.group(() => {
     Route.post('/admin/assign/coupon/fetch_coupon_desc', 'AdminController.coupon_desc')
     Route.post('/admin/assign/coupon/submit', 'AdminController.assign_coupon_submit')
     Route.get('/admin/assign/coupon/delete/:id', 'AdminController.unassigned_coupon')
+    Route.get('/admin/assign/coupon/view/:id', 'AdminController.assign_coupon_view_details')
 
     Route.get('/admin/jobs', 'AdminController.jobs_listings')
     Route.get('/admin/jobs/details/:id', 'AdminController.job_details')
