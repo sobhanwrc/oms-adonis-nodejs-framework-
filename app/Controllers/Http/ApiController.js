@@ -1124,7 +1124,7 @@ class ApiController {
         var  allocation_id = request.input('allocation_id');
         var job_id = request.input('job_id');
 
-        var fetch_allocated_details = await VendorAllocation.findOne({job_id : job_id, status : 3, _id : allocation_id}).populate('user_id').populate('job_id');
+        var fetch_allocated_details = await VendorAllocation.findOne({job_id : job_id, status : 3, _id : allocation_id}).populate('user_id').populate({path: 'job_id', populate: {path: 'user_id'}});
         
         console.log(fetch_allocated_details, 'fetch_allocated_details');
 
@@ -1138,6 +1138,13 @@ class ApiController {
           update_job.job_allocated_to_vendor = 1;
 
           await update_job.save();
+
+          //push notification sent to user with vendor details
+          var title = `${fetch_allocated_details.job_id.job_title}`;
+          msg_body = `Your job request has accepted by ${fetch_allocated_details.user_id.first_name} ${fetch_allocated_details.user_id.last_name}`;
+          click_action = "Accept";
+          await this.sentPushNotification(fetch_allocated_details.job_id.user_id.device_id, msg_body, fetch_allocated_details.job_id.user_id, click_action, title);
+          //end
 
           response.json({
             status : true,

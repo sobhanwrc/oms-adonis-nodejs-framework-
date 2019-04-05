@@ -1137,7 +1137,7 @@ class AdminController {
                 'tag' : Date.now()
             }
         };
-
+        console.log(message);
         fcm.send(message, function(err, response){
             if (err) {
                 console.log("Something has gone wrong!");
