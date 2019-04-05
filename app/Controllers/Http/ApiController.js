@@ -1074,10 +1074,20 @@ class ApiController {
         var  allocation_id = request.input('allocation_id');
         var job_id = request.input('job_id');
 
-        var allocation_details_update = await VendorAllocation.findOne({_id : allocation_id, job_id : job_id, status : 3});
+        var allocation_details_update = await VendorAllocation.findOne({_id : allocation_id, job_id : job_id, status : 3})
+        .populate('user_id')
+        .populate({path: 'job_id', populate: {path: 'user_id'}});
+
         allocation_details_update.status = 2; // invitation decline by vendor
 
         if(await allocation_details_update.save()) {
+          //push notification sent to user for decline request from vendor end.
+          var title = `${allocation_details_update.job_id.job_title}`;
+          msg_body = `${allocation_details_update.user_id.first_name} ${allocation_details_update.user_id.last_name} has decline your job request.`;
+          click_action = "Accept";
+          await this.sentPushNotification(allocation_details_update.job_id.user_id.device_id, msg_body, allocation_details_update.job_id.user_id, click_action, title);
+          //end
+
           await this.add_notification(user,'',allocation_details_update);
 
           var fetch_new_allocated_vendor = await VendorAllocation.find({job_id : job_id, status : 0}).limit(1).populate('user_id').populate('job_id');
@@ -1089,6 +1099,9 @@ class ApiController {
             await fetch_new_allocated_vendor[0].save();
              
             var add_notification = this.add_notification('','','','','',fetch_new_allocated_vendor);
+
+            //if another vendor found , the sent pus notification to which vendor is found
+            //end
 
             var sendEmail = Mailjet.post('send');
             var emailData = {
