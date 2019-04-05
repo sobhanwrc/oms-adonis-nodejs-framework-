@@ -1090,7 +1090,10 @@ class ApiController {
 
           await this.add_notification(user,'',allocation_details_update);
 
-          var fetch_new_allocated_vendor = await VendorAllocation.find({job_id : job_id, status : 0}).limit(1).populate('user_id').populate('job_id');
+          var fetch_new_allocated_vendor = await VendorAllocation.find({job_id : job_id, status : 0})
+          .limit(1)
+          .populate('user_id')
+          .populate({path: 'job_id', populate: {path: 'user_id'}});
           console.log(fetch_new_allocated_vendor, 'fetch_new_allocated_vendor_from_decline');
           // return false;
 
@@ -1100,7 +1103,11 @@ class ApiController {
              
             var add_notification = this.add_notification('','','','','',fetch_new_allocated_vendor);
 
-            //if another vendor found , the sent pus notification to which vendor is found
+            //if another vendor found , then sent pus notification to which vendor is found
+            var title = `${fetch_new_allocated_vendor[0].job_id.job_title}`;
+            msg_body = `You have one job request from ${fetch_new_allocated_vendor[0].job_id.user_id.first_name} ${fetch_new_allocated_vendor[0].job_id.user_id.last_name}`;
+            click_action = "Invitation";
+            await this.sentPushNotification(fetch_new_allocated_vendor[0].user_id.device_id, msg_body, fetch_new_allocated_vendor[0].user_id, click_action, title);
             //end
 
             var sendEmail = Mailjet.post('send');
@@ -1113,6 +1120,13 @@ class ApiController {
             };
 
             await sendEmail.request(emailData);
+
+            //notify user with new vendor using push notification
+            var title = `${fetch_new_allocated_vendor[0].job_id.job_title}`;
+            msg_body = `${fetch_new_allocated_vendor[0].user_id.first_name} ${fetch_new_allocated_vendor[0].user_id.last_name} has received your job request.`;
+            click_action = "Invitation";
+            await this.sentPushNotification(fetch_new_allocated_vendor[0].job_id.user_id.device_id, msg_body, fetch_new_allocated_vendor[0].job_id.user_id, click_action, title);
+            //end
           }
           
           response.json({
