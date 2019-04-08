@@ -1004,7 +1004,7 @@ class ApiController {
                   return false;
                 }
               }else {
-                return "No vendor found."
+                return "No vendors are found."
               }
             });
           });
@@ -1289,7 +1289,7 @@ class ApiController {
 
           //push notification sent to user with vendor details
           var title = `${fetch_allocated_details.job_id.job_title}`;
-          msg_body = `Your job request has accepted by ${fetch_allocated_details.user_id.first_name} ${fetch_allocated_details.user_id.last_name}`;
+          msg_body = `${fetch_allocated_details.user_id.first_name} ${fetch_allocated_details.user_id.last_name} has accept your job request.`;
           click_action = "Accept";
           await this.sentPushNotification(fetch_allocated_details.job_id.user_id.device_id, msg_body, fetch_allocated_details.job_id.user_id, click_action, title);
           //end
@@ -3410,6 +3410,7 @@ class ApiController {
             'tag' : Date.now()
           }
       };
+      console.log(message,'push notification');
 
       fcm.send(message, function(err, response){
           if (err) {
