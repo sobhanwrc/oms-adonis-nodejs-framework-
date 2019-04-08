@@ -1021,6 +1021,12 @@ class ApiController {
       // return false;
 
       if(find_allocated_vendor.length > 0) {
+        // auto allocated
+        if(find_allocated_vendor[0].job_id.user_id.business.job_auto_accept == 1){
+
+        }
+        //end
+
         var vendor_email = find_allocated_vendor[0].user_id.email;
 
         // await update_job.save();

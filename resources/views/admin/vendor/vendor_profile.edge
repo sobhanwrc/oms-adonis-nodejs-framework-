@@ -103,7 +103,17 @@
                             </div>-->
                             <div class="form-group col-sm-6 col-xs-12">
                               <label class="control-label">Address</label>
-                            <textarea cols="" rows="" class="form-control" readonly>{{vendor_details.address}}</textarea>
+                              <textarea cols="" rows="" class="form-control" readonly>{{vendor_details.address}}</textarea>
+                            </div>
+
+                            <div class="form-group col-sm-6 col-xs-12">
+                              <label class="control-label">Auto accept service request</label>
+                              @if(vendor_details.business[0].job_auto_accept == 1)
+                                <input type="text" class="form-control" disabled value="Enable">
+                              @else
+                                <input type="text" class="form-control" disabled value="Disable">
+                              @endif
+                              
                             </div>
                           </div>
 
