@@ -1038,9 +1038,36 @@ class ApiController {
       // return false
 
       if(auto_accept_vendors_array.length > 0){
-        console.log("hello");
-      }else {
+        var choose_1st_vendor = auto_accept_vendors_array[0];
+
+        choose_1st_vendor.status = 1 ; // 1 = job auto accept by vendor.
         
+        if(await choose_1st_vendor.save()) {
+          //admin notification
+          await this.add_notification(choose_1st_vendor.user_id,'','', choose_1st_vendor);
+
+          var update_job = await Job.findOne({_id : choose_1st_vendor.job_id._id})
+          update_job.vendor_id = choose_1st_vendor.user_id._id;
+          update_job.job_allocated_to_vendor = 1;
+
+          await update_job.save();
+
+          //push notification sent to user with vendor details
+          var title = `${choose_1st_vendor.job_id.job_title}`;
+          msg_body = `Your job request has accepted by ${choose_1st_vendor.user_id.first_name} ${choose_1st_vendor.user_id.last_name}`;
+          click_action = "Accept";
+          await this.sentPushNotification(choose_1st_vendor.job_id.user_id.device_id, msg_body, choose_1st_vendor.job_id.user_id, click_action, title);
+          //end
+
+          response.json({
+            status : true,
+            code : 200,
+            message : "You have successfully accept this job request."
+          })
+        }
+
+      }else {
+
       }
       return false
 
