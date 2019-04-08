@@ -861,6 +861,10 @@ class ApiController {
         //   {
         //     parent_service_id : '5c78dd0563f38236efdf35d5',
         //     child_service_id : '5c78df9c9ed89a3ea251adc4'
+        //   },
+        //   {
+        //     parent_service_id : '5c78df0f9ed89a3ea251adc0',
+        //     child_service_id : '5c78df409ed89a3ea251adc2'
         //   }
         // ]
         //end
@@ -1011,22 +1015,40 @@ class ApiController {
     }
 
     async sendPushToAllocatedVendor ({request, response}) {
-      // console.log(request.body,'body param');
       var job_id = request.input('job_id');
-      // console.log(job_id,'job_id');
+      var find_all_allocated_vendors = await VendorAllocation.find({job_id : job_id, status : 0})
+      .populate('user_id')
+      .populate({path: 'job_id', populate: {path: 'user_id'}})
+      .sort({_id : -1});
+
+      var auto_accept_vendors_array = [];
+      var without_auto_accept_vendors_array = [];
+
+      _.forEach(find_all_allocated_vendors, data => {
+        if(data.user_id.business[0].job_auto_accept == 1){
+          auto_accept_vendors_array.push(data)
+        }else {
+          without_auto_accept_vendors_array.push(data)
+        }
+      })
+
+      // console.log(find_all_allocated_vendors, 'find_all_allocated_vendors');
+      // console.log(auto_accept_vendors_array,'auto_accept_vendors_array');
+      // console.log(without_auto_accept_vendors_array,'without_auto_accept_vendors_array');
       // return false
+
+      if(auto_accept_vendors_array.length > 0){
+        console.log("hello");
+      }else {
+        
+      }
+      return false
 
       var find_allocated_vendor = await VendorAllocation.find({job_id : job_id, status : 0}).limit(1).populate('user_id').populate({path: 'job_id', populate: {path: 'user_id'}});
       console.log(find_allocated_vendor[0].job_id.user_id, 'find_allocated_vendor_details');
       // return false;
 
       if(find_allocated_vendor.length > 0) {
-        // auto allocated
-        if(find_allocated_vendor[0].job_id.user_id.business.job_auto_accept == 1){
-
-        }
-        //end
-
         var vendor_email = find_allocated_vendor[0].user_id.email;
 
         // await update_job.save();
