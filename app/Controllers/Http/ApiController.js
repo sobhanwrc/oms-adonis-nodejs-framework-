@@ -495,6 +495,8 @@ class ApiController {
             swift_code : '',
         }
 
+        var accept = request.input('auto_accept') ? request.input('auto_accept') : user.business[0].job_auto_accept;
+
         user.first_name = first_name;
         user.middle_name = middle_name;
         user.last_name = last_name;
@@ -511,6 +513,7 @@ class ApiController {
             experience : experience,
             service_type : service_type,
             services : services,
+            job_auto_accept : accept
         }
         // user.status = 1;
         // user.forgot_pw_email_sent_date = '';
@@ -1084,7 +1087,7 @@ class ApiController {
           //push notification sent to user for decline request from vendor end.
           var title = `${allocation_details_update.job_id.job_title}`;
           msg_body = `${allocation_details_update.user_id.first_name} ${allocation_details_update.user_id.last_name} has decline your job request.`;
-          click_action = "Accept";
+          click_action = "Decline";
           await this.sentPushNotification(allocation_details_update.job_id.user_id.device_id, msg_body, allocation_details_update.job_id.user_id, click_action, title);
           //end
 
@@ -1125,6 +1128,7 @@ class ApiController {
             var title = `${fetch_new_allocated_vendor[0].job_id.job_title}`;
             msg_body = `${fetch_new_allocated_vendor[0].user_id.first_name} ${fetch_new_allocated_vendor[0].user_id.last_name} has received your job request.`;
             click_action = "Invitation";
+            
             await this.sentPushNotification(fetch_new_allocated_vendor[0].job_id.user_id.device_id, msg_body, fetch_new_allocated_vendor[0].job_id.user_id, click_action, title);
             //end
           }

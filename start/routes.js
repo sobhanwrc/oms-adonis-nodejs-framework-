@@ -158,6 +158,8 @@ Route.group(() => {
 
     Route.post('/api/userActiveCoupons', 'ApiController.userActiveCoupons')
 
+    Route.post('/api/vendorJobAutoAccept', 'ApiController.vendorJobAutoAccept')
+
     //all stripe route
     Route.post('/api/vendor/topup-credit-stripe', 'ApiController.stripeTopUpCredit')
     Route.post('/api/stripePaymentOfUser', 'ApiController.stripePaymentOfUser')

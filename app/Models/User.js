@@ -32,6 +32,7 @@ class User extends BaseModel {
       user_address2 : {type : String},
       city: { type : String,  default: '' },
       dob: { type: String,  default: '' },
+      
       business : [
         {
           company_name: { type : String,  default: '' },
@@ -39,7 +40,8 @@ class User extends BaseModel {
           company_ph_no : { type: String,  default: '' },
           experience : { type : String,  default: '' },
           service_type : { type : String,  default: '' },
-          services: { type : String,  default: '' }
+          services: { type : String,  default: '' },
+          job_auto_accept : { type : Number, default : 0}
         }
       ],
       bank_information: [
@@ -56,15 +58,6 @@ class User extends BaseModel {
         customer_created : {type : String, default: ''}
       }],
       uen_no : { type: String, unique: true,  default: '' },
-
-      geoLocation : {
-        type : { type : String, default : "Point"},
-        coordinates : { type: [Number], default: [0, 0] } //lat,long
-        // index: '2dsphere'
-      },
-
-      // latitude: {type : String,  default: '' },
-      // longitude : { type: String,  default: '' },
       status: { type: Number, default: 0}, //1 = 'active', 0='Inactive'
       reg_type: { type: String,  default: ''  }, //1=Admin,2=User,3=Vendor
       login_type: { type: String,  default: ''  }, //F=Facebook,G=Google,N=Normal
