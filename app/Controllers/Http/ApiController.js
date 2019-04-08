@@ -1147,45 +1147,108 @@ class ApiController {
 
           await this.add_notification(user,'',allocation_details_update);
 
+          //find others available vendors
           var fetch_new_allocated_vendor = await VendorAllocation.find({job_id : job_id, status : 0})
-          .limit(1)
           .populate('user_id')
           .populate({path: 'job_id', populate: {path: 'user_id'}});
           console.log(fetch_new_allocated_vendor, 'fetch_new_allocated_vendor_from_decline');
-          // return false;
 
           if(fetch_new_allocated_vendor.length > 0){
-            fetch_new_allocated_vendor[0].status = 3 ; // 3 = invitation sent.
-            await fetch_new_allocated_vendor[0].save();
-             
-            var add_notification = this.add_notification('','','','','',fetch_new_allocated_vendor);
+            var auto_accept_vendors_array = [];
+            var without_auto_accept_vendors_array = [];
 
-            //if another vendor found , then sent pus notification to which vendor is found
-            var title = `${fetch_new_allocated_vendor[0].job_id.job_title}`;
-            msg_body = `You have one job request from ${fetch_new_allocated_vendor[0].job_id.user_id.first_name} ${fetch_new_allocated_vendor[0].job_id.user_id.last_name}`;
-            click_action = "Invitation";
-            await this.sentPushNotification(fetch_new_allocated_vendor[0].user_id.device_id, msg_body, fetch_new_allocated_vendor[0].user_id, click_action, title);
-            //end
+            _.forEach(fetch_new_allocated_vendor, data => {
+              if(data.user_id.business[0].job_auto_accept == 1){
+                auto_accept_vendors_array.push(data)
+              }else {
+                without_auto_accept_vendors_array.push(data)
+              }
+            })
 
-            var sendEmail = Mailjet.post('send');
-            var emailData = {
-                'FromEmail': 'sobhan.das@intersoftkk.com',
-                'FromName': 'Oh! My Concierge',
-                'Subject': 'Invitation for Job Request',
-                'Html-part': "You are invited for a job. Please see your job requests section.",
-                'Recipients': [{'Email': fetch_new_allocated_vendor[0].user_id.email}]
-            };
+            if(auto_accept_vendors_array.length > 0){
+              var choose_1st_vendor = auto_accept_vendors_array[0];
+    
+              choose_1st_vendor.status = 1 ; // 1 = job auto accept by vendor.
+              
+              if(await choose_1st_vendor.save()) {
+                //admin notification
+                await this.add_notification(choose_1st_vendor.user_id,'','', choose_1st_vendor);
+                //end
+    
+                var update_job = await Job.findOne({_id : choose_1st_vendor.job_id._id})
+                update_job.vendor_id = choose_1st_vendor.user_id._id;
+                update_job.job_allocated_to_vendor = 1;
+    
+                await update_job.save();
+    
+                //push notification sent to user with vendor details
+                var title = `${choose_1st_vendor.job_id.job_title}`;
+                msg_body = `Your job request has accept by ${choose_1st_vendor.user_id.first_name} ${choose_1st_vendor.user_id.last_name}`;
+                click_action = "Accept";
+                await this.sentPushNotification(choose_1st_vendor.job_id.user_id.device_id, msg_body, choose_1st_vendor.job_id.user_id, click_action, title);
+                //end
+    
+                //push notification sent to vendor with user job details
+                var title = `${choose_1st_vendor.job_id.job_title}`;
+                msg_body = `You have auto accept a job request from ${choose_1st_vendor.job_id.user_id.first_name} ${choose_1st_vendor.job_id.user_id.last_name}`;
+                click_action = "Accept";
+                await this.sentPushNotification(choose_1st_vendor.user_id.device_id, msg_body, choose_1st_vendor.user_id, click_action, title);
+                //end
+    
+                response.json({
+                  status : true,
+                  code : 200,
+                  message : `${choose_1st_vendor.user_id.first_name} ${choose_1st_vendor.user_id.last_name} has accept your job request.`
+                })
+              }
+    
+            }else {
+              var choose_1st_without_auto_accept_vendor = without_auto_accept_vendors_array;
+    
+              var vendor_email = choose_1st_without_auto_accept_vendor[0].user_id.email;
+    
+              // await update_job.save();
+              choose_1st_without_auto_accept_vendor[0].status = 3 ; // 3 = invitation sent.
+              await choose_1st_without_auto_accept_vendor[0].save();
+    
+              console.log(choose_1st_without_auto_accept_vendor,'after invitation sent');
+              
+              var add_notification = this.add_notification('','','','','',choose_1st_without_auto_accept_vendor);
+    
+              //push notification sent to vendor with job request
+              var title = `${choose_1st_without_auto_accept_vendor[0].job_id.job_title}`;
+              msg_body = `You have one job request from ${choose_1st_without_auto_accept_vendor[0].job_id.user_id.first_name} ${choose_1st_without_auto_accept_vendor[0].job_id.user_id.last_name}`;
+              click_action = "Invitation";
+              await this.sentPushNotification(choose_1st_without_auto_accept_vendor[0].user_id.device_id, msg_body, choose_1st_without_auto_accept_vendor[0].user_id, click_action, title);
+              //end
+    
+              var sendEmail = Mailjet.post('send');
+              var emailData = {
+                  'FromEmail': 'sobhan.das@intersoftkk.com',
+                  'FromName': 'Oh! My Concierge',
+                  'Subject': 'Invitation for Job Request',
+                  'Html-part': "You are invited for a job. Please see your job requests section.",
+                  'Recipients': [{'Email': vendor_email}]
+              };
+              
+              if (sendEmail.request(emailData)) {
+                //push notification sent to user with vendor details
+                var title = `${choose_1st_without_auto_accept_vendor[0].job_id.job_title}`;
+                msg_body = `Job request is received by ${choose_1st_without_auto_accept_vendor[0].user_id.first_name} ${choose_1st_without_auto_accept_vendor[0].user_id.last_name}`;
+                click_action = "Invitation";
+                await this.sentPushNotification(choose_1st_without_auto_accept_vendor[0].job_id.user_id.device_id, msg_body, choose_1st_without_auto_accept_vendor[0].job_id.user_id, click_action, title);
+                //end
+    
+                response.json({
+                  status : true,
+                  code : 200,
+                  message : "Invitation has sent to a particular vendor successfully."
+                })
+              }
+            }
 
-            await sendEmail.request(emailData);
-
-            //notify user with new vendor using push notification
-            var title = `${fetch_new_allocated_vendor[0].job_id.job_title}`;
-            msg_body = `${fetch_new_allocated_vendor[0].user_id.first_name} ${fetch_new_allocated_vendor[0].user_id.last_name} has received your job request.`;
-            click_action = "Invitation";
-            
-            await this.sentPushNotification(fetch_new_allocated_vendor[0].job_id.user_id.device_id, msg_body, fetch_new_allocated_vendor[0].job_id.user_id, click_action, title);
-            //end
           }
+          //end
           
           response.json({
             status : true,
