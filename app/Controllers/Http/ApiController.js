@@ -429,6 +429,7 @@ class ApiController {
 
     async profileEdit ({ request, response, auth }) {
         var user = await auth.getUser();
+        console.log(user,'profile edit');
 
         var first_name = request.input('first_name') ? request.input('first_name') : user.first_name;
         var middle_name = request.input('middle_name') ? request.input('middle_name') : user.middle_name;
