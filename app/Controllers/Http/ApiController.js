@@ -985,7 +985,7 @@ class ApiController {
                 this.add_notification(user,job,'','','','','', sent_quote_received_vendor_details);
                 //end
 
-                // push notification sent to vendor with job request
+                // push notification sent to vendor with job sent quote request
                 var title = `${job.job_title}`;
                 msg_body = `${user.first_name} ${user.last_name} has requested to you for sent quote.`;
                 click_action = "Sent Quote";
@@ -3435,7 +3435,7 @@ class ApiController {
       }
 
       if(sent_quote != '') {
-        desc = `${sent_quote.first_name} ${sent_quote.last_name} has received sent quote request from $${user_details.first_name} ${user_details.last_name} for ${added_job_details.job_title}`;
+        desc = `${sent_quote.first_name} ${sent_quote.last_name} has received sent quote request from ${user_details.first_name} ${user_details.last_name} for ${added_job_details.job_title}`;
       }
 
       var add = await Notification({
