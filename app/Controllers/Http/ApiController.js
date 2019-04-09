@@ -842,46 +842,28 @@ class ApiController {
           create_job_id = "JOB-" + 1;
         }
 
-        // var final_job_amount = 0;
-        // var coupon_id = request.input('coupon_id') ? request.input('coupon_id') : '';
-        // if(coupon_id != '') {
-        //   var coupon_details = await Coupon.findOne({_id : coupon_id});
-        //   var coupon_discount_amount = coupon_details.coupons_amount;
-        //   var discount_amount = parseFloat((job_amount *  coupon_discount_amount) / 100).toFixed(2) ;
-        //   final_job_amount = parseFloat(job_amount - discount_amount);
-        // }else {
-        //   final_job_amount = job_amount;
-        // }
-
         var user_present_address_check = request.input('check_address');
 
         // array for create job
-        var demo = request.input('service_category_type');
-        console.log(demo);
-        // var demo = [
-        //   {
-        //     parent_service_id : '5c78dd0563f38236efdf35d5',
-        //     child_service_id : '5c78df9c9ed89a3ea251adc4'
-        //   },
-        //   {
-        //     parent_service_id : '5c78df0f9ed89a3ea251adc0',
-        //     child_service_id : '5c78df409ed89a3ea251adc2'
-        //   }
-        // ]
+        // var demo = request.input('service_category_type');
+        // console.log(demo);
+        var demo = [
+          {
+            parent_service_id : '5c78dd0563f38236efdf35d5',
+            child_service_id : '5c78df9c9ed89a3ea251adc4'
+          },
+          {
+            parent_service_id : '5c78df0f9ed89a3ea251adc0',
+            child_service_id : '5c78df409ed89a3ea251adc2'
+          }
+        ]
         //end
 
         var add_job = new Job({
           create_job_id : create_job_id,
           user_id : user_id,
-          // service_require_at : service_require_at,
           job_amount : job_amount,
           service_category : job_category,
-          // job_date : date,
-          // job_endDate : job_endDate,
-          // job_time : job_time,
-          // job_end_time : job_end_time,
-          // description : description,
-          // duration : duration,
           status : 1, // 1= active, 2 = inactive, 3 = complete
           job_allocated_to_vendor : job_allocated_to_vendor,
           ask_quote : request.input('ask_quote')
@@ -889,7 +871,9 @@ class ApiController {
         var jod_id = await add_job.save();
 
         if(jod_id != '') {
-          var update_job = await Job.findOne({_id : jod_id._id}).populate('service_category');
+          var update_job = await Job.findOne({_id : jod_id._id})
+          .populate('service_category')
+          .populate('added_services_details.parent_service_id');
           
           var dynamic_job_title = update_job.service_category.service_category;
 
@@ -925,19 +909,19 @@ class ApiController {
             await add_data_to_audit_table.save();
           }
 
-          // if(user_present_address_check == undefined) {
-          //   user.user_address2 = service_require_at
-          //   await user.save();
-          // }
-          
-          await this.fetchNearestVendor(user,update_job);
+          if(request.input('ask_quote') == 1){
+            //call sent quote function for vendor
+            var job_details = await Job.findOne({_id : jod_id._id})
+            .populate('service_category')
+            .populate('added_services_details.parent_service_id');
 
-          // if(coupon_id != '') {
-          //   var update = await AssignCouponToUser.findOne({user_id : user._id, coupon_id : coupon_id});
-          //   update.status = "Redeemed";
-
-          //   await update.save();
-          // }
+            await this.vendorSentQuote(user,job_details);
+            //end
+          }else {
+            //fetch nearest vendor
+            await this.fetchNearestVendor(user,update_job);
+            //end
+          }
 
           response.json({
             status : true,
@@ -952,6 +936,31 @@ class ApiController {
           code : 400,
           message : "You don't have a permission to add job."
         });
+      }
+    }
+
+    async vendorSentQuote (user, job) {
+      if(user.reg_type == 2){
+        var fetch_vendor_location_wise = await User.find({location_id : user.location_id, reg_type : 3});
+        
+        if(fetch_vendor_location_wise.length > 0){
+          var all_vendor_list_ids = _.map(fetch_vendor_location_wise, '_id');
+          var notAllocatedVendorsArray = [];
+
+          for(var i = 0; i < all_vendor_list_ids.length; i++) {
+            var status = await Job.find({vendor_id : all_vendor_list_ids[i]})
+            if(status.length > 0) {
+            }else { 
+              withOutAllocatedVendors.push(all_vendor_list_ids[i]);
+            }
+          }
+        }else {
+          return response.json({
+            status : false,
+            code : 400,
+            message : "No vendors are available in your location."
+          })
+        }
       }
     }
 
