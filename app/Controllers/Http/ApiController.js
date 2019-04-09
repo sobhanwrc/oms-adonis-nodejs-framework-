@@ -26,6 +26,7 @@ const stripe = use('stripe')('sk_test_1lfdJgJawDb3EFLvNDyi1p7v');
 const AuditLog = use('App/Models/AuditLog');
 const Notification = use('App/Models/Notification');
 const AppNotification = use('App/Models/AppNotification');
+const SentQuoteRequest = use('App/Models/SentQuoteRequest');
 // ('sk_test_1lfdJgJawDb3EFLvNDyi1p7v'); //secret key for test account
 
 const _ = use('lodash');
@@ -845,18 +846,18 @@ class ApiController {
         var user_present_address_check = request.input('check_address');
 
         // array for create job
-        // var demo = request.input('service_category_type');
+        var demo = request.input('service_category_type');
         // console.log(demo);
-        var demo = [
-          {
-            parent_service_id : '5c78dd0563f38236efdf35d5',
-            child_service_id : '5c78df9c9ed89a3ea251adc4'
-          },
-          {
-            parent_service_id : '5c78df0f9ed89a3ea251adc0',
-            child_service_id : '5c78df409ed89a3ea251adc2'
-          }
-        ]
+        // var demo = [
+        //   {
+        //     parent_service_id : '5c78dd0563f38236efdf35d5',
+        //     child_service_id : '5c78df9c9ed89a3ea251adc4'
+        //   },
+        //   {
+        //     parent_service_id : '5c78df0f9ed89a3ea251adc0',
+        //     child_service_id : '5c78df409ed89a3ea251adc2'
+        //   }
+        // ]
         //end
 
         var add_job = new Job({
@@ -915,19 +916,22 @@ class ApiController {
             .populate('service_category')
             .populate('added_services_details.parent_service_id');
 
-            await this.vendorSentQuote(user,job_details);
-            //end
+            var result = await this.vendorSentQuote(user,job_details);
+            var sent_quote = 1;
           }else {
             //fetch nearest vendor
             await this.fetchNearestVendor(user,update_job);
+            var result = "Job added successfully."
+            var sent_quote = 0;
             //end
           }
 
           response.json({
             status : true,
             code : 200,
+            sent_quote : sent_quote,
             added_job_id : jod_id._id,
-            message : "Job added successfully."
+            message : `${result}`
           });
         }
       } else { 
@@ -951,15 +955,52 @@ class ApiController {
             var status = await Job.find({vendor_id : all_vendor_list_ids[i]})
             if(status.length > 0) {
             }else { 
-              withOutAllocatedVendors.push(all_vendor_list_ids[i]);
+              notAllocatedVendorsArray.push(all_vendor_list_ids[i]);
             }
           }
-        }else {
-          return response.json({
-            status : false,
-            code : 400,
-            message : "No vendors are available in your location."
-          })
+
+          if(notAllocatedVendorsArray.length > 0){
+            var matching_vendors_array = [];
+
+            for(var i = 0; i < notAllocatedVendorsArray.length; i ++){
+              var service_data = await Service.find({user_id : notAllocatedVendorsArray[i], service_category : job.service_category._id})
+              if(service_data.length > 0){
+                matching_vendors_array.push(notAllocatedVendorsArray[i])
+              }
+            }
+
+            if(matching_vendors_array.length > 0){
+              for(var j = 0; j < matching_vendors_array.length; j++){
+                var add = new VendorAllocation ({
+                  user_id : matching_vendors_array[j],
+                  job_id : job._id,
+                  status : 4 // 0 = not allocated, 1 = allocated, 4 = "Sent quote requested "
+                });
+
+                await add.save();
+
+                //admin notification
+                // this.add_notification('','','','','',choose_1st_without_auto_accept_vendor);
+                //end
+
+                //push notification sent to vendor with job request
+                // var title = `${job.job_title}`;
+                // msg_body = `${user.first_name} ${user.last_name} has requested to you for sent quote.`;
+                // click_action = "Sent Quote";
+                // await this.sentPushNotification(user.device_id, msg_body, user, click_action, title);
+                //end
+              }
+
+              return "Job added successfully and sent quote has requested to particular vendor."; //sent quote requested successfully.
+            }else {
+              return "Job added successfully. But no vendors are available with your select job category."
+            }
+
+          }else{
+            return "Job added successfully. But no vendors are available."
+          }
+        }else{
+          return "Job added successfully. But no vendors are available."
         }
       }
     }
@@ -1323,7 +1364,11 @@ class ApiController {
     async vendorsAllJobRequest ({response, auth}) {
       var user = await auth.getUser();
 
-      var job_request_list = await VendorAllocation.find({user_id : user._id, status :3}).populate({path: 'job_id', populate: {path: 'service_category'}})
+      //3 = 'job invitation sent', 4 ='sent quote requested'
+      var job_request_list = await VendorAllocation.find({user_id : user._id, status : {
+        $in : [3,4]
+      }})
+      .populate({path: 'job_id', populate: {path: 'service_category'}})
       .populate({path: 'job_id', populate: {path: 'added_services_details.parent_service_id'}})
       .sort({_id : -1});
 
