@@ -971,6 +971,8 @@ class ApiController {
 
             if(matching_vendors_array.length > 0){
               for(var j = 0; j < matching_vendors_array.length; j++){
+                var sent_quote_received_vendor_details = await User.findOne({_id : matching_vendors_array[j]});
+
                 var add = new VendorAllocation ({
                   user_id : matching_vendors_array[j],
                   job_id : job._id,
@@ -980,18 +982,18 @@ class ApiController {
                 await add.save();
 
                 //admin notification
-                // this.add_notification('','','','','',choose_1st_without_auto_accept_vendor);
+                this.add_notification(user,job,'','','','','', sent_quote_received_vendor_details);
                 //end
 
-                //push notification sent to vendor with job request
-                // var title = `${job.job_title}`;
-                // msg_body = `${user.first_name} ${user.last_name} has requested to you for sent quote.`;
-                // click_action = "Sent Quote";
-                // await this.sentPushNotification(user.device_id, msg_body, user, click_action, title);
-                //end
+                // push notification sent to vendor with job request
+                var title = `${job.job_title}`;
+                msg_body = `${user.first_name} ${user.last_name} has requested to you for sent quote.`;
+                click_action = "Sent Quote";
+                await this.sentPushNotification(sent_quote_received_vendor_details.device_id, msg_body, sent_quote_received_vendor_details, click_action, title);
+                // end
               }
 
-              return "Job added successfully and sent quote has requested to particular vendor."; //sent quote requested successfully.
+              return "Job added successfully and sent quote has requested to the particular vendor."; //sent quote requested successfully.
             }else {
               return "Job added successfully. But no vendors are available with your select job category."
             }
@@ -3398,7 +3400,7 @@ class ApiController {
       })
     }
 
-    async add_notification(user_details = '', added_job_details = '', decline ='', accept = '', service = '', find_allocated_vendor = '', user_payment = '') {
+    async add_notification(user_details = '', added_job_details = '', decline ='', accept = '', service = '', find_allocated_vendor = '', user_payment = '', sent_quote = '') {
       var desc = '';
       if(user_details != ''){
         if(user_details.reg_type == 2){
@@ -3430,6 +3432,10 @@ class ApiController {
 
       if(user_payment != '') {
         desc = `${user_details.first_name} ${user_details.last_name} has paid $${user_payment.job_amount} for ${user_payment.job_title}`;
+      }
+
+      if(sent_quote != '') {
+        desc = `${sent_quote.first_name} ${sent_quote.last_name} has received sent quote request from $${user_details.first_name} ${user_details.last_name} for ${added_job_details.job_title}`;
       }
 
       var add = await Notification({
