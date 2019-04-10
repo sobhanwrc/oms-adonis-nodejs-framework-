@@ -10,6 +10,7 @@ const sentQuoteSchema = new Schema({
         child_service_id : { type: String},
         quote_price : { type : String}
     }],
+    note : { type : String},
     created_at : { type : Date, default : Date.now()}
 })
 

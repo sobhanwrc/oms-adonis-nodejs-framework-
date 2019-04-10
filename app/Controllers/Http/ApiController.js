@@ -1421,24 +1421,27 @@ class ApiController {
       if(user.reg_type == 3){
         var job_id = request.input('job_id');
         var quote_request_sent_customer_id = request.input('quote_request_sent_customer_id');
-        // var quote_services = request.input('quote_services');
-        var quote_services = [
-          {
-            parent_service_id : '5c78dd0563f38236efdf35d5',
-            child_service_id : '5c78df9c9ed89a3ea251adc4',
-            quote_price : 150.00
-          },
-          {
-            parent_service_id : '5c78df0f9ed89a3ea251adc0',
-            child_service_id : '5c78df409ed89a3ea251adc2',
-            quote_price : 100.00
-          }
-        ]
+        var note = request.input('note');
+        var quote_services = request.input('quote_services');
+        console.log(quote_services,'quote_services');
+        // var quote_services = [
+        //   {
+        //     parent_service_id : '5c78dd0563f38236efdf35d5',
+        //     child_service_id : '5c78df9c9ed89a3ea251adc4',
+        //     quote_price : 150.00
+        //   },
+        //   {
+        //     parent_service_id : '5c78df0f9ed89a3ea251adc0',
+        //     child_service_id : '5c78df409ed89a3ea251adc2',
+        //     quote_price : 100.00
+        //   }
+        // ]
 
         var add = new SentQuoteRequest({
           quote_received_customer_id : quote_request_sent_customer_id,
           quote_sent_vendor_id : user._id,
-          job_id : job_id
+          job_id : job_id,
+          note : note
         });
 
         var insert_vendor_submit_quote = await add.save();
@@ -1466,6 +1469,30 @@ class ApiController {
         })
 
       }else {
+        response.json({
+          status : false,
+          code : 400,
+          message : "Sorry, you don't have a permission to do that."
+        })
+      }
+    }
+
+    async userViewQuoteFromVendors({request, response, auth}) {
+      var user = await auth.getUser();
+      var job_id = request.input('job_id');
+      if(user.reg_type == 2){
+        var see_all_quote_details = await SentQuoteRequest.find({job_id : job_id, quote_received_customer_id : user._id})
+        .populate('quote_sent_vendor_id')
+        .populate({path: 'job_id', populate: {path: 'service_category'}})
+        .populate('ask_for_quote_details.parent_service_id')
+        .sort({_id : -1});
+
+        response.json({
+          status : true,
+          code : 200,
+          data : see_all_quote_details
+        });
+      }else{
         response.json({
           status : false,
           code : 400,
