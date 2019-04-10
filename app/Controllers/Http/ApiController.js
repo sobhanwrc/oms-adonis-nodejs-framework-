@@ -394,7 +394,7 @@ class ApiController {
     async userDetails ({ request, response, auth}) {
         try {
           var user_details = await auth.getUser();
-          // console.log(user_details);
+          console.log(user_details,'user_details api');
           // return false
           if(user_details.location_id != '') {
             var user_location_id = user_details.location_id;
@@ -846,18 +846,18 @@ class ApiController {
         var user_present_address_check = request.input('check_address');
 
         // array for create job
-        var demo = request.input('service_category_type');
+        // var demo = request.input('service_category_type');
         // console.log(demo);
-        // var demo = [
-        //   {
-        //     parent_service_id : '5c78dd0563f38236efdf35d5',
-        //     child_service_id : '5c78df9c9ed89a3ea251adc4'
-        //   },
-        //   {
-        //     parent_service_id : '5c78df0f9ed89a3ea251adc0',
-        //     child_service_id : '5c78df409ed89a3ea251adc2'
-        //   }
-        // ]
+        var demo = [
+          {
+            parent_service_id : '5c78dd0563f38236efdf35d5',
+            child_service_id : '5c78df9c9ed89a3ea251adc4'
+          },
+          {
+            parent_service_id : '5c78df0f9ed89a3ea251adc0',
+            child_service_id : '5c78df409ed89a3ea251adc2'
+          }
+        ]
         //end
 
         var add_job = new Job({
@@ -1411,6 +1411,65 @@ class ApiController {
           status : false,
           code : 400,
           message : "No record found."
+        })
+      }
+    }
+
+    async vendorSentQuoteToUser({request, response, auth}) {
+      var user = await auth.getUser();
+
+      if(user.reg_type == 3){
+        var job_id = request.input('job_id');
+        var quote_request_sent_customer_id = request.input('quote_request_sent_customer_id');
+        // var quote_services = request.input('quote_services');
+        var quote_services = [
+          {
+            parent_service_id : '5c78dd0563f38236efdf35d5',
+            child_service_id : '5c78df9c9ed89a3ea251adc4',
+            quote_price : 150.00
+          },
+          {
+            parent_service_id : '5c78df0f9ed89a3ea251adc0',
+            child_service_id : '5c78df409ed89a3ea251adc2',
+            quote_price : 100.00
+          }
+        ]
+
+        var add = new SentQuoteRequest({
+          quote_received_customer_id : quote_request_sent_customer_id,
+          quote_sent_vendor_id : user._id,
+          job_id : job_id
+        });
+
+        var insert_vendor_submit_quote = await add.save();
+
+        if(insert_vendor_submit_quote){
+          for(var i = 0; i < quote_services.length; i++){
+            var fetch_added_quote_details = await SentQuoteRequest.findOne({_id : insert_vendor_submit_quote._id});
+
+            var added_services_quote = {
+              parent_service_id : quote_services[i].parent_service_id,
+              child_service_id : quote_services[i].child_service_id,
+              quote_price : quote_services[i].quote_price
+            }
+
+            fetch_added_quote_details.ask_for_quote_details.unshift(added_services_quote);
+
+            await fetch_added_quote_details.save();
+          }
+        }
+
+        response.json({
+          status : true,
+          code : 200,
+          message : "Quotation sent successfully to the Customer."
+        })
+
+      }else {
+        response.json({
+          status : false,
+          code : 400,
+          message : "Sorry, you don't have a permission to do that."
         })
       }
     }
