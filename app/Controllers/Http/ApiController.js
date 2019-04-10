@@ -846,18 +846,18 @@ class ApiController {
         var user_present_address_check = request.input('check_address');
 
         // array for create job
-        // var demo = request.input('service_category_type');
+        var demo = request.input('service_category_type');
         // console.log(demo);
-        var demo = [
-          {
-            parent_service_id : '5c78dd0563f38236efdf35d5',
-            child_service_id : '5c78df9c9ed89a3ea251adc4'
-          },
-          {
-            parent_service_id : '5c78df0f9ed89a3ea251adc0',
-            child_service_id : '5c78df409ed89a3ea251adc2'
-          }
-        ]
+        // var demo = [
+        //   {
+        //     parent_service_id : '5c78dd0563f38236efdf35d5',
+        //     child_service_id : '5c78df9c9ed89a3ea251adc4'
+        //   },
+        //   {
+        //     parent_service_id : '5c78df0f9ed89a3ea251adc0',
+        //     child_service_id : '5c78df409ed89a3ea251adc2'
+        //   }
+        // ]
         //end
 
         var add_job = new Job({
@@ -1366,9 +1366,9 @@ class ApiController {
     async vendorsAllJobRequest ({response, auth}) {
       var user = await auth.getUser();
 
-      //3 = 'job invitation sent', 4 ='sent quote requested'
+      //1 = 'job accept', 2 = 'job decline', 3 = 'job invitation sent', 4 ='sent quote requested'
       var job_request_list = await VendorAllocation.find({user_id : user._id, status : {
-        $in : [3,4]
+        $in : [1,2,3,4]
       }})
       .populate({path: 'job_id', populate: {path: 'service_category'}})
       .populate({path: 'job_id', populate: {path: 'added_services_details.parent_service_id'}})
@@ -1389,31 +1389,31 @@ class ApiController {
       }
     }
 
-    async vendorAllAcceptAndDeclineJobs ({response, auth}) {
-      var user = await auth.getUser();
+    // async vendorAllAcceptAndDeclineJobs ({response, auth}) {
+    //   var user = await auth.getUser();
 
-      //multiple populate from sub-document
-      var job_request_list_of_accept_decline = await VendorAllocation.find({user_id : user._id, status :{
-        $in : [1,2]
-      }})
-      .sort({_id : -1})
-      .populate({path: 'job_id', populate: {path: 'added_services_details.parent_service_id'}})
-      .populate({path: 'job_id', populate: {path: 'service_category'}})
+    //   //multiple populate from sub-document
+    //   var job_request_list_of_accept_decline = await VendorAllocation.find({user_id : user._id, status :{
+    //     $in : [1,2]
+    //   }})
+    //   .sort({_id : -1})
+    //   .populate({path: 'job_id', populate: {path: 'added_services_details.parent_service_id'}})
+    //   .populate({path: 'job_id', populate: {path: 'service_category'}})
 
-      if(job_request_list_of_accept_decline.length > 0) {
-        response.json({
-          status : true,
-          code : 200,
-          data : job_request_list_of_accept_decline
-        })
-      }else {
-        response.json({
-          status : false,
-          code : 400,
-          message : "No record found."
-        })
-      }
-    }
+    //   if(job_request_list_of_accept_decline.length > 0) {
+    //     response.json({
+    //       status : true,
+    //       code : 200,
+    //       data : job_request_list_of_accept_decline
+    //     })
+    //   }else {
+    //     response.json({
+    //       status : false,
+    //       code : 400,
+    //       message : "No record found."
+    //     })
+    //   }
+    // }
 
     async vendorSentQuoteToUser({request, response, auth}) {
       var user = await auth.getUser();
@@ -1460,6 +1460,13 @@ class ApiController {
 
             await fetch_added_quote_details.save();
           }
+
+          //update job status 3 for view quote from User end
+          var job_details = await Job.findOne({_id : job_id}, {status : 1});
+          job_details.status = 3;
+
+          await job_details.save();
+          //end
         }
 
         response.json({
