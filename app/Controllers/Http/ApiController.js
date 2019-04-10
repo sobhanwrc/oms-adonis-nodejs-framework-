@@ -394,7 +394,7 @@ class ApiController {
     async userDetails ({ request, response, auth}) {
         try {
           var user_details = await auth.getUser();
-          console.log(user_details,'user_details api');
+          // console.log(user_details,'user_details api');
           // return false
           if(user_details.location_id != '') {
             var user_location_id = user_details.location_id;
@@ -430,7 +430,7 @@ class ApiController {
 
     async profileEdit ({ request, response, auth }) {
         var user = await auth.getUser();
-        console.log(user,'profile edit');
+        // console.log(user,'profile edit');
 
         var first_name = request.input('first_name') ? request.input('first_name') : user.first_name;
         var middle_name = request.input('middle_name') ? request.input('middle_name') : user.middle_name;
@@ -1421,7 +1421,8 @@ class ApiController {
       if(user.reg_type == 3){
         var job_id = request.input('job_id');
         var quote_request_sent_customer_id = request.input('quote_request_sent_customer_id');
-        var note = request.input('note');
+        // var note = request.input('note');
+        var total_amount = request.input('total_amount');
         var quote_services = request.input('quote_services');
         console.log(quote_services,'quote_services');
         // var quote_services = [
@@ -1441,7 +1442,8 @@ class ApiController {
           quote_received_customer_id : quote_request_sent_customer_id,
           quote_sent_vendor_id : user._id,
           job_id : job_id,
-          note : note
+          // note : note,
+          total_amount : total_amount
         });
 
         var insert_vendor_submit_quote = await add.save();
@@ -1487,18 +1489,35 @@ class ApiController {
     async userViewQuoteFromVendors({request, response, auth}) {
       var user = await auth.getUser();
       var job_id = request.input('job_id');
-      if(user.reg_type == 2){
-        var see_all_quote_details = await SentQuoteRequest.find({job_id : job_id, quote_received_customer_id : user._id})
-        .populate('quote_sent_vendor_id')
-        .populate({path: 'job_id', populate: {path: 'service_category'}})
-        .populate('ask_for_quote_details.parent_service_id')
-        .sort({_id : -1});
+      var vendor_id = request.input('vendor_id');
 
-        response.json({
-          status : true,
-          code : 200,
-          data : see_all_quote_details
-        });
+      if(user.reg_type == 2){
+        if(vendor_id == undefined){
+          var see_all_quote_details = await SentQuoteRequest.find({job_id : job_id, quote_received_customer_id : user._id})
+          .populate('quote_sent_vendor_id')
+          .populate({path: 'job_id', populate: {path: 'service_category'}})
+          .populate('ask_for_quote_details.parent_service_id')
+          .sort({_id : -1});
+
+          response.json({
+            status : true,
+            code : 200,
+            data : see_all_quote_details
+          });
+        }else {
+          var see_particular_quote_details = await SentQuoteRequest.find({job_id : job_id, quote_received_customer_id : user._id, quote_sent_vendor_id : vendor_id})
+          .populate('quote_sent_vendor_id')
+          .populate({path: 'job_id', populate: {path: 'service_category'}})
+          .populate('ask_for_quote_details.parent_service_id')
+          .sort({_id : -1});
+
+          response.json({
+            status : true,
+            code : 200,
+            data : see_particular_quote_details
+          });
+        }
+        
       }else{
         response.json({
           status : false,
