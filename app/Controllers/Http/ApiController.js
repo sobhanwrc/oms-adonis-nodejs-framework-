@@ -531,7 +531,7 @@ class ApiController {
           }
           
           //push notification to app
-          msg_body = "Your profile has successfully updated.";
+          msg_body = "Your profile has been successfully updated.";
           click_action = "Profile";
           await this.sentPushNotification(user.device_id, msg_body, user, click_action);
           //end
@@ -603,7 +603,7 @@ class ApiController {
 
             if(await user.save()){
               //push notification to app
-              msg_body = "Your profile picture has successfully updated.";
+              msg_body = "Your profile picture has been successfully updated.";
               click_action = "Profile";
               await this.sentPushNotification(user.device_id, msg_body, user, click_action);
               //end
@@ -634,7 +634,7 @@ class ApiController {
 
             if(await user.save()) {
               //push notification to app
-              msg_body = "Your password has successfully changed.";
+              msg_body = "Your password has been successfully changed.";
               click_action = "Change Password";
               await this.sentPushNotification(user.device_id, msg_body, user, click_action);
               //end
