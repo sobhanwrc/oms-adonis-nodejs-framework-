@@ -1477,6 +1477,7 @@ class ApiController {
           var fetch_added_quote_details = await SentQuoteRequest.findOne({_id : insert_vendor_submit_quote._id});
 
           for(var i = 0; i < quote_services.length; i++){
+            // console.log(quote_services[i].quote_price, quote_services[i]);
             var added_services_quote = {
               parent_service_id : quote_services[i].parent_service_id,
               child_service_id : quote_services[i].child_service_id,
