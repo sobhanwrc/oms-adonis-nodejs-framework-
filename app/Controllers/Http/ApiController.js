@@ -1366,19 +1366,39 @@ class ApiController {
     async vendorsAllJobRequest ({response, auth}) {
       var user = await auth.getUser();
 
-      //1 = 'job accept', 2 = 'job decline', 3 = 'job invitation sent', 4 ='sent quote requested'
+      //1 = 'job accept', 2 = 'job decline', 3 = 'job invitation sent', 4 ='sent quote requested', 5 = "quote submitted"
       var job_request_list = await VendorAllocation.find({user_id : user._id, status : {
-        $in : [1,2,3,4]
+        $in : [1,2,3,4,5]
       }})
       .populate({path: 'job_id', populate: {path: 'service_category'}})
       .populate({path: 'job_id', populate: {path: 'added_services_details.parent_service_id'}})
       .sort({_id : -1});
 
+      var finalArray = [];
+
+      for(var i = 0; i < job_request_list.length; i ++){
+        if(job_request_list[i].status == 5){
+          var fetch_sent_quote_details = await SentQuoteRequest.findOne({quote_sent_vendor_id : user._id, job_id : job_request_list[i].job_id._id})
+          .populate({path: 'job_id', populate: {path: 'service_category'}})
+          .populate({path: 'job_id', populate: {path: 'added_services_details.parent_service_id'}})
+          .populate('ask_for_quote_details.parent_service_id');
+          // console.log(fetch_sent_quote_details,'fetch_sent_quote_details');
+
+          fetch_sent_quote_details['status'] = 5;
+          
+          finalArray.push(fetch_sent_quote_details);
+
+        }else{
+          finalArray.push(job_request_list[i]);
+        }
+      }
+
       if(job_request_list.length > 0) {
         response.json({
           status : true,
           code : 200,
-          data : job_request_list
+          // data : job_request_list,
+          data : finalArray
         })
       }else {
         response.json({
@@ -1424,12 +1444,17 @@ class ApiController {
         // var note = request.input('note');
         var total_amount = request.input('total_amount');
         var quote_services = request.input('quote_services');
-        console.log(quote_services,'quote_services');
+        // console.log(quote_services,'quote_services');
         // var quote_services = [
         //   {
         //     parent_service_id : '5c78dd0563f38236efdf35d5',
         //     child_service_id : '5c78df9c9ed89a3ea251adc4',
         //     quote_price : 150.00
+        //   },
+        //   {
+        //     parent_service_id : '5c78df0f9ed89a3ea251adc0',
+        //     child_service_id : '5c78df409ed89a3ea251adc2',
+        //     quote_price : 100.00
         //   },
         //   {
         //     parent_service_id : '5c78df0f9ed89a3ea251adc0',
@@ -1449,9 +1474,9 @@ class ApiController {
         var insert_vendor_submit_quote = await add.save();
 
         if(insert_vendor_submit_quote){
-          for(var i = 0; i < quote_services.length; i++){
-            var fetch_added_quote_details = await SentQuoteRequest.findOne({_id : insert_vendor_submit_quote._id});
+          var fetch_added_quote_details = await SentQuoteRequest.findOne({_id : insert_vendor_submit_quote._id});
 
+          for(var i = 0; i < quote_services.length; i++){
             var added_services_quote = {
               parent_service_id : quote_services[i].parent_service_id,
               child_service_id : quote_services[i].child_service_id,
@@ -1463,12 +1488,17 @@ class ApiController {
             await fetch_added_quote_details.save();
           }
 
+          
+
           //update job status 3 for view quote from User end
           var job_details = await Job.findOne({_id : job_id}, {status : 1});
           job_details.status = 3;
 
-          await job_details.save();
-          //end
+          if(job_details.save()){
+            var update_vendor = await VendorAllocation.findOne({job_id : job_id, user_id : user._id});
+            update_vendor.status = 5 //quote submitted
+            update_vendor.save();
+          }
         }
 
         response.json({
@@ -1518,6 +1548,29 @@ class ApiController {
           });
         }
         
+      }else{
+        response.json({
+          status : false,
+          code : 400,
+          message : "Sorry, you don't have a permission to do that."
+        })
+      }
+    }
+
+    async userAcceptSentQuoteOfVendor({request, response, auth}) {
+      var user = await auth.getUser();
+      if(user.reg_type == 2){
+        var sent_quote_id = request.input('sent_quote_id');
+        var fetch_sent_quote_details = await SentQuoteRequest.findOne({_id : sent_quote_id, quote_received_customer_id: user._id});
+        fetch_sent_quote_details.quote_accept = 1 ;//user accept this quote of vendor
+
+        await fetch_sent_quote_details.save();
+
+        response.json({
+          status : true,
+          code : 200,
+          message : "You have successfully accept this quotation."
+        })
       }else{
         response.json({
           status : false,

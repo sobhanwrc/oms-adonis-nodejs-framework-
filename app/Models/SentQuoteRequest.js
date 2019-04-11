@@ -12,6 +12,8 @@ const sentQuoteSchema = new Schema({
     }],
     total_amount : { type : String},
     note : { type : String},
+    quote_accept : { type : Number , default : 0},
+    status : { type : Number , default : 0},
     created_at : { type : Date, default : Date.now()}
 })
 
