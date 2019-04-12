@@ -2822,6 +2822,8 @@ class ApiController {
           email: user.email
         });
 
+        console.log(connect_user,'connect_user');
+
         if(connect_user) {
           var user_update = await User.updateOne({
             _id: user._id //matching with table id
@@ -2839,7 +2841,7 @@ class ApiController {
               message : "Your stripe account has been successfully associated with us."
             });
           }
-        }
+        } 
       }else {
         response.json({
           status : false,
