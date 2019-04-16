@@ -446,37 +446,37 @@ class ApiController {
         // var city = '';
         var dob = request.input('dob') ? request.input('dob') : user.dob;
 
-        if(request.input('company_name')) {
+        if(request.input('company_name') || user.business[0].company_name) {
           var company_name = request.input('company_name') ? request.input('company_name') : user.business[0].company_name;
         }else {
           var company_name = ''
         }
         
-        if(request.input('company_address')) {
+        if(request.input('company_address') || user.business[0].company_address) {
           var company_address = request.input('company_address') ? request.input('company_address') : user.business[0].company_address;
         }else {
           var company_address = ''
         }
 
-        if(request.input('company_ph_no')) {
+        if(request.input('company_ph_no') || user.business[0].company_ph_no) {
           var company_ph_no = request.input('company_ph_no') ? request.input('company_ph_no') : user.business[0].company_ph_no;
         }else {
           var company_ph_no = ''
         }
         
-        if(request.input('experience')) {
+        if(request.input('experience') || user.business[0].experience) {
           var experience = request.input('experience') ? request.input('experience') : user.business[0].experience;
         }else {
           var experience = ''
         }
         
-        if(request.input('service_type')) {
+        if(request.input('service_type') || user.business[0].service_type) {
           var service_type = request.input('service_type') ? request.input('service_type') : user.business[0].service_type;
         }else { 
           var service_type = ''
         }
         
-        if(request.input('services')) {
+        if(request.input('services') || user.business[0].services) {
           var services = request.input('services') ? request.input('services') : user.business[0].services;
         }else {
           var services = ''
