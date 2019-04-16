@@ -3629,6 +3629,7 @@ class ApiController {
             body: msg_body,
             sound: "default",
             icon: "ic_launcher",
+            click_action : click_action,
             tag : Date.now()
           },
           
