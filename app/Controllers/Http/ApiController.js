@@ -1444,7 +1444,7 @@ class ApiController {
         // var note = request.input('note');
         var total_amount = request.input('total_amount');
         var quote_services = request.input('quote_services');
-        // console.log(quote_services,'quote_services');
+        console.log(quote_services,'quote_services');
         // var quote_services = [
         //   {
         //     parent_service_id : '5c78dd0563f38236efdf35d5',
