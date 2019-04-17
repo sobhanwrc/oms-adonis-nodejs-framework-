@@ -1435,6 +1435,34 @@ class ApiController {
     //   }
     // }
 
+    async markJobAsComplete({request, response, auth}) {
+      var user = await auth.getUser();
+      if(user.reg_type == 3){
+        var marked_as_complete = request.input("marked_as_complete");
+        var job_id = request.input('job_id');
+        var find_job_details = await VendorAllocation.findOne({job_id: job_id, status : 1, user_id : user._id});
+
+        if(marked_as_complete == 1){
+          find_job_details.status == 6 // job complete
+          await find_job_details.save();
+
+          response.json({
+            status : true,
+            code : 200,
+            message : "Job successfully marked as complete."
+          })
+        }else{
+          response.json({
+            status : false,
+            code : 400,
+            message : "Something went wrong!"
+          })
+        }
+
+        
+      }
+    }
+
     async vendorSentQuoteToUser({request, response, auth}) {
       var user = await auth.getUser();
 
@@ -1563,11 +1591,11 @@ class ApiController {
       if(user.reg_type == 2){
         var sent_quote_id = request.input('sent_quote_id');
         var fetch_sent_quote_details = await SentQuoteRequest.findOne({_id : sent_quote_id, quote_received_customer_id: user._id});
-        fetch_sent_quote_details.quote_accept = 1 ;//user accept this quote of vendor
+        fetch_sent_quote_details.quote_accept = 1 ; //user accept this quote of vendor
 
         await fetch_sent_quote_details.save();
 
-        var allocated_vendor = await this.allocateVendorForSentQuoteAccept();
+        var allocated_vendor = await this.allocateVendorForSentQuoteAccept(fetch_sent_quote_details);
         console.log(allocated_vendor);
         return false
 
@@ -1585,7 +1613,7 @@ class ApiController {
       }
     }
 
-    async allocateVendorForSentQuoteAccept () {
+    async allocateVendorForSentQuoteAccept (fetch_sent_quote_details) {
       var job_id = request.input('job_id');
       var find_all_allocated_vendors = await VendorAllocation.find({job_id : job_id, status : 0})
       .populate('user_id')
