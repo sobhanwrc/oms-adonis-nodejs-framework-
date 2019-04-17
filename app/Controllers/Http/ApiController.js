@@ -1366,9 +1366,9 @@ class ApiController {
     async vendorsAllJobRequest ({response, auth}) {
       var user = await auth.getUser();
 
-      //1 = 'job accept', 2 = 'job decline', 3 = 'job invitation sent', 4 ='sent quote requested', 5 = "quote submitted"
+      //1 = 'job accept', 2 = 'job decline', 3 = 'job invitation sent', 4 ='sent quote requested', 5 = "quote submitted", 6 = 'job complete'
       var job_request_list = await VendorAllocation.find({user_id : user._id, status : {
-        $in : [1,2,3,4,5]
+        $in : [1,2,3,4,5,6]
       }})
       .populate({path: 'job_id', populate: {path: 'service_category'}})
       .populate({path: 'job_id', populate: {path: 'added_services_details.parent_service_id'}})
@@ -1442,15 +1442,24 @@ class ApiController {
         var job_id = request.input('job_id');
         var find_job_details = await VendorAllocation.findOne({job_id: job_id, status : 1, user_id : user._id});
 
-        if(marked_as_complete == 1){
-          find_job_details.status == 6 // job complete
-          await find_job_details.save();
+        console.log(find_job_details,'find_job_details');
 
-          response.json({
-            status : true,
-            code : 200,
-            message : "Job successfully marked as complete."
-          })
+        if(marked_as_complete == 1){
+          find_job_details.status = 6 // job complete for vendor end
+
+          if(await find_job_details.save()){
+            var job_update = await Job.findOne({_id : job_id});
+            job_update.status = 4; // job complete. show for user.
+
+            await job_update.save();
+
+            response.json({
+              status : true,
+              code : 200,
+              message : "Job successfully marked as complete."
+            })
+          }
+          
         }else{
           response.json({
             status : false,
