@@ -1463,7 +1463,7 @@ class ApiController {
                 job_id : job_id
               });
 
-              add_balance_to_wallet.save();
+              await add_balance_to_wallet.save();
             }
 
             response.json({
@@ -1480,8 +1480,6 @@ class ApiController {
             message : "Something went wrong!"
           })
         }
-
-        
       }
     }
 

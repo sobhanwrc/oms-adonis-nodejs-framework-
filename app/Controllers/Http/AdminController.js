@@ -230,9 +230,7 @@ class AdminController {
             }else {
                 var location_name = "N/A"
             }
-            
         }
-
 
         var fetch_vendors_all_jobs_of_interest = await VendorAllocation.find
         ({user_id : vendor_id, status : { $ne: 0 } })
