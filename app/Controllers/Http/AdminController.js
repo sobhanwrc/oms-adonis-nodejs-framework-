@@ -253,6 +253,15 @@ class AdminController {
                     case 3:
                         vendor_jobs_status = 'Job Request Sent';
                     break;
+                    case 4:
+                    vendor_jobs_status = 'User request for a sent Quote';
+                    break;
+                    case 5:
+                    vendor_jobs_status = 'Quotation sent';
+                    break;
+                    case 6:
+                    vendor_jobs_status = 'Completed';
+                    break;
                     default:
                         vendor_jobs_status = 'N/A'
                 }

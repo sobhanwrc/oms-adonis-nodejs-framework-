@@ -1442,8 +1442,6 @@ class ApiController {
         var job_id = request.input('job_id');
         var find_job_details = await VendorAllocation.findOne({job_id: job_id, status : 1, user_id : user._id});
 
-        console.log(find_job_details,'find_job_details');
-
         if(marked_as_complete == 1){
           find_job_details.status = 6 // job complete for vendor end
 

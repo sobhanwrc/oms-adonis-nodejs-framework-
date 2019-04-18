@@ -288,11 +288,15 @@
                                           <td style="text-align:left;"> {{item.job_title}} </td>
                                           <td>
                                             <span class="label label-sm label-success"> 
-                                              @if(item.job_allocated_to_vendor == 2)
-                                                Not Allocated
-                                              @else
+                                              
+                                              @if(item.status == 4)
+                                                Completed
+                                              @elseif(item.job_allocated_to_vendor == 1)
                                                 Allocated
+                                              @else
+                                                Not Allocated
                                               @endif
+
                                             </span>
                                           </td>
                                           <td>

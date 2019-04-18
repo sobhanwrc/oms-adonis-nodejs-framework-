@@ -60,7 +60,15 @@
                             </td>
                             <td>
                                 <span class="label label-sm label-success">
-                                    {{job.job_allocated_to_vendor == 1 ? 'Allocated' : 'Not Allocated'}}   
+                                    
+                                    @if(job.status == 4)
+                                      Completed
+                                    @elseif(job.job_allocated_to_vendor == 1)
+                                      Allocated
+                                    @else 
+                                      Not Allocated
+                                    @endif
+                                    
                                 </span>
                             </td>
                             <td><div class="profile-userbuttons"> <a class="btn btn-circle green" href="/admin/jobs/details/{{job._id}}" > View Job </a> </div></td>
