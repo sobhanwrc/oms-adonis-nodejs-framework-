@@ -1464,6 +1464,8 @@ class ApiController {
               });
 
               await add_balance_to_wallet.save();
+
+              this.add_notification(user,'','','','','','','',job_update);
             }
 
             response.json({
@@ -3731,7 +3733,7 @@ class ApiController {
       })
     }
 
-    async add_notification(user_details = '', added_job_details = '', decline ='', accept = '', service = '', find_allocated_vendor = '', user_payment = '', sent_quote = '') {
+    async add_notification(user_details = '', added_job_details = '', decline ='', accept = '', service = '', find_allocated_vendor = '', user_payment = '', sent_quote = '', mark_as_complete = '') {
       var desc = '';
       if(user_details != ''){
         if(user_details.reg_type == 2){
@@ -3767,6 +3769,10 @@ class ApiController {
 
       if(sent_quote != '') {
         desc = `${sent_quote.first_name} ${sent_quote.last_name} has received sent quote request from ${user_details.first_name} ${user_details.last_name} for ${added_job_details.job_title}`;
+      }
+
+      if(mark_as_complete != ''){
+        desc = `${user_details.first_name} ${user_details.last_name} has successfully completed this ${job_update.job_title}.`;
       }
 
       var add = await Notification({
