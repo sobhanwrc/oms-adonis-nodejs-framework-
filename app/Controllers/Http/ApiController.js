@@ -33,6 +33,7 @@ const _ = use('lodash');
 const Rating = use ('App/Models/Rating');
 const {rate,average} = use('average-rating');
 const StripeTransaction = use ('App/Models/StripeTransaction');
+const Wallet = use('App/Models/Wallet');
 const axios = use('axios');
 
 var FCM = use('fcm-node');
@@ -1382,6 +1383,7 @@ class ApiController {
           .populate({path: 'job_id', populate: {path: 'service_category'}})
           .populate({path: 'job_id', populate: {path: 'added_services_details.parent_service_id'}})
           .populate('ask_for_quote_details.parent_service_id');
+
           // console.log(fetch_sent_quote_details,'fetch_sent_quote_details');
 
           fetch_sent_quote_details['status'] = 5;
@@ -1449,7 +1451,20 @@ class ApiController {
             var job_update = await Job.findOne({_id : job_id});
             job_update.status = 4; // job complete. show for user.
 
-            await job_update.save();
+            if(await job_update.save()){
+              var job_amount = job_update.job_amount;
+              var deduction_amount = Number((job_amount * 20) / 100); //20% deduction
+              var final_amount = Number(job_amount - deduction_amount);
+
+              var add_balance_to_wallet = new Wallet({
+                vendor_id : user._id,
+                earning : final_amount,
+                deduction_amount : deduction_amount,
+                job_id : job_id
+              });
+
+              add_balance_to_wallet.save();
+            }
 
             response.json({
               status : true,
