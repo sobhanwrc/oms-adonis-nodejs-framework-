@@ -1485,6 +1485,37 @@ class ApiController {
       }
     }
 
+    async vendorsWalletDetails({request, response, auth}) {
+      var user = await auth.getUser();
+
+      if(user.reg_type == 3){
+        var wallet_details = await Wallet.find({vendor_id : user._id})
+        .populate({path: 'job_id', populate: {path: 'user_id'}})
+        .sort({_id : -1});
+
+        if(wallet_details.length > 0){
+          response.json({
+            status : true,
+            code : 200,
+            data : wallet_details
+          })
+        }else{
+          response.json({
+            status : false,
+            code : 400,
+            message : "No sufficient balance available."
+          })
+        }
+        
+      }else{
+        response.json({
+          status : false,
+          code : 400,
+          message : "You don't have a permission to see wallet details of vendors."
+        })
+      }
+    }
+
     async vendorSentQuoteToUser({request, response, auth}) {
       var user = await auth.getUser();
 
