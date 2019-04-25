@@ -41,8 +41,7 @@
                             
                             @each(child_services in item.parent_service_id.child_services)
                                 &nbsp;&nbsp;&nbsp;
-                                <span>{{child_services.name}}</span> 
-                                <span>{{child_services.ask_for_quote}}</span> 
+                                <span>{{child_services.name}}</span>
                                 
                                 @if(child_services.ask_for_quote == "1" || child_services.ask_for_quote === "YES")
                                     <span class="pull-right">Ask for quote</span>

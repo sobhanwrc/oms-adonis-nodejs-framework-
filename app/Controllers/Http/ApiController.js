@@ -2070,7 +2070,7 @@ class ApiController {
       var user = await auth.getUser();
       if(user.reg_type == 3) {
         var all_services = await Service.find({'user_id' : user._id})
-        .populate('service_category')
+        .populate({path: 'service_category', populate: {path: 'service_type.service_type_id'}})
         .populate('added_services_details.parent_service_id')
         .sort({_id : -1});
 
