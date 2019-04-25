@@ -289,6 +289,21 @@ class AdminController {
         }
     }
 
+    async registered_service_view ({auth, view, response, params}) {
+        if(await auth.check()){
+            const service_id = params.id;
+
+            var service_details = await Service.find({_id : service_id})
+                .populate('user_id')
+                .populate('service_category')
+                .populate('added_services_details.parent_service_id');
+
+            return view.render('admin.service.registered_service_view', {service_details : service_details})
+        }else{
+            response.redirect('/admin')
+        }
+    }
+
     async location ({auth, view, response}) {
         if(await auth.check()) {
             var fetch_all_locations = await Location.find().sort({_id : -1});

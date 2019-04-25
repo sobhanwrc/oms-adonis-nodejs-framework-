@@ -49,6 +49,7 @@ Route.group(() => {
     Route.get('/admin/vendor-list/profile/:id', 'AdminController.vendor_profile')
 
     Route.get('/admin/service-list', 'AdminController.service_list')
+    Route.get('/admin/registered_service/view/:id', 'AdminController.registered_service_view')
 
     Route.get('/admin/Location', 'AdminController.location')
     Route.post('/admin/location/add', 'AdminController.location_add')

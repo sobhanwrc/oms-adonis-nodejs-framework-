@@ -2132,67 +2132,46 @@ class ApiController {
 
       if(user.reg_type == 3) {
         var service_id = request.input('service_id'); 
+        var new_modified_added_services = request.input('service_type')
+        // var new_modified_added_services = ['5c78df0f9ed89a3ea251adc0', '5c78dd1763f38236efdf35d6'];
+        console.log(new_modified_added_services,'new_modified_added_services');
+
         var service_details = await Service.findOne({_id : service_id, user_id : user._id})
+        .populate('service_category')
+        .populate('added_services_details.parent_service_id');
 
         if(service_details) {
-          service_details.service_title = request.input('service_title') ? request.input('service_title') : service_details.service_title;
-          
-          service_details.service_type = request.input('service_type') ? request.input('service_type') : service_details.service_type;
-          
-          service_details.service_category = request.input('service_category') ? request.input('service_category') : service_details.service_category;
 
-          service_details.rate = request.input('rate') ? request.input('rate') : service_details.rate;
+          for(var k = 0; k < service_details.added_services_details.length; k++){
+            var delete_added_services = await Service.update(
+                { _id : service_id },
+                { $pull: { added_services_details: { parent_service_id:  service_details.added_services_details[k].parent_service_id._id} } },
+                { multi: true }
+            )
+          }
 
-          // service_details.start_date = request.input('start_date') ? request.input('start_date') : service_details.start_date;
-          // if(request.input('start_date')) {
-          //   var start_date = request.input('start_date');
-          //   // dd/mm/yyyy
-          //   var date_arr = start_date.split('/');
-          //   var y = date_arr[2];
-          //   var m = date_arr[1];
-          //   var d = date_arr[0];
-          //   var date = y+'-'+m+'-'+d; 
+          var fetch_details_after_delete = await Service.findOne({_id : service_id, user_id : user._id})
+          .populate('service_category')
+          .populate('added_services_details.parent_service_id');
 
-          //   service_details.start_date = date;
-          // }else {
-          //   service_details.start_date = service_details.start_date;
-          // }
+          if(fetch_details_after_delete.added_services_details.length == 0){
+              for(var p = 0; p < new_modified_added_services.length; p++){
+                  var info = {
+                    parent_service_id : new_modified_added_services[p]
+                  }
 
+                  fetch_details_after_delete.added_services_details.unshift(info); 
 
-          // service_details.end_date = request.input('end_date') ? request.input('end_date') : service_details.end_date;
-          // if(request.input('end_date')) {
-          //   //end date
-          //   var end_date = request.input('end_date');
-          //   // console.log(end_date,'end_date');
-          //   var date_arr_end_date = end_date.split('/');
-          //   var y = date_arr_end_date[2];
-          //   var m = date_arr_end_date[1];
-          //   var d = date_arr_end_date[0];
-          //   var end_date_modified = y+'-'+m+'-'+d;
-
-          //   service_details.end_date = end_date_modified;
-          // }else {
-          //   service_details.end_date = service_details.end_date;
-          // }
-
-
-
-          service_details.description = request.input('description') ? request.input('description') : service_details.description;
-
-          service_details.status = request.input('status') ? request.input('status') : service_details.status;
-
-          if(await service_details.save()) {
-            var updated_service_details = await Service.findOne({_id : service_id, user_id : user._id})
-            .populate('service_type')
-            .populate('service_category');
+                  await fetch_details_after_delete.save();
+              }
 
             response.json({
               status : true,
               code : 200,
-              message : "Service edit successful.",
-              data : updated_service_details
-            });
+              message : "Service modified successfully."
+            })
           }
+
         } else { 
           response.json ({
             status : false,
@@ -2200,7 +2179,6 @@ class ApiController {
             message : "No service found."
           });
         }
-
       } else { 
         response.json ({
           status : false,
