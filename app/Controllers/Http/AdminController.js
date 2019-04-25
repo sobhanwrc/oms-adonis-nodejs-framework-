@@ -293,10 +293,12 @@ class AdminController {
         if(await auth.check()){
             const service_id = params.id;
 
-            var service_details = await Service.find({_id : service_id})
+            var service_details = await Service.findOne({_id : service_id})
                 .populate('user_id')
                 .populate('service_category')
                 .populate('added_services_details.parent_service_id');
+            
+                console.log(service_details);
 
             return view.render('admin.service.registered_service_view', {service_details : service_details})
         }else{

@@ -22,48 +22,25 @@
             </div>-->
             <div class="portlet-body form-group row">
                 <div class="chef_list col-md-6">
-                    <form role="form">
-                        
-                        {{ csrfField() }}
-                        <input type="hidden" name="category_id" id="category_id" value="{{details._id}}">
-
-                        <div class="box-body">
-                            <div class="form-group">
-                                <label for="categoty_edit_name">Category Name</label>
-                                <input type="text" class="form-control" id="categoty_edit_name" name="categoty_edit_name" placeholder="Category Name" value="{{details.service_category}}" autocomplete="off" disabled>
-                            </div>
-                            <div class="form-group">
-                                <label for="">Category Description</label>
-                                <textarea cols="" rows="" class="form-control" id="category_edit_desc" disabled name="category_edit_desc" placeholder="Category Description">{{details.description}}</textarea>
-                            </div>
-                            <div class="form-group parent-cat-image parent-category-image2">
-                                <label for="category_image">Category Image</label>
-                                <div>
-                                    <img src="{{details.category_image}}" class="p-img" />
-                                    <input type="hidden" name="exist_category_image" id="exist_category_image" value="{{details.category_image}}">
-                                </div>
-                                
-                                
-                            </div>
-
-                            <div class="form-group">
-                                <label for="categoty_name1" class="col-md-12" style="padding-left:0;">Add service</label>
-                                    @each(subCategory in fetch_all_service_type)
-                                        @if(size(subCategory.child_services) != 0)
-                                            <div class="form-check disabled col-md-4" style="padding-left:0;">
-
-                                                <label for="add_services_name">
-                                                    <input disabled type="checkbox" class="form-check-input" name="all_added_services[]" value="{{subCategory._id}}" {{ subCategory.check == true ? 'checked' : ''}}>
-                                                    {{subCategory.parent_service}}
-                                                </label>
-                                            </div>
-                                        @endif
-                                    
-                                    @endeach
-                            </div>
+                    <p><strong>Title:</strong>&nbsp; {{service_details.service_title}}</p>
+                    <p><strong>Date:</strong>&nbsp; {{service_details.created_at}}</p>
+                    <div class="col-md-4 col-md-offset-4">
+                        <div class="profile-userpic"> 
+                          <img src="{{service_details.service_category.category_image}}" class="img-responsive" alt=""> 
                         </div>
-                        <!-- /.box-body -->
-                    </form>
+                    </div>
+                    <div class="col-md-8 col-md-offset-2">
+                        <h3 class="profile-usertitle-name text-center">{{service_details.service_category.service_category}}</h3>
+                        <div class="col-md-6 margin-bottom-10">
+                            dfqef
+                            <div>3636</div>
+                        </div>
+                        <div class="col-md-6 margin-bottom-10">dfqef</div>
+                        <div class="col-md-6 margin-bottom-10">dfqef</div>
+                        <div class="col-md-6 margin-bottom-10">dfqef</div>
+                        <div class="col-md-6 margin-bottom-10">dfqef</div>
+                        <div class="col-md-6 margin-bottom-10">dfqef</div>
+                    </div>
                 </div>
           </div>
         </div>
