@@ -20,27 +20,40 @@
                         <a href="/admin/service-category/add"><button class="btn btn-info pull-left"> Add</button></a> 
                 </div>
             </div>-->
-            <div class="portlet-body form-group row">
-                <div class="chef_list col-md-6">
-                    <p><strong>Title:</strong>&nbsp; {{service_details.service_title}}</p>
-                    <p><strong>Date:</strong>&nbsp; {{service_details.created_at}}</p>
-                    <div class="col-md-4 col-md-offset-4">
-                        <div class="profile-userpic"> 
-                          <img src="{{service_details.service_category.category_image}}" class="img-responsive" alt=""> 
-                        </div>
+            <div class="portlet-body form-group row new-section">
+                <div class="col-md-6 col-md-offset-3">
+                    
+                    <p class="text-left"><strong>Service Title:</strong>&nbsp; {{service_details.service_title}}</p>
+                    <p class="text-left"><strong>Date:</strong>&nbsp; {{service_date}}</p>
+                </div>
+                <div class="col-md-4 col-md-offset-4">
+                    <div class="profile-userpic"> 
+                        <img src="{{service_details.service_category.category_image}}" class="img-responsive" alt=""> 
                     </div>
-                    <div class="col-md-8 col-md-offset-2">
-                        <h3 class="profile-usertitle-name text-center">{{service_details.service_category.service_category}}</h3>
-                        <div class="col-md-6 margin-bottom-10">
-                            dfqef
-                            <div>3636</div>
+                </div>
+                <div class="col-md-6 col-md-offset-3">
+                    <h3 class="profile-usertitle-name text-center">{{service_details.service_category.service_category}}</h3>
+
+                    @each(item in service_details.added_services_details)
+                        <div class="col-md-12 margin-bottom-10 text-left" style="padding-left:0;">
+                            <label class="bold">{{item.parent_service_id.parent_service}}</label>
+                            <br>
+                            
+                            @each(child_services in item.parent_service_id.child_services)
+                                &nbsp;&nbsp;&nbsp;
+                                <span>{{child_services.name}}</span> 
+                                <span>{{child_services.ask_for_quote}}</span> 
+                                
+                                @if(child_services.ask_for_quote == "1" || child_services.ask_for_quote === "YES")
+                                    <span class="pull-right">Ask for quote</span>
+                                @else
+                                    <span class="pull-right">{{child_services.price}}</span>
+                                @endif
+                                
+                            <br>
+                            @endeach
                         </div>
-                        <div class="col-md-6 margin-bottom-10">dfqef</div>
-                        <div class="col-md-6 margin-bottom-10">dfqef</div>
-                        <div class="col-md-6 margin-bottom-10">dfqef</div>
-                        <div class="col-md-6 margin-bottom-10">dfqef</div>
-                        <div class="col-md-6 margin-bottom-10">dfqef</div>
-                    </div>
+                    @endeach
                 </div>
           </div>
         </div>

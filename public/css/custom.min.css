@@ -28,6 +28,10 @@
 }
 .parent-cat-image {position:absolute; margin-left: 115%; top: 10px;}
 
+.new-section{    display: inline-block;
+    width: 100%; text-align:center;}
+	.new-section .profile-userpic img{border-radius:10% !important;}
+
 
 .p-img{ width: 256px; height:256px;}
 @media screen and (max-width: 1920px) {}

@@ -297,10 +297,10 @@ class AdminController {
                 .populate('user_id')
                 .populate('service_category')
                 .populate('added_services_details.parent_service_id');
-            
-                console.log(service_details);
 
-            return view.render('admin.service.registered_service_view', {service_details : service_details})
+            var service_date = this.convertToYYYYMMDD(service_details.created_at)
+
+            return view.render('admin.service.registered_service_view', {service_details : service_details, service_date : service_date})
         }else{
             response.redirect('/admin')
         }

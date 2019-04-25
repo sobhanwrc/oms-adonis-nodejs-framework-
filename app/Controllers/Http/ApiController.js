@@ -2798,7 +2798,7 @@ class ApiController {
               if(await add_charges_details.save()) {
                 var user_job = await Job.findOne({_id : request.input('job_id')});
                 user_job.job_amount = request.input('job_amount');
-                user_job.status = 1;
+                user_job.status = 5; //payment complete
                 user_job.transaction_id = charge.id;
                 
                 var save_job = await user_job.save();
@@ -2868,7 +2868,7 @@ class ApiController {
               if(await add_charges_details.save()) {
                 var user_job = await Job.findOne({_id : request.input('job_id')});
                 // user_job.job_amount = request.input('job_amount');
-                user_job.status = 1;
+                user_job.status = 5; //payment complete
                 user_job.transaction_id = charge.id;
 
                 var save_job = await user_job.save();
@@ -3181,7 +3181,7 @@ class ApiController {
           if(await add_charges_details.save()) {
             var user_job = await Job.findOne({_id : request.input('job_id')});
             user_job.job_amount = request.input('job_amount');
-            user_job.status = 1;
+            user_job.status = 5; // payment complete
             user_job.transaction_id = charge.id;
             await user_job.save();
 
