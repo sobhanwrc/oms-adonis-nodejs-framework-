@@ -2169,7 +2169,7 @@ class ApiController {
             response.json({
               status : true,
               code : 200,
-              message : "Service modified successfully."
+              message : "Service has been modified successfully."
             })
           }
 
