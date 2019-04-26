@@ -285,7 +285,7 @@
                                 <th class="sorting_disabled" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" # " style="width: 91px;"> Sr. No </th>
                                 <th class="sorting_asc" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" ID : activate to sort column descending" style="width: 81px;" aria-sort="ascending"> JOb ID </th>
                                 <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Job Type : activate to sort column ascending" style="width: 138px;"> Job Title </th>
-                                <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Satus : activate to sort column ascending" style="width: 92px;"> Job Satus </th>
+                                <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Satus : activate to sort column ascending" style="width: 92px;"> Job Status </th>
                               </tr>
                             </thead>
                             <tbody>
@@ -294,7 +294,14 @@
                                     <td class=""> {{$loop.index +1}} </td>
                                     <td class="center sorting_1"><a href="/admin/jobs/details/{{item._id}}" >{{item.job_id}}</a></td>
                                     <td style="text-align:left;"> {{item.title}} </td>
-                                    <td><span class="label label-sm label-success"> {{item.vendor_jobs_status}} </span></td>
+                                    <td>
+                                      @if(item.vendor_jobs_status == 'Decline')
+                                        <span class="label label-sm label-danger"> {{item.vendor_jobs_status}} </span>
+                                      @else
+                                        <span class="label label-sm label-success"> {{item.vendor_jobs_status}} </span>
+                                      @endif
+                                      
+                                    </td>
                                   </tr>
                                 @endeach
                             </tbody>

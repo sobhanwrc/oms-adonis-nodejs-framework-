@@ -1021,7 +1021,7 @@ class ApiController {
         var withOutAllocatedVendors = [];
 
         for(var i = 0; i < all_vendor_list.length; i++) {
-          var status = await Job.find({vendor_id : all_vendor_list[i]})
+          var status = await Job.find({vendor_id : all_vendor_list[i], job_allocated_to_vendor : 1})
           if(status.length > 0) {
           }else { 
             withOutAllocatedVendors.push(all_vendor_list[i]);
@@ -1450,6 +1450,7 @@ class ApiController {
           if(await find_job_details.save()){
             var job_update = await Job.findOne({_id : job_id});
             job_update.status = 4; // job complete. show for user.
+            job_update.job_allocated_to_vendor = 2;
 
             if(await job_update.save()){
               var job_amount = job_update.job_amount;
