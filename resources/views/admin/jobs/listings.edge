@@ -50,13 +50,19 @@
                                 </a> 
                             </td>
                             <td class="center">
+                              @if(job.status == 4)
+                                <a class="" href="/admin/vendor-list/profile/{{job.vendor_id._id}}" > 
+                                  {{ upperFirst(job.vendor_id.first_name) }} {{ upperFirst(job.vendor_id.last_name) }}
+                                </a>
+                              @else
                                 @if(job.job_allocated_to_vendor == 1)
-                                    <a class="" href="/admin/vendor-list/profile/{{job.vendor_id._id}}" > 
-                                        {{ upperFirst(job.vendor_id.first_name) }} {{ upperFirst(job.vendor_id.last_name) }}
-                                    </a>
+                                  <a class="" href="/admin/vendor-list/profile/{{job.vendor_id._id}}" > 
+                                      {{ upperFirst(job.vendor_id.first_name) }} {{ upperFirst(job.vendor_id.last_name) }}
+                                  </a>
                                 @else
                                   N/A
                                 @endif
+                              @endif
                             </td>
                             <td>
                                 <span class="label label-sm label-success">

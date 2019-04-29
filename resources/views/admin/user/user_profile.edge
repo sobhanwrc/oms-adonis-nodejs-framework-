@@ -275,9 +275,8 @@
                                       <th class="sorting_disabled" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" # " style="width: 91px;"> Sr. No </th>
                                       <th class="sorting_asc" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" ID : activate to sort column descending" style="width: 81px;" aria-sort="ascending"> JOb ID </th>
                                       <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Job Type : activate to sort column ascending" style="width: 138px;"> Job Title </th>
-                                      <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Satus : activate to sort column ascending" style="width: 92px;"> Job Satus </th>
-
                                       <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Satus : activate to sort column ascending" style="width: 92px;"> Vendor Name </th>
+                                      <th class="sorting" tabindex="0" aria-controls="sample_1_2" rowspan="1" colspan="1" aria-label=" Satus : activate to sort column ascending" style="width: 92px;"> Job Satus </th>
                                     </tr>
                                   </thead>
                                   <tbody>
@@ -286,6 +285,23 @@
                                           <td class=""> {{$loop.index +1}} </td>
                                           <td class="center sorting_1"><a href="/admin/jobs/details/{{item._id}}" >{{item.create_job_id}}</a></td>
                                           <td style="text-align:left;"> {{item.job_title}} </td>
+                                          
+                                          <td>
+                                              @if(item.status == 4)
+                                                <a class="" href="/admin/vendor-list/profile/{{item.vendor_id._id}}" > 
+                                                  {{ upperFirst(item.vendor_id.first_name) }} {{ upperFirst(item.vendor_id.last_name) }}
+                                                </a>
+                                              @else
+                                                @if(job.job_allocated_to_vendor == 1)
+                                                  <a class="" href="/admin/vendor-list/profile/{{item.vendor_id._id}}" > 
+                                                      {{ upperFirst(item.vendor_id.first_name) }} {{ upperFirst(item.vendor_id.last_name) }}
+                                                  </a>
+                                                @else
+                                                  N/A
+                                                @endif
+                                              @endif
+                                            </td>
+
                                           <td>
                                             <span class="label label-sm label-success"> 
                                               
@@ -299,13 +315,7 @@
 
                                             </span>
                                           </td>
-                                          <td>
-                                            @if(item.job_allocated_to_vendor == 2)
-                                              N/A
-                                            @else
-                                            <a href="/admin/vendor-list/profile/{{item.vendor_id._id}}">{{ upperFirst(item.vendor_id.first_name) }} {{ upperFirst(item.vendor_id.last_name) }}</a>
-                                            @endif
-                                          </td>
+                                          
                                         </tr>
                                       @endeach
                                   </tbody>
