@@ -1466,9 +1466,11 @@ class ApiController {
 
               await add_balance_to_wallet.save();
 
+              //admin notification
               this.add_notification(user,'','','','','','','',job_update);
+              //end
 
-              //check ustomer device id
+              //check customer device id
               if(job_update.user_id.device_id != ''){                
                 //sent push to customer
                 var title = `${job_update.job_title}`;
