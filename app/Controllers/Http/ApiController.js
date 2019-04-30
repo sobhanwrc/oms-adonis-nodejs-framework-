@@ -1442,13 +1442,13 @@ class ApiController {
       if(user.reg_type == 3){
         var marked_as_complete = request.input("marked_as_complete");
         var job_id = request.input('job_id');
-        var find_job_details = await VendorAllocation.findOne({job_id: job_id, status : 1, user_id : user._id});
+        var find_job_details = await VendorAllocation.findOne({job_id: job_id, status : 1, user_id : user._id}).populate('user_id');
 
         if(marked_as_complete == 1){
           find_job_details.status = 6 // job complete for vendor end
 
           if(await find_job_details.save()){
-            var job_update = await Job.findOne({_id : job_id});
+            var job_update = await Job.findOne({_id : job_id}).populate('user_id');
             job_update.status = 4; // job complete. show for user.
             job_update.job_allocated_to_vendor = 2;
 
@@ -1467,6 +1467,19 @@ class ApiController {
               await add_balance_to_wallet.save();
 
               this.add_notification(user,'','','','','','','',job_update);
+
+              //check ustomer device id
+              if(job_update.user_id.device_id != ''){                
+                //sent push to customer
+                var title = `${job_update.job_title}`;
+                
+                msg_body = `This job has been successfully marked as completed by ${find_job_details.user_id.first_name} ${find_job_details.user_id.last_name}.`;
+                
+                click_action = "Complete";
+                
+                await this.sentPushNotification(job_update.user_id.device_id, msg_body, job_update.user_id, click_action, title);
+              }
+              //end
             }
 
             response.json({
@@ -3782,7 +3795,7 @@ class ApiController {
       }
 
       if(mark_as_complete != ''){
-        desc = `${user_details.first_name} ${user_details.last_name} has successfully completed this ${job_update.job_title}.`;
+        desc = `${user_details.first_name} ${user_details.last_name} has successfully completed ${mark_as_complete.job_title}.`;
       }
 
       var add = await Notification({
