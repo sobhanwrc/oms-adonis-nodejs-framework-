@@ -159,12 +159,26 @@ class ApiController {
                     var send_registration_email = this.registrationEmailData(user);
 
                     if(send_registration_email == true) {
-                      var add_notification = this.add_notification(user);
+                      var add_notification = await this.add_notification(user);
 
                       //push notification to app
                       msg_body = `Hi, ${user.first_name} ${user.last_name} welcome to OMC`;
                       click_action = 'Registration';
-                      this.sentPushNotification(user.device_id, msg_body, user, click_action);
+                      await this.sentPushNotification(user.device_id, msg_body, user, click_action);
+                      //end
+
+                      //add vendor to stripe as a customer
+                      if(user.reg_type == 3){
+                        var add_vendor_to_stripe = await this.add_vendor_to_stripe_as_customer(user);
+
+                        if(add_vendor_to_stripe != false){
+                          user.stripe_details = {
+                            customer_id : add_vendor_to_stripe
+                          }
+
+                          await user.save();
+                        }
+                      }
                       //end
 
                       return response.json({
@@ -1444,6 +1458,7 @@ class ApiController {
         var job_id = request.input('job_id');
         var find_job_details = await VendorAllocation.findOne({job_id: job_id, status : 1, user_id : user._id}).populate('user_id');
 
+
         if(marked_as_complete == 1){
           find_job_details.status = 6 // job complete for vendor end
 
@@ -2718,51 +2733,88 @@ class ApiController {
     }
 
     //stripe functions
+    async add_vendor_to_stripe_as_customer (user_details) {
+      // Create a Customer:
+      const customer = await stripe.customers.create({
+        email: user_details.email,
+        description : "OMC Vendor",
+        name : user_details.first_name + ' ' + user_details.last_name
+      });
+      if(customer.id != '') {
+        return customer.id;
+      }else{
+        return false;
+      }
+    }
     async stripeTopUpCredit ({request, response, auth}) {
       try {
         var user = await auth.getUser();
-        if(request.input("topup_amount") < 40) {
-          response.json({
-            status : false,
-            code : 400,
-            message : "Credit amount should be greater than $40 ."
-          });
-        } else { 
-          var customer_details = await stripe.customers.retrieve(request.input("stripe_customer_id"));
-          var existing_account_balance = Number(customer_details.account_balance);
-          var new_balance = 0;
-
-          if(existing_account_balance > 0) {
-            new_balance = existing_account_balance + Number(request.input("topup_amount") * 100);
-          }else { 
-            new_balance = Number(request.input("topup_amount") * 100);
-          }
-
-          var update_customer = await stripe.customers.update(request.input("stripe_customer_id"), {
-            account_balance: new_balance 
-          });
-
-          if(update_customer) {
-            user.stripe_details = {
-              account_balance : new_balance
-            }
-
-            await user.save();
-
-            response.json ({
-              status : true,
-              code : 200,
-              message : "Top up added successfully."
-            });
-          } else { 
-            response.json ({
+        if(user.reg_type == 3){
+          if(request.input("topup_amount") < 40) {
+            response.json({
               status : false,
               code : 400,
-              message : "Top up added failed."
+              message : "Credit amount should be greater than $40 ."
             });
+          } else {
+            var customer_id = request.input("stripe_customer_id");
+            const token = request.body.stripeToken;
+            //stripe add card
+            var addCard = await stripe.customers.createSource(customer_id,{
+              source: token
+            });
+
+            if (addCard) {
+              //stripe update customer default card
+              var save = await stripe.customers.update(customer_id, {
+                default_source : addCard.id
+              });
+              if(save) {
+                //stripe create charge
+                const charge = await stripe.charges.create({
+                  amount: request.input('topup_amount') * 100,
+                  currency: 'sgd',
+                  description: 'Top up amount credit successfully.',
+                  customer : customer_id
+                });
+        
+                if(charge) {
+                  var add_charges_details = new StripeTransaction ({
+                    user_id : user._id,
+                    transaction_id : charge.id,
+                    type : 'vendor_pay_to_omc_as_topUp'
+                  });
+                  if(await add_charges_details.save()) {
+                    // credit wallet 
+                    var add_wallet = new Wallet({
+                      vendor_id : user._id,
+                      credit : request.input('topup_amount')
+                    })
+
+                    if(add_wallet.save()) {
+                      var add_notification = this.add_notification(user,'','','','','',top_up_recharge);
+
+                      var send_payment_invoice = this.paymentInvoiceEmail(user, charge, save_job);
+                      if(send_payment_invoice == true) {
+                        response.json({
+                          status : true,
+                          code : 200,
+                          message : "Top up recharge has been completed."
+                        });
+                      }
+                    }
+                  }
+                }else { 
+                  response.json({
+                    status : false,
+                    code : 400,
+                    message : "Payment declined."
+                  });
+                }
+              }
+            }
           }
         }
-        
       }catch (error) {
         throw error;
       }

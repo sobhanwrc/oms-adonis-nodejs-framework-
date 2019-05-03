@@ -52,7 +52,8 @@ class User extends BaseModel {
         }
       ],
       stripe_details : [{
-        customer_id : { type : String, unique : true, default: ''},
+        customer_id : { type : String, unique : true, default: '' },
+        connect_account_id : {type : String, unique : true, default: '' },
         account_balance : { type : Number, default: ''},
         invoice_prefix : { type : String, default: ''},
         customer_created : {type : String, default: ''}
