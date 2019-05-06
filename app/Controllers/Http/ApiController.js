@@ -1462,23 +1462,43 @@ class ApiController {
           find_job_details.status = 6 // job complete for vendor end
 
           if(await find_job_details.save()){
+            //update complete for user end
             var job_update = await Job.findOne({_id : job_id}).populate('user_id');
             job_update.status = 4; // job complete. show for user.
             job_update.job_allocated_to_vendor = 2;
 
             if(await job_update.save()){
+              //earning wallet transaction
               var job_amount = job_update.job_amount;
               var deduction_amount = Number((job_amount * 20) / 100); //20% deduction
               var final_amount = Number(job_amount - deduction_amount);
-
-              var add_balance_to_wallet = new Wallet({
+              //insert transaction db
+              var add_balance_to_wallet = new VendorWalletTransactions({
                 vendor_id : user._id,
                 earning : final_amount,
                 deduction_amount : deduction_amount,
                 job_id : job_id
               });
 
-              await add_balance_to_wallet.save();
+              //update in vendor wallet
+              if(await add_balance_to_wallet.save()){
+                var fetch_earning_wallet_details = await Wallet.findOne({vendor_id : user._id});
+                if(fetch_earning_wallet_details != null){
+                  var previous_earning_wallet_balance = fetch_earning_wallet_details.earning;
+                  var updated_balance = Number(final_amount + previous_earning_wallet_balance);
+
+                  fetch_earning_wallet_details.earning = updated_balance;
+                  fetch_earning_wallet_details.updated_at = Date.now();
+                  await fetch_earning_wallet_details.save();
+                }else{
+                  var add = new Wallet({
+                    vendor_id : user._id,
+                    earning : final_amount
+                  });
+
+                  await add.save();
+                }
+              }
 
               //admin notification
               this.add_notification(user,'','','','','','','',job_update);
