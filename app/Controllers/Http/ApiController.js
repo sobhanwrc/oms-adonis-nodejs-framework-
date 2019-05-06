@@ -27,13 +27,12 @@ const AuditLog = use('App/Models/AuditLog');
 const Notification = use('App/Models/Notification');
 const AppNotification = use('App/Models/AppNotification');
 const SentQuoteRequest = use('App/Models/SentQuoteRequest');
-// ('sk_test_1lfdJgJawDb3EFLvNDyi1p7v'); //secret key for test account
-
 const _ = use('lodash');
 const Rating = use ('App/Models/Rating');
 const {rate,average} = use('average-rating');
 const StripeTransaction = use ('App/Models/StripeTransaction');
 const Wallet = use('App/Models/Wallet');
+const VendorWalletTransactions = use('App/Models/VendorWalletTransactions');
 const axios = use('axios');
 
 var FCM = use('fcm-node');
@@ -2746,15 +2745,17 @@ class ApiController {
         return false;
       }
     }
+    
+    //top up credit
     async stripeTopUpCredit ({request, response, auth}) {
       try {
         var user = await auth.getUser();
         if(user.reg_type == 3){
-          if(request.input("topup_amount") < 40) {
+          if(request.input("topup_amount") < 49) {
             response.json({
               status : false,
               code : 400,
-              message : "Credit amount should be greater than $40 ."
+              message : "Credit amount should be greater than $49 ."
             });
           } else {
             var customer_id = request.input("stripe_customer_id");
@@ -2779,29 +2780,39 @@ class ApiController {
                 });
         
                 if(charge) {
-                  var add_charges_details = new StripeTransaction ({
-                    user_id : user._id,
-                    transaction_id : charge.id,
-                    type : 'vendor_pay_to_omc_as_topUp'
+                  var add_charges_details = new VendorWalletTransactions ({
+                    vendor_id : user._id,
+                    credit : request.input('topup_amount'),
                   });
+                  
                   if(await add_charges_details.save()) {
-                    // credit wallet 
-                    var add_wallet = new Wallet({
-                      vendor_id : user._id,
-                      credit : request.input('topup_amount')
-                    })
+                    var fetch_vendor_wallet_details = await Wallet.findOne({vendor_id : user._id});
+                    if(fetch_vendor_wallet_details != ''){
+                      var previous_credit_wallet_balance = fetch_vendor_wallet_details.credit;
+                      var new_updated_credit_wallet_balance = Number(request.input('topup_amount') + previous_credit_wallet_balance)
 
-                    if(add_wallet.save()) {
-                      var add_notification = this.add_notification(user,'','','','','',top_up_recharge);
+                      fetch_vendor_wallet_details.credit = new_updated_credit_wallet_balance;
+                      fetch_vendor_wallet_details.updated_at = Date.now();
+                      await fetch_vendor_wallet_details.save();
+                    }else {
+                      // credit wallet 
+                      var add_wallet = new Wallet({
+                        vendor_id : user._id,
+                        credit : request.input('topup_amount')
+                      })
 
-                      var send_payment_invoice = this.paymentInvoiceEmail(user, charge, save_job);
-                      if(send_payment_invoice == true) {
-                        response.json({
-                          status : true,
-                          code : 200,
-                          message : "Top up recharge has been completed."
-                        });
-                      }
+                      await add_wallet.save();
+                    }
+
+                    var add_notification = this.add_notification(user,'','','','','',top_up_recharge);
+
+                    var send_payment_invoice = this.paymentInvoiceEmail(user, charge, save_job);
+                    if(send_payment_invoice == true) {
+                      response.json({
+                        status : true,
+                        code : 200,
+                        message : "Top up recharge has been completed."
+                      });
                     }
                   }
                 }else { 

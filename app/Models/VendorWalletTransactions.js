@@ -5,8 +5,9 @@ var vendor_wallet = new Schema({
     vendor_id : {type : Schema.Types.ObjectId, ref:"User"},
     credit: { type : Number},
     earning : { type : Number},
+    deduction_amount : { type: Number},
+    job_id : { type : String},
     created_at : { type: Date, default : Date.now()},
-    updated_at : { type: Date, default : Date.now()}
 });
 
-module.exports = mongoose.model('Wallet', vendor_wallet);
+module.exports = mongoose.model('VendorWalletTransactions', vendor_wallet);
