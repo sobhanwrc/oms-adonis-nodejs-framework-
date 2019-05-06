@@ -2748,86 +2748,82 @@ class ApiController {
     
     //top up credit
     async stripeTopUpCredit ({request, response, auth}) {
-      try {
-        var user = await auth.getUser();
-        if(user.reg_type == 3){
-          if(request.input("topup_amount") < 49) {
-            response.json({
-              status : false,
-              code : 400,
-              message : "Credit amount should be greater than $49 ."
-            });
-          } else {
-            var customer_id = request.input("stripe_customer_id");
-            const token = request.body.stripeToken;
-            //stripe add card
-            var addCard = await stripe.customers.createSource(customer_id,{
-              source: token
-            });
+      var user = await auth.getUser();
+      if(user.reg_type == 3){
+        if(request.input("topup_amount") < 49) {
+          response.json({
+            status : false,
+            code : 400,
+            message : "Credit amount should be greater than $49 ."
+          });
+        } else {
+          var customer_id = request.input("stripe_customer_id");
+          const token = request.body.stripeToken;
+          //stripe add card
+          var addCard = await stripe.customers.createSource(customer_id,{
+            source: token
+          });
 
-            if (addCard) {
-              //stripe update customer default card
-              var save = await stripe.customers.update(customer_id, {
-                default_source : addCard.id
+          if (addCard) {
+            //stripe update customer default card
+            var save = await stripe.customers.update(customer_id, {
+              default_source : addCard.id
+            });
+            if(save) {
+              //stripe create charge
+              const charge = await stripe.charges.create({
+                amount: request.input('topup_amount') * 100,
+                currency: 'sgd',
+                description: 'Top up amount credit successfully.',
+                customer : customer_id
               });
-              if(save) {
-                //stripe create charge
-                const charge = await stripe.charges.create({
-                  amount: request.input('topup_amount') * 100,
-                  currency: 'sgd',
-                  description: 'Top up amount credit successfully.',
-                  customer : customer_id
+      
+              if(charge) {
+                var add_charges_details = new VendorWalletTransactions ({
+                  vendor_id : user._id,
+                  credit : request.input('topup_amount'),
                 });
-        
-                if(charge) {
-                  var add_charges_details = new VendorWalletTransactions ({
-                    vendor_id : user._id,
-                    credit : request.input('topup_amount'),
-                  });
-                  
-                  if(await add_charges_details.save()) {
-                    var fetch_vendor_wallet_details = await Wallet.findOne({vendor_id : user._id});
-                    if(fetch_vendor_wallet_details != ''){
-                      var previous_credit_wallet_balance = fetch_vendor_wallet_details.credit;
-                      var new_updated_credit_wallet_balance = Number(request.input('topup_amount') + previous_credit_wallet_balance)
 
-                      fetch_vendor_wallet_details.credit = new_updated_credit_wallet_balance;
-                      fetch_vendor_wallet_details.updated_at = Date.now();
-                      await fetch_vendor_wallet_details.save();
-                    }else {
-                      // credit wallet 
-                      var add_wallet = new Wallet({
-                        vendor_id : user._id,
-                        credit : request.input('topup_amount')
-                      })
+                if(await add_charges_details.save()) {
+                  var fetch_vendor_wallet_details = await Wallet.findOne({vendor_id : user._id});
+                  if(fetch_vendor_wallet_details != null){
+                    var previous_credit_wallet_balance = fetch_vendor_wallet_details.credit;
+                    var new_updated_credit_wallet_balance = Number(request.input('topup_amount') + previous_credit_wallet_balance)
 
-                      await add_wallet.save();
-                    }
+                    fetch_vendor_wallet_details.credit = new_updated_credit_wallet_balance;
+                    fetch_vendor_wallet_details.updated_at = Date.now();
+                    await fetch_vendor_wallet_details.save();
+                  }else {
+                    // credit wallet 
+                    var add_wallet = new Wallet({
+                      vendor_id : user._id,
+                      credit : request.input('topup_amount')
+                    })
 
-                    var add_notification = this.add_notification(user,'','','','','',top_up_recharge);
-
-                    var send_payment_invoice = this.paymentInvoiceEmail(user, charge, save_job);
-                    if(send_payment_invoice == true) {
-                      response.json({
-                        status : true,
-                        code : 200,
-                        message : "Top up recharge has been completed."
-                      });
-                    }
+                    await add_wallet.save();
                   }
-                }else { 
-                  response.json({
-                    status : false,
-                    code : 400,
-                    message : "Payment declined."
-                  });
+
+                  var add_notification = this.add_notification(user,'','','','','',top_up_recharge);
+
+                  var send_payment_invoice = this.paymentInvoiceEmail(user, charge, save_job);
+                  if(send_payment_invoice == true) {
+                    response.json({
+                      status : true,
+                      code : 200,
+                      message : "Top up recharge has been completed."
+                    });
+                  }
                 }
+              }else { 
+                response.json({
+                  status : false,
+                  code : 400,
+                  message : "Payment declined."
+                });
               }
             }
           }
         }
-      }catch (error) {
-        throw error;
       }
     }
 

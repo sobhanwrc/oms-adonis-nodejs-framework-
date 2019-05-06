@@ -126,7 +126,7 @@ Route.post('/api/assignCouponsToUser', 'ApiController.assignCouponsToUser')
 Route.post('/api/checkDate', 'ApiController.checkDate');
 
 Route.get('/dbs/test', 'ApiController.test')
-// Route.post('/api/vendor/topup-credit-stripe', 'ApiController.stripeTopUpCredit')
+Route.post('/api/vendor/topup-credit-stripe', 'ApiController.stripeTopUpCredit')
 Route.group(() => { 
     Route.get('/api/userDetails', 'ApiController.userDetails')
     Route.post('/api/profileEdit', 'ApiController.profileEdit')
