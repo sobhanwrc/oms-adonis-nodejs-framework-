@@ -1384,7 +1384,8 @@ class ApiController {
       var job_request_list = await VendorAllocation.find({user_id : user._id, status : {
         $in : [1,2,3,4,5,6]
       }})
-      .populate({path: 'job_id', populate: {path: 'service_category'}})
+      // .populate({path: 'job_id', populate: {path: 'service_category'}})
+      .populate({path: 'job_id', populate: {path: 'service_category', populate: {path: 'service_type.service_type_id'}}})
       .populate({path: 'job_id', populate: {path: 'added_services_details.parent_service_id'}})
       .sort({_id : -1});
 
@@ -1393,7 +1394,8 @@ class ApiController {
       for(var i = 0; i < job_request_list.length; i ++){
         if(job_request_list[i].status == 5){
           var fetch_sent_quote_details = await SentQuoteRequest.findOne({quote_sent_vendor_id : user._id, job_id : job_request_list[i].job_id._id})
-          .populate({path: 'job_id', populate: {path: 'service_category'}})
+          // .populate({path: 'job_id', populate: {path: 'service_category'}})
+          .populate({path: 'job_id', populate: {path: 'service_category', populate: {path: 'service_type.service_type_id'}}})
           .populate({path: 'job_id', populate: {path: 'added_services_details.parent_service_id'}})
           .populate('ask_for_quote_details.parent_service_id');
 
@@ -1459,7 +1461,7 @@ class ApiController {
 
 
         if(marked_as_complete == 1){
-          find_job_details.status = 6 // job complete for vendor end
+          find_job_details.status = 6 // job complete from vendor end
 
           if(await find_job_details.save()){
             //update complete for user end
