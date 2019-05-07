@@ -2825,7 +2825,8 @@ class ApiController {
                     await add_wallet.save();
                   }
 
-                  var add_notification = this.add_notification(user,'','','','','',top_up_recharge);
+                  var wallet_details = await Wallet.findOne({vendor_id : user._id});
+                  var add_notification = this.add_notification(user,'','','','','','','','',wallet_details);
 
                   var send_payment_invoice = this.paymentInvoiceEmail(user, charge, save_job);
                   if(send_payment_invoice == true) {
@@ -3839,7 +3840,7 @@ class ApiController {
       })
     }
 
-    async add_notification(user_details = '', added_job_details = '', decline ='', accept = '', service = '', find_allocated_vendor = '', user_payment = '', sent_quote = '', mark_as_complete = '') {
+    async add_notification(user_details = '', added_job_details = '', decline ='', accept = '', service = '', find_allocated_vendor = '', user_payment = '', sent_quote = '', mark_as_complete = '', wallet_details = '') {
       var desc = '';
       if(user_details != ''){
         if(user_details.reg_type == 2){
@@ -3879,6 +3880,10 @@ class ApiController {
 
       if(mark_as_complete != ''){
         desc = `${user_details.first_name} ${user_details.last_name} has successfully completed ${mark_as_complete.job_title}.`;
+      }
+
+      if(wallet_details != ''){
+        desc =  `$${wallet_details.credit} has been successfully credited by ${user_details.first_name} ${user_details.last_name}.`
       }
 
       var add = await Notification({
