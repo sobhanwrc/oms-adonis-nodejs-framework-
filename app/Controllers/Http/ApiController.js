@@ -1041,9 +1041,18 @@ class ApiController {
           }
         }
 
-        console.log(withOutAllocatedVendors,'withOutAllocatedVendors');
+        //checking which vendor has $50 in credit wallet
+        var wallet_match_array = [];
+        for(var j = 0; j < withOutAllocatedVendors.length; j++){
+          var fetch_wallet_details = await Wallet.findOne({vendor_id : withOutAllocatedVendors[j], credit : {$gt: 49} });
+          if(fetch_wallet_details != null){
+            wallet_match_array.push(withOutAllocatedVendors[j])
+          } 
+        }
 
-        await _.chunk(withOutAllocatedVendors,4).map(id => {
+        console.log(wallet_match_array,'wallet_match_array');
+
+        await _.chunk(wallet_match_array,4).map(id => {
           _.forEach(id, function(value) {
             Service.find({user_id : value, service_category : job.service_category._id})
             .then(function (matching_vendor_with_service) {
@@ -2776,7 +2785,7 @@ class ApiController {
           response.json({
             status : false,
             code : 400,
-            message : "Credit amount should be greater than $49 ."
+            message : "Credit amount should be greater than $50 ."
           });
         } else {
           var customer_id = request.input("stripe_customer_id");
