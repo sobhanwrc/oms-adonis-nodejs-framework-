@@ -184,7 +184,7 @@ class ApiController {
                           status: true, 
                           code: 200, 
                           token: 'Bearer ' + generate_token.token,
-                          message: 'Registration completed successfully.'
+                          message: 'Registration completed successfully.',
                       });
                     }
                 }
@@ -199,6 +199,7 @@ class ApiController {
     async submitLogin ({ request, response, auth}){
       var reg_type = request.input('reg_type'); //2 ='user', 3='vendor'
       var device_token = request.input('device_id');
+      var warning = 0;
 
       const user = await User.findOne({email : request.input('email'), reg_type : reg_type});
       
@@ -213,25 +214,25 @@ class ApiController {
           const isSame = await Hash.verify(request.input('password'), user.password);
 
           if(user != null && isSame && user.status === 1) {
-            
-            if(user.device_id != ''){ 
-              user.device_id = device_token;
-
-              await user.save();
-            }else {
-              user.device_id = device_token;
-
-              await user.save();
-            }
+            user.device_id = device_token;
+            await user.save();
 
             var generate_token = await auth.authenticator('jwt').generate(user);
 
-              return response.json({
-                  status: true,
-                  code : 200,
-                  token: 'Bearer ' + generate_token.token,
-                  message : "Login successfully."
-              })
+            if(reg_type == 3){
+              var wallet_balance_warning = await this.check_vendor_credit_wallet_balance(user);
+              if(wallet_balance_warning == 'Low Balance'){
+                warning = 400;
+              }
+            }
+
+            return response.json({
+                status: true,
+                code : 200,
+                token: 'Bearer ' + generate_token.token,
+                message : "Login successfully.",
+                alert : warning == 400 ? false : true
+            })
           }else if (user.status == 0) {
               return response.json ({
                   status: false,
@@ -3944,6 +3945,23 @@ class ApiController {
               add.save();
           }
       });
+    }
+
+    async check_vendor_credit_wallet_balance (user) {
+      console.log(user,'user');
+      var user_id = user._id;
+      var wallet_balance = await Wallet.findOne({vendor_id : user_id, credit : { $gt : 49 } });
+
+      if(wallet_balance != null){
+        return true;
+      }else{
+        //sent push to vendor mobile
+        msg_body = `Hi ${user.first_name} ${user.last_name}, you have very insufficient balance in your credit wallet. Please recharge your credit wallet.`;
+        click_action = 'Wallet';
+        await this.sentPushNotification(user.device_id, msg_body, user, click_action);
+
+        return "Low Balance";
+      }
     }
 
     email_domain_check(email){
