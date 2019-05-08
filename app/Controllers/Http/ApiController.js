@@ -1052,8 +1052,9 @@ class ApiController {
         }
 
         console.log(wallet_match_array,'wallet_match_array');
+        console.log(withOutAllocatedVendors,'withOutAllocatedVendors');
 
-        await _.chunk(wallet_match_array,4).map(id => {
+        await _.chunk(withOutAllocatedVendors,4).map(id => {
           _.forEach(id, function(value) {
             Service.find({user_id : value, service_category : job.service_category._id})
             .then(function (matching_vendor_with_service) {
