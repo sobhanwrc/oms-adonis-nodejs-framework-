@@ -2499,21 +2499,27 @@ class ApiController {
 
     async vendorTransactionList ({response, auth}) {
       var user = await auth.getUser();
-
-      var transaction_list = await StripeTransaction.find({user_id : user._id, type : 'OMC_pay_to_Vendor'});
-
-      if (transaction_list.length > 0) {
-        response.json({
-          status : true,
-          code : 200,
-          data : transaction_list
-        });
-      } else {
+      if(user.reg_type == 3){
+        var transactions = await VendorWalletTransactions.find({vendor_id : user._id}).populate('job_id').sort({_id : -1});
+        if(transactions.length > 0){
+          response.json({
+            status : true,
+            code : 200,
+            data : transactions
+          })
+        }else{
+          response.json({
+            status : true,
+            code : 200,
+            message : "No transactions found."
+          })
+        }
+      }else{
         response.json({
           status : false,
           code : 400,
-          message : "No transaction details found."
-        });
+          message : "You don't have a permission to do this."
+        })
       }
     }
 
@@ -3948,7 +3954,6 @@ class ApiController {
     }
 
     async check_vendor_credit_wallet_balance (user) {
-      console.log(user,'user');
       var user_id = user._id;
       var wallet_balance = await Wallet.findOne({vendor_id : user_id, credit : { $gt : 49 } });
 

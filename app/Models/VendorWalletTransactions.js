@@ -6,7 +6,7 @@ var vendor_wallet = new Schema({
     credit: { type : Number},
     earning : { type : Number},
     deduction_amount : { type: Number},
-    job_id : { type : String},
+    job_id : {type : Schema.Types.ObjectId, ref:"Job"},
     created_at : { type: Date, default : Date.now()},
 });
 
