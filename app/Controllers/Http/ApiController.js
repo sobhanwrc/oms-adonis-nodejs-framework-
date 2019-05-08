@@ -2511,7 +2511,7 @@ class ApiController {
           response.json({
             status : true,
             code : 200,
-            message : "No transactions found."
+            message : "No transactions are found."
           })
         }
       }else{
@@ -3943,12 +3943,13 @@ class ApiController {
               console.log("Something has gone wrong!");
           } else {
               console.log("Successfully sent with response: ", response);
+              console.log(user_details);
               var add = new AppNotification({
                 user_id : user_details._id,
                 message : msg_body
               })
 
-              add.save();
+              await add.save();
           }
       });
     }
