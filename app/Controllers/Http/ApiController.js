@@ -1842,7 +1842,7 @@ class ApiController {
     async jobList ({request, response, auth}) {
       var user = await auth.getUser();
       var all_jobs_list = await Job.find({user_id: user._id}).sort({ _id : -1 })
-      .populate('service_category')
+      .populate({path: 'service_category', populate: {path: 'service_type.service_type_id'}})
       .populate('added_services_details.parent_service_id')
       .populate('vendor_id');
 
@@ -3942,14 +3942,12 @@ class ApiController {
           if (err) {
               console.log("Something has gone wrong!");
           } else {
-              console.log("Successfully sent with response: ", response);
-              console.log(user_details);
-              var add = new AppNotification({
-                user_id : user_details._id,
-                message : msg_body
-              })
+            var add = new AppNotification({
+              user_id : user_details._id,
+              message : msg_body
+            })
 
-              await add.save();
+            add.save();
           }
       });
     }
