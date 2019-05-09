@@ -1670,7 +1670,7 @@ class ApiController {
         if(vendor_id == undefined){
           var see_all_quote_details = await SentQuoteRequest.find({job_id : job_id, quote_received_customer_id : user._id})
           .populate('quote_sent_vendor_id')
-          .populate({path: 'job_id', populate: {path: 'service_category'}})
+          .populate({path: 'job_id', populate: {path: 'service_category', populate: {path: 'service_type.service_type_id'}}})
           .populate('ask_for_quote_details.parent_service_id')
           .sort({_id : -1});
 
@@ -1682,7 +1682,7 @@ class ApiController {
         }else {
           var see_particular_quote_details = await SentQuoteRequest.find({job_id : job_id, quote_received_customer_id : user._id, quote_sent_vendor_id : vendor_id})
           .populate('quote_sent_vendor_id')
-          .populate({path: 'job_id', populate: {path: 'service_category'}})
+          .populate({path: 'job_id', populate: {path: 'service_category', populate: {path: 'service_type.service_type_id'}}})
           .populate('ask_for_quote_details.parent_service_id')
           .sort({_id : -1});
 
@@ -3876,7 +3876,7 @@ class ApiController {
       }
 
       if(accept != '') {
-        desc = `${user_details.first_name} ${user_details.last_name} has accept a job request.`
+        desc = `${accept.job_id.job_title} has been accepted by ${user_details.first_name} ${user_details.last_name}.`
       }
 
       if(service != '') {
