@@ -1671,6 +1671,7 @@ class ApiController {
           var see_all_quote_details = await SentQuoteRequest.find({job_id : job_id, quote_received_customer_id : user._id})
           .populate('quote_sent_vendor_id')
           .populate({path: 'job_id', populate: {path: 'service_category', populate: {path: 'service_type.service_type_id'}}})
+          .populate({path: 'job_id', populate: {path: 'added_services_details.parent_service_id'}})
           .populate('ask_for_quote_details.parent_service_id')
           .sort({_id : -1});
 
@@ -1683,6 +1684,7 @@ class ApiController {
           var see_particular_quote_details = await SentQuoteRequest.find({job_id : job_id, quote_received_customer_id : user._id, quote_sent_vendor_id : vendor_id})
           .populate('quote_sent_vendor_id')
           .populate({path: 'job_id', populate: {path: 'service_category', populate: {path: 'service_type.service_type_id'}}})
+          .populate({path: 'job_id', populate: {path: 'added_services_details.parent_service_id'}})
           .populate('ask_for_quote_details.parent_service_id')
           .sort({_id : -1});
 
