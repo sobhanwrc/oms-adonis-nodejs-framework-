@@ -8,7 +8,8 @@ const sentQuoteSchema = new Schema({
     ask_for_quote_details : [{
         parent_service_id : { type: Schema.Types.ObjectId, ref: "ServiceType"},
         child_service_id : { type: String},
-        quote_price : { type : String}
+        quote_price : { type : String},
+        quote_price_for_child_service : { type : Number} // 1 = vendor set quote price, 0 = default
     }],
     total_amount : { type : String},
     note : { type : String},

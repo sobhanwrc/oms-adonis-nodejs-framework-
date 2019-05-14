@@ -18,6 +18,7 @@ var service = new Schema ({
     end_date : { type: Date},
     description : { type: String},
     status : { type: Number, default : 1},
+    service_allocated_or_not : {type : Number, default : 0}, //1= allocated, 0 = not allocated
     created_at : { type: Date, default : Date.now()}
 });
 

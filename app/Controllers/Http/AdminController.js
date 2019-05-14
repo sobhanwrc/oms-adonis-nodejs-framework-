@@ -800,7 +800,7 @@ class AdminController {
 
         if(details) {
             var edit_category_details = await ServiceCategory.findOne({_id : details._id})
-
+            console.log(service_category_id,'service_category_id');
             if (service_category_id != undefined) {
 
                 if(edit_category_details.service_type.length > 0) {

@@ -880,7 +880,7 @@ class ApiController {
           user_id : user_id,
           job_amount : job_amount,
           service_category : job_category,
-          status : 1, // 1= active, 2 = inactive, 3 = complete
+          status : 1, // 1= active, 2 = inactive
           job_allocated_to_vendor : job_allocated_to_vendor,
           ask_quote : request.input('ask_quote')
         });
@@ -1363,7 +1363,14 @@ class ApiController {
           update_job.vendor_id = fetch_allocated_details.user_id._id;
           update_job.job_allocated_to_vendor = 1;
 
-          await update_job.save();
+          //update service details
+          if (await update_job.save()) {
+            var vendor_service_details = await Service.findOne({user_id : user._id, service_category : update_job.service_category})
+
+            vendor_service_details.service_allocated_or_not = 1;
+
+            await vendor_service_details.save();
+          }
 
           //push notification sent to user with vendor details
           var title = `${fetch_allocated_details.job_id.job_title}`;
@@ -1625,7 +1632,8 @@ class ApiController {
             var added_services_quote = {
               parent_service_id : quote_services[i].parent_service_id,
               child_service_id : quote_services[i].child_service_id,
-              quote_price : quote_services[i].quote_price
+              quote_price : quote_services[i].quote_price,
+              quote_price_for_child_service : quote_services[i].quote_price_for_child_service
             }
 
             fetch_added_quote_details.ask_for_quote_details.unshift(added_services_quote);
@@ -2197,6 +2205,7 @@ class ApiController {
 
       if(user.reg_type == 3) {
         var service_id = request.input('service_id'); 
+        var service_category_id = request.input('service_category_id');
         var new_modified_added_services = request.input('service_type')
         // var new_modified_added_services = ['5c78df0f9ed89a3ea251adc0', '5c78dd1763f38236efdf35d6'];
         console.log(new_modified_added_services,'new_modified_added_services');
@@ -2206,35 +2215,43 @@ class ApiController {
         .populate('added_services_details.parent_service_id');
 
         if(service_details) {
+          var isServiceCategoryAssociatedWithJobs = await Job.find({service_category : service_category_id, vendor_id : user._id});
+           console.log(isServiceCategoryAssociatedWithJobs);
+           return false
 
-          for(var k = 0; k < service_details.added_services_details.length; k++){
-            var delete_added_services = await Service.update(
-                { _id : service_id },
-                { $pull: { added_services_details: { parent_service_id:  service_details.added_services_details[k].parent_service_id._id} } },
-                { multi: true }
-            )
-          }
+          if(isServiceCategoryAssociatedWithJobs.length > 0){
+            for(var k = 0; k < service_details.added_services_details.length; k++){
+              var delete_added_services = await Service.update(
+                  { _id : service_id },
+                  { $pull: { added_services_details: { parent_service_id:  service_details.added_services_details[k].parent_service_id._id} } },
+                  { multi: true }
+              )
+            }
+  
+            var fetch_details_after_delete = await Service.findOne({_id : service_id, user_id : user._id})
+            .populate('service_category')
+            .populate('added_services_details.parent_service_id');
+  
+            if(fetch_details_after_delete.added_services_details.length == 0){
+                for(var p = 0; p < new_modified_added_services.length; p++){
+                    var info = {
+                      parent_service_id : new_modified_added_services[p]
+                    }
+  
+                    fetch_details_after_delete.added_services_details.unshift(info); 
+  
+                    await fetch_details_after_delete.save();
+                }
+  
+              response.json({
+                status : true,
+                code : 200,
+                message : "Service has been modified successfully."
+              })
+            }
 
-          var fetch_details_after_delete = await Service.findOne({_id : service_id, user_id : user._id})
-          .populate('service_category')
-          .populate('added_services_details.parent_service_id');
+          }else{
 
-          if(fetch_details_after_delete.added_services_details.length == 0){
-              for(var p = 0; p < new_modified_added_services.length; p++){
-                  var info = {
-                    parent_service_id : new_modified_added_services[p]
-                  }
-
-                  fetch_details_after_delete.added_services_details.unshift(info); 
-
-                  await fetch_details_after_delete.save();
-              }
-
-            response.json({
-              status : true,
-              code : 200,
-              message : "Service has been modified successfully."
-            })
           }
 
         } else { 
