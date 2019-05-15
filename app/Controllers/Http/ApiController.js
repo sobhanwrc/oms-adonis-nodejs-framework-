@@ -1066,16 +1066,17 @@ class ApiController {
                 if (total_assign_value <= 4) {
 
                   _.forEach(matching_vendor_with_service, function(value) {
-                    var add = new VendorAllocation ({
-                      user_id : value.user_id,
-                      job_id : job._id,
-                      status : 0 // 0 = not allocated, 1 = allocated
-                    });
-                    
-                    if(add.save()) {
-                      total_assign_value = total_assign_value + 1;
+                    if(value.added_services_details.length > 0){
+                      var add = new VendorAllocation ({
+                        user_id : value.user_id,
+                        job_id : job._id,
+                        status : 0 // 0 = not allocated, 1 = allocated
+                      });
+                      
+                      if(add.save()) {
+                        total_assign_value = total_assign_value + 1;
+                      }
                     }
-  
                   });
 
                 }else { 
@@ -2220,7 +2221,7 @@ class ApiController {
             )
           }
           console.log(delete_added_services,'delete_added_services');
-          
+
           var fetch_details_after_delete = await Service.findOne({_id : service_id, user_id : user._id})
           .populate('service_category')
           .populate('added_services_details.parent_service_id');
@@ -2882,6 +2883,9 @@ class ApiController {
     async stripePaymentOfUser ({request, response, auth}) {
       const token = request.body.stripeToken;
       var user = await auth.getUser();
+      var job_date = request.input('job_date');
+      var job_address = request.input('job_address');
+      var pin_code = request.input('pin_code');
 
       const save_card = request.input('save_card'); // 1 = 'save card on stripe', 0 ='delete save card from stripe'
 
@@ -2922,6 +2926,9 @@ class ApiController {
                 user_job.job_amount = request.input('job_amount');
                 user_job.status = 5; //payment complete
                 user_job.transaction_id = charge.id;
+                user_job.job_date = job_date;
+                user_job.service_require_at = job_address;
+                user_job.pincode = pin_code;
                 
                 var save_job = await user_job.save();
 
@@ -2992,6 +2999,9 @@ class ApiController {
                 // user_job.job_amount = request.input('job_amount');
                 user_job.status = 5; //payment complete
                 user_job.transaction_id = charge.id;
+                user_job.job_date = job_date;
+                user_job.service_require_at = job_address;
+                user_job.pincode = pin_code;
 
                 var save_job = await user_job.save();
 

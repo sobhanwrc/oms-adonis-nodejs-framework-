@@ -7,7 +7,7 @@ const schema = new Schema({
   user_id : {type : Schema.Types.ObjectId, ref:"User"},
   job_title : { type: String},
   service_require_at : { type: String},
-
+  pincode : {type : String},
   service_category : {
     type: Schema.Types.ObjectId,
     ref: "ServiceCategory"
