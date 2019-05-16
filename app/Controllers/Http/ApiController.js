@@ -1407,7 +1407,7 @@ class ApiController {
       .populate({path: 'job_id', populate: {path: 'service_category', populate: {path: 'service_type.service_type_id'}}})
       .populate({path: 'job_id', populate: {path: 'added_services_details.parent_service_id'}})
       .sort({_id : -1});
-
+      
       var finalArray = [];
 
       for(var i = 0; i < job_request_list.length; i ++){
@@ -1421,6 +1421,11 @@ class ApiController {
           // console.log(fetch_sent_quote_details,'fetch_sent_quote_details');
 
           fetch_sent_quote_details['status'] = 5;
+          if(job_request_list[i].sent_quote_accept == undefined){
+            fetch_sent_quote_details['sent_quote_accept'] = 0;//nothing
+          }else{
+            fetch_sent_quote_details['sent_quote_accept'] = job_request_list[i].sent_quote_accept;
+          }
           
           finalArray.push(fetch_sent_quote_details);
 
@@ -1428,7 +1433,7 @@ class ApiController {
           finalArray.push(job_request_list[i]);
         }
       }
-
+      
       if(job_request_list.length > 0) {
         response.json({
           status : true,
