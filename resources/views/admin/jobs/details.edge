@@ -76,7 +76,7 @@
                               </div>
 
                                 <div class="form-group col-sm-6 col-xs-12">
-                                    <label class="control-label">Job Post Date</label>
+                                    <label class="control-label">Job Date</label>
                                     <input type="text" placeholder="04/11/2018" class="form-control" value="{{job_post_date}}" readonly>
                                 </div>
                             </div>
@@ -84,6 +84,18 @@
                               <div class="form-group col-sm-6 col-xs-12">
                                 <label class="control-label">Job Amount</label>
                                 <input type="text" class="form-control" value="${{fetch_job_details.job_amount}}" readonly>
+                              </div>
+
+                              <div class="form-group col-sm-6 col-xs-12">
+                                <label class="control-label">Job Address</label>
+                                <textarea cols="" rows="" class="form-control" readonly>{{fetch_job_details.service_require_at}}</textarea>
+                              </div>
+                            </div>
+
+                            <div class="row">
+                              <div class="form-group col-sm-6 col-xs-12">
+                                <label class="control-label">Pin code</label>
+                                <input type="text" class="form-control" value="{{fetch_job_details.pincode}}" readonly>
                               </div>
                             </div>
                            

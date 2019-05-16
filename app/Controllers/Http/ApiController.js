@@ -1723,8 +1723,6 @@ class ApiController {
         await fetch_sent_quote_details.save();
 
         var allocated_vendor = await this.allocateVendorForSentQuoteAccept(fetch_sent_quote_details);
-        console.log(allocated_vendor);
-        return false
 
         response.json({
           status : true,
@@ -1741,113 +1739,81 @@ class ApiController {
     }
 
     async allocateVendorForSentQuoteAccept (fetch_sent_quote_details) {
-      var job_id = request.input('job_id');
-      var find_all_allocated_vendors = await VendorAllocation.find({job_id : job_id, status : 0})
+      var subject = '';
+      var html_part = '';
+      var job_id = fetch_sent_quote_details.job_id;
+      var vendor_id = fetch_sent_quote_details.quote_sent_vendor_id;
+      var find_all_allocated_vendors = await VendorAllocation.findOne({job_id : job_id, status : 5, user_id : vendor_id})
       .populate('user_id')
-      .populate({path: 'job_id', populate: {path: 'user_id'}})
-      .sort({_id : -1});
+      .populate({path: 'job_id', populate: {path: 'user_id'}});
 
-      if(find_all_allocated_vendors.length > 0){
+      console.log(find_all_allocated_vendors,'find_all_allocated_vendors sent quote');
 
-        var auto_accept_vendors_array = [];
-        var without_auto_accept_vendors_array = [];
+      //check auto accept is on or off
+      var auto_accept = find_all_allocated_vendors.user_id.business[0].job_auto_accept;
+      if(auto_accept == 1){
+        find_all_allocated_vendors.sent_quote_accept = 2; //vendor accept sent quote from User.
 
-        _.forEach(find_all_allocated_vendors, data => {
-          if(data.user_id.business[0].job_auto_accept == 1){
-            auto_accept_vendors_array.push(data)
-          }else {
-            without_auto_accept_vendors_array.push(data)
-          }
-        })
+        await find_all_allocated_vendors.save();
 
-        if(auto_accept_vendors_array.length > 0){
-          var choose_1st_vendor = auto_accept_vendors_array[0];
 
-          choose_1st_vendor.status = 1 ; // 1 = job auto accept by vendor.
-          
-          if(await choose_1st_vendor.save()) {
-            //admin notification
-            await this.add_notification(choose_1st_vendor.user_id,'','', choose_1st_vendor);
-            //end
+        //push notification sent to user with vendor details
+        var title = `${find_all_allocated_vendors.job_id.job_title}`;
+        msg_body = `Your job request has accept by ${find_all_allocated_vendors.user_id.first_name} ${find_all_allocated_vendors.user_id.last_name}`;
+        click_action = "Accept";
+        await this.sentPushNotification(find_all_allocated_vendors.job_id.user_id.device_id, msg_body, find_all_allocated_vendors.job_id.user_id, click_action, title);
+        //end
 
-            var update_job = await Job.findOne({_id : choose_1st_vendor.job_id._id})
-            update_job.vendor_id = choose_1st_vendor.user_id._id;
-            update_job.job_allocated_to_vendor = 1;
+        //push notification sent to vendor with user job details
+        var title = `${find_all_allocated_vendors.job_id.job_title}`;
+        msg_body = `You have auto accept a job request from ${find_all_allocated_vendors.job_id.user_id.first_name} ${find_all_allocated_vendors.job_id.user_id.last_name}`;
+        click_action = "Accept";
+        await this.sentPushNotification(find_all_allocated_vendors.user_id.device_id, msg_body, find_all_allocated_vendors.user_id, click_action, title);
+        //end
 
-            await update_job.save();
+        //for email
+        subject = "Auto accept job request";
+        html_part = `You have auto accept a job request from ${find_all_allocated_vendors.job_id.user_id.first_name} ${find_all_allocated_vendors.job_id.user_id.last_name}`;
+      }else{
+        //sent invitation for user accept vendors quote
+        find_all_allocated_vendors.sent_quote_accept = 1; //showing Accept & Decline on Vendors end.
 
-            //push notification sent to user with vendor details
-            var title = `${choose_1st_vendor.job_id.job_title}`;
-            msg_body = `Your job request has accept by ${choose_1st_vendor.user_id.first_name} ${choose_1st_vendor.user_id.last_name}`;
-            click_action = "Accept";
-            await this.sentPushNotification(choose_1st_vendor.job_id.user_id.device_id, msg_body, choose_1st_vendor.job_id.user_id, click_action, title);
-            //end
+        await find_all_allocated_vendors.save();
 
-            //push notification sent to vendor with user job details
-            var title = `${choose_1st_vendor.job_id.job_title}`;
-            msg_body = `You have auto accept a job request from ${choose_1st_vendor.job_id.user_id.first_name} ${choose_1st_vendor.job_id.user_id.last_name}`;
-            click_action = "Accept";
-            await this.sentPushNotification(choose_1st_vendor.user_id.device_id, msg_body, choose_1st_vendor.user_id, click_action, title);
-            //end
 
-            response.json({
-              status : true,
-              code : 200,
-              message : `${choose_1st_vendor.user_id.first_name} ${choose_1st_vendor.user_id.last_name} has accept your job request.`
-            })
-          }
+        //push notification sent to vendor with job request
+        var title = `${find_all_allocated_vendors.job_id.job_title}`;
+        msg_body = `You have one job request from ${find_all_allocated_vendors.job_id.user_id.first_name} ${find_all_allocated_vendors.job_id.user_id.last_name}`;
+        click_action = "Invitation";
+        await this.sentPushNotification(find_all_allocated_vendors.user_id.device_id, msg_body, find_all_allocated_vendors.user_id, click_action, title);
+        //end
 
-        }else {
-          var choose_1st_without_auto_accept_vendor = without_auto_accept_vendors_array;
+        //push notification sent to user with vendor details
+        var title = `${find_all_allocated_vendors.job_id.job_title}`;
+        msg_body = `Job request is received by ${find_all_allocated_vendors.user_id.first_name} ${find_all_allocated_vendors.user_id.last_name}`;
+        click_action = "Invitation";
+        await this.sentPushNotification(find_all_allocated_vendors.job_id.user_id.device_id, msg_body, find_all_allocated_vendors.job_id.user_id, click_action, title);
+        //end
 
-          var vendor_email = choose_1st_without_auto_accept_vendor[0].user_id.email;
+        //for email
+        subject = "Job request invitation";
+        html_part = `You have one job request from ${find_all_allocated_vendors.job_id.user_id.first_name} ${find_all_allocated_vendors.job_id.user_id.last_name}`;
+      }
 
-          // await update_job.save();
-          choose_1st_without_auto_accept_vendor[0].status = 3 ; // 3 = invitation sent.
-          await choose_1st_without_auto_accept_vendor[0].save();
-
-          console.log(choose_1st_without_auto_accept_vendor,'after invitation sent');
-          
-          var add_notification = this.add_notification('','','','','',choose_1st_without_auto_accept_vendor);
-
-          //push notification sent to vendor with job request
-          var title = `${choose_1st_without_auto_accept_vendor[0].job_id.job_title}`;
-          msg_body = `You have one job request from ${choose_1st_without_auto_accept_vendor[0].job_id.user_id.first_name} ${choose_1st_without_auto_accept_vendor[0].job_id.user_id.last_name}`;
-          click_action = "Invitation";
-          await this.sentPushNotification(choose_1st_without_auto_accept_vendor[0].user_id.device_id, msg_body, choose_1st_without_auto_accept_vendor[0].user_id, click_action, title);
-          //end
-
-          var sendEmail = Mailjet.post('send');
-          var emailData = {
-              'FromEmail': 'sobhan.das@intersoftkk.com',
-              'FromName': 'Oh! My Concierge',
-              'Subject': 'Invitation for Job Request',
-              'Html-part': "You are invited for a job. Please see your job requests section.",
-              'Recipients': [{'Email': vendor_email}]
-          };
-          
-          if (sendEmail.request(emailData)) {
-            //push notification sent to user with vendor details
-            var title = `${choose_1st_without_auto_accept_vendor[0].job_id.job_title}`;
-            msg_body = `Job request is received by ${choose_1st_without_auto_accept_vendor[0].user_id.first_name} ${choose_1st_without_auto_accept_vendor[0].user_id.last_name}`;
-            click_action = "Invitation";
-            await this.sentPushNotification(choose_1st_without_auto_accept_vendor[0].job_id.user_id.device_id, msg_body, choose_1st_without_auto_accept_vendor[0].job_id.user_id, click_action, title);
-            //end
-
-            response.json({
-              status : true,
-              code : 200,
-              message : "Invitation has sent to a particular vendor successfully."
-            })
-          }
-        }
-
-      }else {
-         response.json({
-           status : false,
-           code : 400,
-           message : "No vendors are available."
-         })
+      //email sent
+      var sendEmail = Mailjet.post('send');
+      var emailData = {
+          'FromEmail': 'sobhan.das@intersoftkk.com',
+          'FromName': 'Oh! My Concierge',
+          'Subject': subject,
+          'Html-part': html_part,
+          'Recipients': [{'Email': find_all_allocated_vendors.user_id.email}]
+      };
+      
+      if (sendEmail.request(emailData)) {
+        return true;
+      }else{
+        return false;
       }
     }
 
@@ -2883,7 +2849,15 @@ class ApiController {
     async stripePaymentOfUser ({request, response, auth}) {
       const token = request.body.stripeToken;
       var user = await auth.getUser();
-      var job_date = request.input('job_date');
+      if(request.input('job_date')) {
+        var job_date = request.input('job_date');
+        // dd/mm/yyyy
+        var date_arr = job_date.split('/');
+        var y = date_arr[2];
+        var m = date_arr[1];
+        var d = date_arr[0];
+        var job_date = y+'-'+m+'-'+d; 
+      }
       var job_address = request.input('job_address');
       var pin_code = request.input('pin_code');
 
@@ -3290,9 +3264,23 @@ class ApiController {
 
     //create payment with saving card
     async stripePaymentWithSavingCard ({request, response, auth}) {
+      console.log(request.body);
+      // return false
       var customer_card_id = request.input('card_id');
       var user = await auth.getUser();
       var cvc = request.input('cvc');
+      var job_address = request.input('job_address');
+      var pin_code = request.input('pin_code');
+
+      if(request.input('job_date')) {
+        var job_date = request.input('job_date');
+        // dd/mm/yyyy
+        var date_arr = job_date.split('/');
+        var y = date_arr[2];
+        var m = date_arr[1];
+        var d = date_arr[0];
+        var job_date = y+'-'+m+'-'+d; 
+      }
 
       if(customer_card_id) {
         var charge = await stripe.charges.create({
@@ -3315,6 +3303,9 @@ class ApiController {
             user_job.job_amount = request.input('job_amount');
             user_job.status = 5; // payment complete
             user_job.transaction_id = charge.id;
+            user_job.job_date = job_date;
+            user_job.service_require_at = job_address;
+            user_job.pincode = pin_code;
             await user_job.save();
 
             response.json({

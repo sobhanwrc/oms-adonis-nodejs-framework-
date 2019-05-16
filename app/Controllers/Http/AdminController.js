@@ -1092,7 +1092,7 @@ class AdminController {
         .populate('added_services_details.parent_service_id')
         .populate('vendor_id');
 
-        var job_post_date = this.convertToYYYYMMDD(fetch_job_details.created_at);
+        var job_post_date = this.convertToYYYYMMDD(fetch_job_details.job_date);
 
 
         var added_services = fetch_job_details.added_services_details;
