@@ -1759,7 +1759,14 @@ class ApiController {
       if(auto_accept == 1){
         find_all_allocated_vendors.sent_quote_accept = 2; //vendor accept sent quote from User.
 
-        await find_all_allocated_vendors.save();
+        if(await find_all_allocated_vendors.save()) {
+          //update job table
+          var update_job = await Job.findOne({_id : job_id});
+          update_job.job_allocated_to_vendor = 1;
+          update_job.vendor_id = vendor_id;
+
+          await update_job.save();
+        }
 
 
         //push notification sent to user with vendor details
@@ -1828,6 +1835,23 @@ class ApiController {
       .populate({path: 'service_category', populate: {path: 'service_type.service_type_id'}})
       .populate('added_services_details.parent_service_id')
       .populate('vendor_id');
+
+      var final_array = [];
+
+      for(var i = 0; i < all_jobs_list.length; i++){
+        if(all_jobs_list[i].ask_quote == 1 && all_jobs_list[i].job_allocated_to_vendor == 1){
+          var fetch_quote_details = await SentQuoteRequest.findOne({job_id : all_jobs_list[i]._id}).populate('ask_for_quote_details.parent_service_id')
+          if(fetch_quote_details != undefined){
+            all_jobs_list[i].job_amount = fetch_quote_details.total_amount;
+
+            all_jobs_list[i].added_services_details = _.merge(all_jobs_list[i].added_services_details, fetch_quote_details.ask_for_quote_details);
+
+            final_array.push(all_jobs_list[i]);
+          }
+        }else{
+          final_array.push(all_jobs_list[i])
+        }
+      }
 
       if(all_jobs_list.length > 0) {
         response.json({
