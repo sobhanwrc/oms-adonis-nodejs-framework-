@@ -19,6 +19,7 @@ const ServiceCategory = use('App/Models/ServiceCategory');
 const VendorAllocation = use('App/Models/VendorAllocation');
 const Notification = use('App/Models/Notification');
 const AppNotification = use('App/Models/AppNotification');
+const Wallet = use('App/Models/Wallet');
 
 var FCM = use('fcm-node');
 var serverKey = Env.get("FCM_SERVER_KEY"); //put your server key here
@@ -215,22 +216,32 @@ class AdminController {
 
     async vendor_list ({view}) {
         var all_vendors = await User.find({reg_type : 3}).sort({_id : -1});
+        var final_array = [];
+        for(var i = 0; i < all_vendors.length; i++){
+            var wallet_balance = await Wallet.findOne({vendor_id : all_vendors[i]._id},{credit : 1, earning : 1, _id : 0});
+            var temp_array = [];
+            if(wallet_balance != undefined){
+                temp_array = wallet_balance;
+
+                final_array = _.merge(all_vendors[i], temp_array);
+            }
+        }
 
         return view.render('admin.vendor.vendor_list', {vendor_lists : all_vendors})
     }
 
     async vendor_profile ({view,params}) {
         var vendor_id = params.id;
-        var vendor_details = await User.findOne({_id : vendor_id});
+        var vendor_details = await User.findOne({_id : vendor_id}).populate('location_id');
 
-        if(vendor_details.location_id != ''){
-            var vendor_location_id = await Location.findOne({_id : vendor_details.location_id});
-            if(vendor_location_id != null){
-                var location_name = vendor_location_id.name;
-            }else {
-                var location_name = "N/A"
-            }
-        }
+        // if(vendor_details.location_id != ''){
+        //     var vendor_location_id = await Location.findOne({_id : vendor_details.location_id});
+        //     if(vendor_location_id != null){
+        //         var location_name = vendor_location_id.name;
+        //     }else {
+        //         var location_name = "N/A"
+        //     }
+        // }
 
         var fetch_vendors_all_jobs_of_interest = await VendorAllocation.find
         ({user_id : vendor_id, status : { $ne: 0 } })
@@ -273,7 +284,7 @@ class AdminController {
             })
         }
 
-        return view.render('admin.vendor.vendor_profile', {vendor_details : vendor_details, location_name : location_name, jobs_interest : newArray})
+        return view.render('admin.vendor.vendor_profile', {vendor_details : vendor_details,jobs_interest : newArray})
     }
 
     async service_list ({auth,view, response}) {

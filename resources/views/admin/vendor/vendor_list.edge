@@ -54,8 +54,22 @@
                             <td>{{vendor.business[0].company_name}}</td>
                             <td>{{vendor.phone_number}}</td>
                             <td class="center"> {{vendor.created_at}} </td>
-                            <td>$0</td>
-                            <td>$0</td>
+                            <td>
+                                @if(vendor.earning > 0)
+                                    ${{vendor.credit}}
+                                @else
+                                    $0.0
+                                @endif 
+                                
+                            </td>
+                            <td>
+                                @if(vendor.earning > 0)
+                                    ${{vendor.earning}}
+                                @else
+                                    $0.0
+                                @endif 
+                                 
+                            </td>
         
                             <td>
                                 @if(vendor.status == 1)

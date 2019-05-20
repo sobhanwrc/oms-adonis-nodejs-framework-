@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 const schema = new Schema({
   create_job_id : { type : String, unique: true},
   user_id : {type : Schema.Types.ObjectId, ref:"User"},
+  user_location_id : { type : String},
   job_title : { type: String},
   service_require_at : { type: String},
   pincode : {type : String},

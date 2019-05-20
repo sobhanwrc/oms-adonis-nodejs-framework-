@@ -5,6 +5,9 @@ const BaseModel = use('MongooseModel')
 /**
  * @class User
  */
+const mongoose = use ('mongoose');
+const Schema = mongoose.Schema;
+
 class User extends BaseModel {
   static boot ({ schema }) {
     // Hooks:
@@ -28,7 +31,8 @@ class User extends BaseModel {
       phone_number : {type: String,  default: '' },
       password: { type: String,  default: ''  },
       address: {type: String, default : ''},
-      location_id : {type: String, default : ''},
+      // location_id : {type: String, default : ''},
+      location_id : {type: Schema.Types.ObjectId, ref: "Location"},
       user_address2 : {type : String},
       city: { type : String,  default: '' },
       dob: { type: String,  default: '' },

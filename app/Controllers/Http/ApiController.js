@@ -428,11 +428,14 @@ class ApiController {
             var location_place_name = "N/A";
           }
 
+          var wallet_balance = await Wallet.find({vendor_id : user_details._id},{credit : 1, earning : 1})
+
           response.json ({
             status : true,
             code:200,
             user_location_name : location_place_name,
-            data: user_details
+            data: user_details,
+            wallet_balance : wallet_balance
           });
         } catch (error) {
           response.json ({
@@ -1052,7 +1055,7 @@ class ApiController {
         console.log(wallet_match_array,'wallet_match_array');
         console.log(withOutAllocatedVendors,'withOutAllocatedVendors');
 
-        await _.chunk(withOutAllocatedVendors,4).map(id => {
+        await _.chunk(wallet_match_array,4).map(id => {
           _.forEach(id, function(value) {
             Service.find({user_id : value, service_category : job.service_category._id})
             .then(function (matching_vendor_with_service) {
@@ -1837,6 +1840,8 @@ class ApiController {
       var final_array = [];
 
       for(var i = 0; i < all_jobs_list.length; i++){
+        var fetch_location_id = user.location_id;
+
         if(all_jobs_list[i].ask_quote == 1 && all_jobs_list[i].job_allocated_to_vendor == 1){
           var fetch_quote_details = await SentQuoteRequest.findOne({job_id : all_jobs_list[i]._id}).populate('ask_for_quote_details.parent_service_id')
           if(fetch_quote_details != undefined){
@@ -1844,9 +1849,12 @@ class ApiController {
 
             all_jobs_list[i].added_services_details = _.merge(all_jobs_list[i].added_services_details, fetch_quote_details.ask_for_quote_details);
 
+            all_jobs_list[i].user_location_id = fetch_location_id;
+
             final_array.push(all_jobs_list[i]);
           }
         }else{
+          all_jobs_list[i].user_location_id = fetch_location_id;
           final_array.push(all_jobs_list[i])
         }
       }
