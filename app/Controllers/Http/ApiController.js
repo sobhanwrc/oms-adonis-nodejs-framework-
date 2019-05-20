@@ -888,6 +888,7 @@ class ApiController {
 
         if(jod_id != '') {
           var update_job = await Job.findOne({_id : jod_id._id})
+          .populate('user_id')
           .populate('service_category')
           .populate('added_services_details.parent_service_id');
           
@@ -946,6 +947,7 @@ class ApiController {
             code : 200,
             sent_quote : sent_quote,
             added_job_id : jod_id._id,
+            fetch_user_location_name : update_job.user_id.location_id,
             message : `${result}`
           });
         }
@@ -1023,14 +1025,10 @@ class ApiController {
     }
 
     async fetchNearestVendor (user, job) {
-      user.reg_type = 2;
-      // return false
-
       if(user.reg_type == 2) {
+        var fetch_vendor_location_wise = await User.find({location_id : user.location_id, reg_type : 3});
 
-        var vendors_list = await User.find({reg_type : 3}, {_id : 1});
-
-        var all_vendor_list = _.map(vendors_list, '_id');
+        var all_vendor_list = _.map(fetch_vendor_location_wise, '_id');
         var total_assign_value = 1;
         var withOutAllocatedVendors = [];
 
@@ -2878,6 +2876,9 @@ class ApiController {
     async stripePaymentOfUser ({request, response, auth}) {
       const token = request.body.stripeToken;
       var user = await auth.getUser();
+      var job_id = await Job.findOne({_id : request.input('job_id')})
+      .populate('vendor_id');
+
       if(request.input('job_date')) {
         var job_date = request.input('job_date');
         // dd/mm/yyyy
@@ -2889,149 +2890,158 @@ class ApiController {
       }
       var job_address = request.input('job_address');
       var pin_code = request.input('pin_code');
+      var location_id = request.input('location_id')
 
-      const save_card = request.input('save_card'); // 1 = 'save card on stripe', 0 ='delete save card from stripe'
+      if(job_id.vendor_id.location_id != user.location_id){
+        response.json({
+          status : false,
+          code : 400,
+          message : "Region does not match. Please change you job address as per your region."
+        })
+      }else{
+        const save_card = request.input('save_card'); // 1 = 'save card on stripe', 0 ='delete save card from stripe'
 
-      if (user.stripe_details == '') {
-        var customer_id = '';
-      }else{ 
-        var customer_id = user.stripe_details[0].customer_id;
-      }
-      
-      if(customer_id != '') {
-        //stripe add card
-        var addCard = await stripe.customers.createSource(customer_id,{
-          source: token
-        });
-
-        if (addCard) {
-          //stripe update customer default card
-          var save = await stripe.customers.update(customer_id, {
-            default_source : addCard.id
+        if (user.stripe_details == '') {
+          var customer_id = '';
+        }else{ 
+          var customer_id = user.stripe_details[0].customer_id;
+        }
+        
+        if(customer_id != '') {
+          //stripe add card
+          var addCard = await stripe.customers.createSource(customer_id,{
+            source: token
           });
-          if(save) {
-            //stripe create charge
-            const charge = await stripe.charges.create({
-              amount: request.input('job_amount') * 100,
-              currency: 'sgd',
-              description: request.input('description'),
-              customer : customer_id
+
+          if (addCard) {
+            //stripe update customer default card
+            var save = await stripe.customers.update(customer_id, {
+              default_source : addCard.id
             });
-    
-            if(charge) {
-              var add_charges_details = new StripeTransaction ({
-                user_id : user._id,
-                transaction_id : charge.id,
-                type : 'User_pay_to_OMC'
+            if(save) {
+              //stripe create charge
+              const charge = await stripe.charges.create({
+                amount: request.input('job_amount') * 100,
+                currency: 'sgd',
+                description: request.input('description'),
+                customer : customer_id
               });
-              if(await add_charges_details.save()) {
-                var user_job = await Job.findOne({_id : request.input('job_id')});
-                user_job.job_amount = request.input('job_amount');
-                user_job.status = 5; //payment complete
-                user_job.transaction_id = charge.id;
-                user_job.job_date = job_date;
-                user_job.service_require_at = job_address;
-                user_job.pincode = pin_code;
-                
-                var save_job = await user_job.save();
+      
+              if(charge) {
+                var add_charges_details = new StripeTransaction ({
+                  user_id : user._id,
+                  transaction_id : charge.id,
+                  type : 'User_pay_to_OMC'
+                });
+                if(await add_charges_details.save()) {
+                  var user_job = await Job.findOne({_id : request.input('job_id')});
+                  user_job.job_amount = request.input('job_amount');
+                  user_job.status = 5; //payment complete
+                  user_job.transaction_id = charge.id;
+                  user_job.job_date = job_date;
+                  user_job.service_require_at = job_address;
+                  user_job.pincode = pin_code;
+                  
+                  var save_job = await user_job.save();
 
-                if(save_job) {
-                  if(save_card == 0) {
-                    //stripe delete default card
-                    var delete_card = await stripe.customers.deleteCard(customer_id,addCard.id);
-                  }
+                  if(save_job) {
+                    if(save_card == 0) {
+                      //stripe delete default card
+                      var delete_card = await stripe.customers.deleteCard(customer_id,addCard.id);
+                    }
 
-                  var add_notification = this.add_notification(user,'','','','','',user_job);
+                    var add_notification = this.add_notification(user,'','','','','',user_job);
 
-                  var send_payment_invoice = this.paymentInvoiceEmail(user, charge, save_job);
-                  if(send_payment_invoice == true) {
-                    response.json({
-                      status : true,
-                      code : 200,
-                      message : "Payment successfully."
-                    });
+                    var send_payment_invoice = this.paymentInvoiceEmail(user, charge, save_job);
+                    if(send_payment_invoice == true) {
+                      response.json({
+                        status : true,
+                        code : 200,
+                        message : "Payment successfully."
+                      });
+                    }
                   }
                 }
+              }else { 
+                response.json({
+                  status : false,
+                  code : 400,
+                  message : "Payment declined."
+                });
               }
-            }else { 
-              response.json({
-                status : false,
-                code : 400,
-                message : "Payment declined."
-              });
             }
           }
-        }
-      }else { 
-        // Create a Customer:
-        const customer = await stripe.customers.create({
-          source: token,
-          email: user.email,
-          description : "OMC User"
-        });
+        }else { 
+          // Create a Customer:
+          const customer = await stripe.customers.create({
+            source: token,
+            email: user.email,
+            description : "OMC User"
+          });
 
-        if(customer) {
-          var user = await User.findOne({email : user.email});
-
-          user.stripe_details = {
-            customer_id : customer.id,
-            account_balance : customer.account_balance,
-            invoice_prefix : customer.invoice_prefix,
-            customer_created : customer.created
-          }
-
-          if(await user.save()) {
+          if(customer) {
             var user = await User.findOne({email : user.email});
-            var customer_id = user.stripe_details[0].customer_id;
 
-            const charge = await stripe.charges.create({
-              amount: request.input('job_amount') * 100,
-              currency: 'sgd',
-              description: request.input('description'),
-              customer : customer_id
-            });
-    
-            if(charge) {
-              var add_charges_details = new StripeTransaction ({
-                user_id : user._id,
-                transaction_id : charge.id,
-                type : 'User_pay_to_OMC'
+            user.stripe_details = {
+              customer_id : customer.id,
+              account_balance : customer.account_balance,
+              invoice_prefix : customer.invoice_prefix,
+              customer_created : customer.created
+            }
+
+            if(await user.save()) {
+              var user = await User.findOne({email : user.email});
+              var customer_id = user.stripe_details[0].customer_id;
+
+              const charge = await stripe.charges.create({
+                amount: request.input('job_amount') * 100,
+                currency: 'sgd',
+                description: request.input('description'),
+                customer : customer_id
               });
-              if(await add_charges_details.save()) {
-                var user_job = await Job.findOne({_id : request.input('job_id')});
-                // user_job.job_amount = request.input('job_amount');
-                user_job.status = 5; //payment complete
-                user_job.transaction_id = charge.id;
-                user_job.job_date = job_date;
-                user_job.service_require_at = job_address;
-                user_job.pincode = pin_code;
+      
+              if(charge) {
+                var add_charges_details = new StripeTransaction ({
+                  user_id : user._id,
+                  transaction_id : charge.id,
+                  type : 'User_pay_to_OMC'
+                });
+                if(await add_charges_details.save()) {
+                  var user_job = await Job.findOne({_id : request.input('job_id')});
+                  // user_job.job_amount = request.input('job_amount');
+                  user_job.status = 5; //payment complete
+                  user_job.transaction_id = charge.id;
+                  user_job.job_date = job_date;
+                  user_job.service_require_at = job_address;
+                  user_job.pincode = pin_code;
 
-                var save_job = await user_job.save();
+                  var save_job = await user_job.save();
 
-                if(save_job) {
-                  if(save_card == 0) {
-                    //stripe delete default card
-                    var delete_card = await stripe.customers.deleteCard(customer_id,charge.source.id);
-                  }
-                  
-                  var add_notification = this.add_notification(user,'','','','','',user_job);
+                  if(save_job) {
+                    if(save_card == 0) {
+                      //stripe delete default card
+                      var delete_card = await stripe.customers.deleteCard(customer_id,charge.source.id);
+                    }
+                    
+                    var add_notification = this.add_notification(user,'','','','','',user_job);
 
-                  var send_payment_invoice = this.paymentInvoiceEmail(user, charge, save_job);
-                  if(send_payment_invoice == true) {
-                    response.json({
-                      status : true,
-                      code : 200,
-                      message : "Payment successfully."
-                    });
+                    var send_payment_invoice = this.paymentInvoiceEmail(user, charge, save_job);
+                    if(send_payment_invoice == true) {
+                      response.json({
+                        status : true,
+                        code : 200,
+                        message : "Payment successfully."
+                      });
+                    }
                   }
                 }
+              }else { 
+                response.json({
+                  status : false,
+                  code : 400,
+                  message : "Payment declined."
+                });
               }
-            }else { 
-              response.json({
-                status : false,
-                code : 400,
-                message : "Payment declined."
-              });
             }
           }
         }
@@ -3293,13 +3303,13 @@ class ApiController {
 
     //create payment with saving card
     async stripePaymentWithSavingCard ({request, response, auth}) {
-      console.log(request.body);
-      // return false
       var customer_card_id = request.input('card_id');
       var user = await auth.getUser();
       var cvc = request.input('cvc');
       var job_address = request.input('job_address');
       var pin_code = request.input('pin_code');
+      var job_id = await Job.findOne({_id : request.input('job_id')})
+      .populate('vendor_id');
 
       if(request.input('job_date')) {
         var job_date = request.input('job_date');
@@ -3311,51 +3321,59 @@ class ApiController {
         var job_date = y+'-'+m+'-'+d; 
       }
 
-      if(customer_card_id) {
-        var charge = await stripe.charges.create({
-          amount: request.input('job_amount') * 100,
-          currency: "sgd",
-          source: customer_card_id, // obtained with Stripe.js
-          customer : user.stripe_details[0].customer_id,
-          // cvc_check : cvc,
-          description: request.input('description')
-        });
-
-        if(charge) {
-          var add_charges_details = new StripeTransaction ({
-            user_id : user._id,
-            transaction_id : charge.id,
-            type : 'User_pay_to_OMC'
+      if(job_id.vendor_id.location_id != user.location_id){
+        response.json({
+          status : false,
+          code : 400,
+          message : "Region does not match. Please change you job address as per your region."
+        })
+      }else{
+        if(customer_card_id) {
+          var charge = await stripe.charges.create({
+            amount: request.input('job_amount') * 100,
+            currency: "sgd",
+            source: customer_card_id, // obtained with Stripe.js
+            customer : user.stripe_details[0].customer_id,
+            // cvc_check : cvc,
+            description: request.input('description')
           });
-          if(await add_charges_details.save()) {
-            var user_job = await Job.findOne({_id : request.input('job_id')});
-            user_job.job_amount = request.input('job_amount');
-            user_job.status = 5; // payment complete
-            user_job.transaction_id = charge.id;
-            user_job.job_date = job_date;
-            user_job.service_require_at = job_address;
-            user_job.pincode = pin_code;
-            await user_job.save();
-
+  
+          if(charge) {
+            var add_charges_details = new StripeTransaction ({
+              user_id : user._id,
+              transaction_id : charge.id,
+              type : 'User_pay_to_OMC'
+            });
+            if(await add_charges_details.save()) {
+              var user_job = await Job.findOne({_id : request.input('job_id')});
+              user_job.job_amount = request.input('job_amount');
+              user_job.status = 5; // payment complete
+              user_job.transaction_id = charge.id;
+              user_job.job_date = job_date;
+              user_job.service_require_at = job_address;
+              user_job.pincode = pin_code;
+              await user_job.save();
+  
+              response.json({
+                status : true,
+                code : 200,
+                message : "Payment successfully."
+              });
+            }
+          }else { 
             response.json({
-              status : true,
-              code : 200,
-              message : "Payment successfully."
+              status : false,
+              code : 400,
+              message : "Payment declined."
             });
           }
         }else { 
           response.json({
             status : false,
             code : 400,
-            message : "Payment declined."
+            message : "Invalid card."
           });
         }
-      }else { 
-        response.json({
-          status : false,
-          code : 400,
-          message : "Invalid card."
-        });
       }
     }
     //end
