@@ -44,6 +44,7 @@ Route.group(() => {
     
     Route.get('/admin/user-list', 'AdminController.user_list')
     Route.get('/admin/user-list/profile/:id', 'AdminController.user_profile')
+    Route.get('/admin/user-list/delete/:id', 'AdminController.user_delete')
 
     Route.get('/admin/vendor-list', 'AdminController.vendor_list')
     Route.get('/admin/vendor-list/profile/:id', 'AdminController.vendor_profile')

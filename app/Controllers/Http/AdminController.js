@@ -190,13 +190,14 @@ class AdminController {
 
     async user_profile ({view,params}) {
         var user_id = params.id;
-        var user = await User.findOne({_id : user_id});
-        if(user.location_id != '') {
-            var user_location_id = await Location.findOne({_id : user.location_id});
-            var location_name = user_location_id.name;
-        }else {
-            var location_name = '';
-        }
+        var user = await User.findOne({_id : user_id}).populate('location_id');
+        // console.log(user,'user');
+        // if(user.location_id != '') {
+        //     var user_location_id = await Location.findOne({_id : user.location_id});
+        //     var location_name = user_location_id.name;
+        // }else {
+        //     var location_name = '';
+        // }
         
 
         var user_all_coupon_list = await AssignCouponToUser.find({user_id : user_id, status : {
@@ -211,7 +212,14 @@ class AdminController {
 
         var jobs_post_details = await Job.find({user_id : user_id}).sort({_id : -1}).populate('vendor_id');
 
-        return view.render('admin.user.user_profile', {user_details : user, location  : location_name, coupon_list : user_all_coupon_list, coupon_list_total : coupon_list_total, jobs_post_details : jobs_post_details});
+        return view.render('admin.user.user_profile', {user_details : user, coupon_list : user_all_coupon_list, coupon_list_total : coupon_list_total, jobs_post_details : jobs_post_details});
+    }
+
+    async user_delete ({params, response}){
+        var deleteUser = await User.deleteOne({_id : params.id});
+        console.log(deleteUser);
+
+        response.redirect('/admin/user-list')
     }
 
     async vendor_list ({view}) {
