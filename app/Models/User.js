@@ -31,7 +31,6 @@ class User extends BaseModel {
       phone_number : {type: String,  default: '' },
       password: { type: String,  default: ''  },
       address: {type: String, default : ''},
-      // location_id : {type: String, default : ''},
       location_id : {type: Schema.Types.ObjectId, ref: "Location"},
       user_address2 : {type : String},
       city: { type : String,  default: '' },
@@ -70,6 +69,7 @@ class User extends BaseModel {
       forgot_pw_key : { type: String, default: ''},
       forgot_pw_email_sent_date : { type: Date, default: ''},
       device_id : { type :  String},
+      avg_rating : { type : Number, default : 0.0},
       created_at : { type: Date, default : Date.now()}
     }
   }

@@ -1690,6 +1690,29 @@ class ApiController {
           .populate('ask_for_quote_details.parent_service_id')
           .sort({_id : -1});
 
+          for(var i = 0 ; i < see_all_quote_details.length; i ++){
+            var vendor_id = see_all_quote_details[i].quote_sent_vendor_id._id;
+            var fetchRating = await Rating.findOne({vendor_id : vendor_id})
+            if(fetchRating) {
+              var total_user_rating = fetchRating.rating_by_user.length;
+
+              var total_rating_one = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 1)).length;
+              var total_rating_two = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 2)).length;
+              var total_rating_three = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 3)).length;
+              var total_rating_four = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 4)).length;
+              var total_rating_five = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 5)).length;
+
+              // from 1 to 5 stars
+              let rating = [total_rating_one, total_rating_two, total_rating_three, total_rating_four, total_rating_five];
+              var rate_rating = rate(rating); // --> 0.84
+
+              // calculate average
+              var avg_rating = average(rating); // --> 4.4
+
+              see_all_quote_details[i].quote_sent_vendor_id.avg_rating = avg_rating
+            }
+          }
+
           response.json({
             status : true,
             code : 200,
@@ -2301,14 +2324,14 @@ class ApiController {
 
       var fetch_rating_details = await Rating.findOne({vendor_id: vendor_id});
 
-      if(fetch_rating_details) {
-          const rating_details_if_exist = _.filter(fetch_rating_details.rating_by_user, rate => rate.user_id == user.id);
+      if(fetch_rating_details != undefined) {
+          const rating_details_if_exist = _.filter(fetch_rating_details.rating_by_user, rate => rate.job_id == job_id);
 
           if(rating_details_if_exist.length > 0) {
             response.json({
               status : false,
               code : 400,
-              message : "Your review has been complete."
+              message : "You have all ready submit your review for this job."
             });
           }else{
             var all_rating = {
@@ -2321,9 +2344,9 @@ class ApiController {
             var rating_details = await fetch_rating_details.save();
 
             if(rating_details) {
-              var user_job = await Job.find({_id : job_id});
+              var user_job = await Job.findById({_id : job_id});
               user_job.review = 1;
-              user_job.rating_details = rating._id;
+              user_job.rating_details = rating_number;
               await user_job.save();
 
               response.json({
@@ -2900,13 +2923,13 @@ class ApiController {
       var pin_code = request.input('pin_code');
       var location_id = request.input('location_id')
 
-      if(job_id.vendor_id.location_id != user.location_id){
-        response.json({
-          status : false,
-          code : 400,
-          message : "Region does not match. Please change you job address as per your region."
-        })
-      }else{
+      // if(job_id.vendor_id.location_id != user.location_id){
+      //   response.json({
+      //     status : false,
+      //     code : 400,
+      //     message : "Region does not match. Please change you job address as per your region."
+      //   })
+      // }else{
         const save_card = request.input('save_card'); // 1 = 'save card on stripe', 0 ='delete save card from stripe'
 
         if (user.stripe_details == '') {
@@ -3053,7 +3076,7 @@ class ApiController {
             }
           }
         }
-      }
+      // }
     }
 
     //add card
@@ -3329,13 +3352,13 @@ class ApiController {
         var job_date = y+'-'+m+'-'+d; 
       }
 
-      if(job_id.vendor_id.location_id != user.location_id){
-        response.json({
-          status : false,
-          code : 400,
-          message : "Region does not match. Please change you job address as per your region."
-        })
-      }else{
+      // if(job_id.vendor_id.location_id != user.location_id){
+      //   response.json({
+      //     status : false,
+      //     code : 400,
+      //     message : "Region does not match. Please change you job address as per your region."
+      //   })
+      // }else{
         if(customer_card_id) {
           var charge = await stripe.charges.create({
             amount: request.input('job_amount') * 100,
@@ -3382,7 +3405,7 @@ class ApiController {
             message : "Invalid card."
           });
         }
-      }
+      // }
     }
     //end
 
