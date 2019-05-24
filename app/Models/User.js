@@ -70,6 +70,7 @@ class User extends BaseModel {
       forgot_pw_email_sent_date : { type: Date, default: ''},
       device_id : { type :  String},
       avg_rating : { type : Number, default : 0.0},
+      rating_details : [],
       created_at : { type: Date, default : Date.now()}
     }
   }

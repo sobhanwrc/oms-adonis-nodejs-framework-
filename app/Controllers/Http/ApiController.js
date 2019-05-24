@@ -1693,7 +1693,14 @@ class ApiController {
           for(var i = 0 ; i < see_all_quote_details.length; i ++){
             var vendor_id = see_all_quote_details[i].quote_sent_vendor_id._id;
             var fetchRating = await Rating.findOne({vendor_id : vendor_id})
+            .populate('rating_by_user.user_id')
+            .populate('rating_by_user.job_id')
+            .populate({path: 'rating_by_user.job_id', populate: {path: 'service_category'}})
+
             if(fetchRating) {
+              var rating_details = [];
+              rating_details = (fetchRating.rating_by_user);
+
               var total_user_rating = fetchRating.rating_by_user.length;
 
               var total_rating_one = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 1)).length;
@@ -1710,6 +1717,8 @@ class ApiController {
               var avg_rating = average(rating); // --> 4.4
 
               see_all_quote_details[i].quote_sent_vendor_id.avg_rating = avg_rating
+
+              see_all_quote_details[i].quote_sent_vendor_id = _.mergeWith(see_all_quote_details[i].quote_sent_vendor_id.rating_details, rating_details);
             }
           }
 
@@ -3359,6 +3368,7 @@ class ApiController {
       //     message : "Region does not match. Please change you job address as per your region."
       //   })
       // }else{
+        
         if(customer_card_id) {
           var charge = await stripe.charges.create({
             amount: request.input('job_amount') * 100,
