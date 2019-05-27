@@ -1695,7 +1695,9 @@ class ApiController {
             var fetchRating = await Rating.findOne({vendor_id : vendor_id})
             .populate('rating_by_user.user_id')
             .populate('rating_by_user.job_id')
-            .populate({path: 'rating_by_user.job_id', populate: {path: 'service_category'}})
+            .populate({path: 'rating_by_user.job_id', populate: {path: 'service_category', populate: {path: 'service_type.service_type_id'}}})
+            .populate({path: 'rating_by_user.job_id', populate: {path: 'added_services_details.parent_service_id'}})
+            
 
             if(fetchRating) {
               var rating_details = [];
@@ -1873,7 +1875,7 @@ class ApiController {
 
       for(var i = 0; i < all_jobs_list.length; i++){
         var fetch_location_id = user.location_id;
-
+        
         if(all_jobs_list[i].ask_quote == 1 && all_jobs_list[i].job_allocated_to_vendor == 1){
           var fetch_quote_details = await SentQuoteRequest.findOne({job_id : all_jobs_list[i]._id}).populate('ask_for_quote_details.parent_service_id')
           if(fetch_quote_details != undefined){
@@ -1891,11 +1893,49 @@ class ApiController {
         }
       }
 
+      for(var j = 0; j < final_array.length; j++) {
+        if(final_array[j].vendor_id != undefined){
+          var vendor_id = final_array[j].vendor_id._id;
+
+          var fetchRating = await Rating.findOne({vendor_id : vendor_id})
+            .populate('rating_by_user.user_id')
+            .populate('rating_by_user.job_id')
+            .populate({path: 'rating_by_user.job_id', populate: {path: 'service_category', populate: {path: 'service_type.service_type_id'}}})
+            .populate({path: 'rating_by_user.job_id', populate: {path: 'added_services_details.parent_service_id'}});
+
+          if(fetchRating != null){
+            var rating_details = [];
+            rating_details = fetchRating.rating_by_user;
+
+            var total_rating_one = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 1)).length;
+            var total_rating_two = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 2)).length;
+            var total_rating_three = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 3)).length;
+            var total_rating_four = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 4)).length;
+            var total_rating_five = (_.filter(fetchRating.rating_by_user, rate => rate.number_of_rating == 5)).length;
+
+            // from 1 to 5 stars
+            let rating = [total_rating_one, total_rating_two, total_rating_three, total_rating_four, total_rating_five];
+            var rate_rating = rate(rating); // --> 0.84
+
+            // calculate average
+            var avg_rating = average(rating); // --> 4.4
+
+            final_array[j].vendor_id.avg_rating = avg_rating;
+
+            final_array[j].vendor_id = _.mergeWith(final_array[j].vendor_id.rating_details, rating_details);
+          }else{
+            final_array[j].vendor_id.avg_rating = 0.0;
+            final_array[j].vendor_id.rating_details = [];
+          }
+        }
+      }
+
       if(all_jobs_list.length > 0) {
         response.json({
           status : true,
           code: 200,
-          data: all_jobs_list 
+          // data: all_jobs_list ,
+          data : final_array
         });
       }else { 
         response.json({
