@@ -128,6 +128,9 @@ Route.post('/api/checkDate', 'ApiController.checkDate');
 
 Route.get('/dbs/test', 'ApiController.test')
 
+Route.get('/api/all_vendors_rating_details_frontend', 'ApiController.all_vendors_rating_details_frontend')
+Route.get('/api/general_settings_frontend', 'ApiController.general_settings_frontend')
+
 Route.group(() => { 
     Route.get('/api/userDetails', 'ApiController.userDetails')
     Route.post('/api/profileEdit', 'ApiController.profileEdit')

@@ -170,6 +170,9 @@ class ApiController {
                       if(user.reg_type == 3){
                         var add_vendor_to_stripe = await this.add_vendor_to_stripe_as_customer(user);
 
+                        var add_vendor_to_stripe_connect = await this.stripeConnectAccountVendor(user);
+                        console.log(add_vendor_to_stripe_connect);
+
                         if(add_vendor_to_stripe != false){
                           user.stripe_details = {
                             customer_id : add_vendor_to_stripe
@@ -409,8 +412,6 @@ class ApiController {
     async userDetails ({ request, response, auth}) {
         try {
           var user_details = await auth.getUser();
-          // console.log(user_details,'user_details api');
-          // return false
           if(user_details.location_id != '') {
             var user_location_id = user_details.location_id;
             if(user_location_id) {
@@ -2877,71 +2878,117 @@ class ApiController {
             message : "Credit amount should be greater than $50 ."
           });
         } else {
-          var customer_id = request.input("stripe_customer_id");
-          const token = request.body.stripeToken;
-          //stripe add card
-          var addCard = await stripe.customers.createSource(customer_id,{
-            source: token
-          });
-
-          if (addCard) {
-            //stripe update customer default card
-            var save = await stripe.customers.update(customer_id, {
-              default_source : addCard.id
+          if(request.input("type") == 1){
+            //stripe checkout
+            var customer_id = request.input("stripe_customer_id");
+            const token = request.body.stripeToken;
+            //stripe add card
+            var addCard = await stripe.customers.createSource(customer_id,{
+              source: token
             });
-            if(save) {
-              //stripe create charge
-              const charge = await stripe.charges.create({
-                amount: request.input('topup_amount') * 100,
-                currency: 'sgd',
-                description: 'Top up amount credit successfully.',
-                customer : customer_id
+
+            if (addCard) {
+              //stripe update customer default card
+              var save = await stripe.customers.update(customer_id, {
+                default_source : addCard.id
               });
-      
-              if(charge) {
-                var add_charges_details = new VendorWalletTransactions ({
-                  vendor_id : user._id,
-                  credit : request.input('topup_amount'),
+              if(save) {
+                //stripe create charge
+                const charge = await stripe.charges.create({
+                  amount: request.input('topup_amount') * 100,
+                  currency: 'sgd',
+                  description: 'Top up amount credit successfully.',
+                  customer : customer_id
                 });
+        
+                if(charge) {
+                  var add_charges_details = new VendorWalletTransactions ({
+                    vendor_id : user._id,
+                    credit : request.input('topup_amount'),
+                  });
 
-                if(await add_charges_details.save()) {
-                  var fetch_vendor_wallet_details = await Wallet.findOne({vendor_id : user._id});
-                  if(fetch_vendor_wallet_details != null){
-                    var previous_credit_wallet_balance = fetch_vendor_wallet_details.credit;
-                    var new_updated_credit_wallet_balance = Number(request.input('topup_amount') + previous_credit_wallet_balance)
+                  if(await add_charges_details.save()) {
+                    var fetch_vendor_wallet_details = await Wallet.findOne({vendor_id : user._id});
+                    console.log(fetch_vendor_wallet_details);
 
-                    fetch_vendor_wallet_details.credit = new_updated_credit_wallet_balance;
-                    fetch_vendor_wallet_details.updated_at = Date.now();
-                    await fetch_vendor_wallet_details.save();
-                  }else {
-                    // credit wallet 
-                    var add_wallet = new Wallet({
-                      vendor_id : user._id,
-                      credit : request.input('topup_amount')
-                    })
+                    if(fetch_vendor_wallet_details != undefined){
+                      var previous_credit_wallet_balance = Number(fetch_vendor_wallet_details.credit);
 
-                    await add_wallet.save();
+                      var new_updated_credit_wallet_balance = Number(request.input('topup_amount')) + previous_credit_wallet_balance;
+
+                      fetch_vendor_wallet_details.credit = new_updated_credit_wallet_balance;
+                      fetch_vendor_wallet_details.updated_at = Date.now();
+                      await fetch_vendor_wallet_details.save();
+                    }else {
+                      // credit wallet 
+                      var add_wallet = new Wallet({
+                        vendor_id : user._id,
+                        credit : request.input('topup_amount')
+                      })
+
+                      await add_wallet.save();
+                    }
+
+                    var wallet_details = await Wallet.findOne({vendor_id : user._id});
+                    var add_notification = this.add_notification(user,'','','','','','','','',wallet_details);
+
+                    // var send_payment_invoice = this.paymentInvoiceEmail(user, charge);
+                    // if(send_payment_invoice == true) {
+                      response.json({
+                        status : true,
+                        code : 200,
+                        message : "Top up recharge has been completed."
+                      });
+                    // }
                   }
-
-                  var wallet_details = await Wallet.findOne({vendor_id : user._id});
-                  var add_notification = this.add_notification(user,'','','','','','','','',wallet_details);
-
-                  var send_payment_invoice = this.paymentInvoiceEmail(user, charge, save_job);
-                  if(send_payment_invoice == true) {
-                    response.json({
-                      status : true,
-                      code : 200,
-                      message : "Top up recharge has been completed."
-                    });
-                  }
+                }else { 
+                  response.json({
+                    status : false,
+                    code : 400,
+                    message : "Payment declined."
+                  });
                 }
-              }else { 
+              }
+            }
+          }else{
+            //recharge from earning wallet
+            var fetching_vendor_wallet = await Wallet.findOne({vendor_id : user._id});
+
+            var earning_wallet = Number(fetching_vendor_wallet.earning);
+
+            if(earning_wallet > 50){
+              var deduction_amount_from_earning_wallet = Number(earning_wallet - request.input("topup_amount"));
+              
+              var add_charges_details = new VendorWalletTransactions ({
+                vendor_id : user._id,
+                credit : request.input('topup_amount'),
+              });
+
+              if(await add_charges_details.save()) {
+
+                if(fetching_vendor_wallet != undefined){
+                  var previous_credit_wallet_balance = Number(fetching_vendor_wallet.credit);
+
+                  var new_updated_credit_wallet_balance = Number(request.input('topup_amount')) + previous_credit_wallet_balance;
+
+                  fetching_vendor_wallet.credit = new_updated_credit_wallet_balance;
+                  fetching_vendor_wallet.earning = deduction_amount_from_earning_wallet;
+                  fetching_vendor_wallet.updated_at = Date.now();
+                  await fetching_vendor_wallet.save();
+                }
+
                 response.json({
-                  status : false,
-                  code : 400,
-                  message : "Payment declined."
+                  status : true,
+                  code : 200,
+                  message : "Top up recharge has been completed."
                 });
               }
+            }else{
+              response.json({
+                status : false,
+                code : 400,
+                message : "Your earning wallet balance is too low. Minimum balance required $50."
+              })
             }
           }
         }
@@ -3211,36 +3258,38 @@ class ApiController {
     }
 
     //open connect account through API
-    async stripeConnectAccountVendor ({request, response, auth}) {
-      var user = await auth.getUser();
-      if(user.reg_type == 3) {
+    async stripeConnectAccountVendor (user_details) {
+      if(user_details.reg_type == 3) {
         //stripe connect account create
         var connect_user = await stripe.accounts.create({
           type: 'standard',
           country: 'SG',
-          email: user.email
+          email: user_details.email
         });
 
         console.log(connect_user,'connect_user');
 
         if(connect_user) {
-          var user_update = await User.updateOne({
-            _id: user._id //matching with table id
-          },{
-            $set: {
-              stripe_details: [{
-                customer_id : connect_user.id
-              }]
-            }
-          });
-          if(user_update) {
-            response.json({
-              status : true,
-              code : 200,
-              message : "Your stripe account has been successfully associated with us."
-            });
-          }
-        } 
+          return connect_user;
+          // var user_update = await User.updateOne({
+          //   _id: user._id //matching with table id
+          // },{
+          //   $set: {
+          //     stripe_details: [{
+          //       customer_id : connect_user.id
+          //     }]
+          //   }
+          // });
+          // if(user_update) {
+          //   response.json({
+          //     status : true,
+          //     code : 200,
+          //     message : "Your stripe account has been successfully associated with us."
+          //   });
+          // }
+        }else{
+          return false;
+        }
       }else {
         response.json({
           status : false,
@@ -4127,6 +4176,65 @@ class ApiController {
         console.log("try catch");
         throw error;
       }
+    }
+
+    async all_vendors_rating_details_frontend ({response}) {
+      var fetchRating = await Rating.find({})
+        .populate('vendor_id')
+        .populate('rating_by_user.user_id')
+        .sort({_id : -1});
+
+      var final_array = [];
+
+      if(fetchRating.length > 0){
+        for(var i = 0; i < fetchRating.length; i++){
+          var total_rating_one = (_.filter(fetchRating[i].rating_by_user, rate => rate.number_of_rating == 1)).length;
+          var total_rating_two = (_.filter(fetchRating[i].rating_by_user, rate => rate.number_of_rating == 2)).length;
+          var total_rating_three = (_.filter(fetchRating[i].rating_by_user, rate => rate.number_of_rating == 3)).length;
+          var total_rating_four = (_.filter(fetchRating[i].rating_by_user, rate => rate.number_of_rating == 4)).length;
+          var total_rating_five = (_.filter(fetchRating[i].rating_by_user, rate => rate.number_of_rating == 5)).length;
+
+          // from 1 to 5 stars
+          let rating = [total_rating_one, total_rating_two, total_rating_three, total_rating_four, total_rating_five];
+          var rate_rating = rate(rating); // --> 0.84
+
+          // calculate average
+          var avg_rating = average(rating); // --> 4.4
+
+          final_array.push({
+            avg_rating : avg_rating,
+            vendor_details : fetchRating[i].vendor_id,
+            rating_by_user : fetchRating[i].rating_by_user
+          })
+        }
+      }
+
+      response.json({
+        status : true,
+        code : 200,
+        data : final_array
+      })
+    }
+
+    async general_settings_frontend ({response}) {
+      var all_customers = await User.find({reg_type : 2}).count();
+      var all_vendors = await User.find({reg_type : 3}).count();
+      var all_jobs = await Job.find({}).count();
+      var all_services = await Service.find({}).count();
+      
+      var finalArray = [];
+      finalArray.push({
+        all_customers : all_customers,
+        all_vendors : all_vendors,
+        all_jobs : all_jobs,
+        all_services : all_services
+      });
+
+      response.json({
+        status : true,
+        code : 200,
+        data : finalArray
+      })
     }
 
 
