@@ -36,7 +36,7 @@
     "base64-to-image": "^1.0.2",
     "fcm-node": "^1.4.0",
     "gravatar": "^1.6.0",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.19",
     "lucid-mongo": "^3.1.4",
     "mime": "^2.4.0",
     "moment": "^2.22.2",
